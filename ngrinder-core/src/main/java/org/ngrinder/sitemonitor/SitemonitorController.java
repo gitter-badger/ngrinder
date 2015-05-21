@@ -1,0 +1,214 @@
+/* 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. 
+ */
+package org.ngrinder.sitemonitor;
+
+import static org.ngrinder.common.constants.InternalConstants.*;
+
+import java.io.File;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import org.ngrinder.infra.AgentConfig;
+import org.ngrinder.monitor.controller.model.SystemDataModel;
+import org.ngrinder.sitemonitor.messages.CreateGroupMessage;
+import org.ngrinder.sitemonitor.messages.RegistScheduleMessage;
+import org.ngrinder.sitemonitor.messages.ShutdownServerMessage;
+import org.ngrinder.sitemonitor.messages.UnregistScheduleMessage;
+import org.python.google.common.base.Preconditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import net.grinder.GrinderConstants;
+import net.grinder.common.GrinderException;
+import net.grinder.communication.ClientReceiver;
+import net.grinder.communication.ClientSender;
+import net.grinder.communication.CommunicationException;
+import net.grinder.communication.ConnectionType;
+import net.grinder.communication.Connector;
+import net.grinder.communication.Message;
+import net.grinder.communication.MessageDispatchSender;
+import net.grinder.communication.MessagePump;
+import net.grinder.engine.agent.Agent;
+import net.grinder.engine.agent.FileStoreSupport;
+import net.grinder.engine.common.AgentControllerConnectorFactory;
+import net.grinder.engine.common.EngineException;
+import net.grinder.engine.controller.AgentControllerIdentityImplementation;
+import net.grinder.message.console.AgentControllerProcessReportMessage;
+import net.grinder.message.console.AgentControllerState;
+import net.grinder.messages.console.AgentAddress;
+import net.grinder.util.NetworkUtils;
+import net.grinder.util.thread.Condition;
+
+/**
+ * @author Gisoo Gwon
+ * @since 3.4
+ */
+public class SitemonitorController implements Agent {
+	/**
+	 * folder for sitemonitorSetting and script file download
+	 */
+	public static final String SITEMONITOR_FILE = "sitemonitor-file";
+
+	private static final Logger LOGGER = LoggerFactory.getLogger("site monitor controller");
+
+	private final AgentControllerIdentityImplementation agentIdentity;
+	private final Condition eventSyncCondition;
+	private final AgentConfig agentConfig;
+	private boolean connected = false;
+	private boolean shutdownServer = false;
+	private String version;
+	private MonitorScheduler monitorScheduler;
+	private SitemonitorControllerServerListener sitemonitorControllerServerListener;
+	private final AgentControllerConnectorFactory connectorFactory = new AgentControllerConnectorFactory(
+		ConnectionType.AGENT);
+	private ClientSender clientSender;
+	private MessagePump messagePump;
+	private Timer sendStatusTimer;
+	private MessageDispatchSender messageDispatcher;
+
+	public SitemonitorController(AgentConfig agentConfig, Condition eventSyncCondition) {
+		this.agentConfig = agentConfig;
+		this.eventSyncCondition = eventSyncCondition;
+		this.version = agentConfig.getInternalProperties().getProperty(
+			PROP_INTERNAL_NGRINDER_VERSION);
+
+		// TODO : sitemonitor.conf should be support setting that agent host id
+		agentIdentity = new AgentControllerIdentityImplementation(agentConfig.getAgentHostID(),
+			NetworkUtils.DEFAULT_LOCAL_HOST_ADDRESS);
+		sitemonitorControllerServerListener = new SitemonitorControllerServerListener(
+			eventSyncCondition, LOGGER);
+	}
+
+	@Override
+	public void run() throws GrinderException {
+		synchronized (eventSyncCondition) {
+			eventSyncCondition.notifyAll();
+		}
+
+		try {
+			setShutdownServer(false);
+			do {
+				if (!connected) {
+					Connector connector = null;
+					try {
+						String ip = agentConfig.getSitemonitorControllerIp();
+						int port = agentConfig.getSitemonitorControllerPort();
+						connector = connectorFactory.create(ip, port);
+
+						connect(connector);
+						LOGGER.info("Connected to sitemonitor controller server at {}",
+							connector.getEndpointAsString());
+					} catch (CommunicationException e) {
+						LOGGER.error(
+							"Error while connecting to sitemonitor controller server at {}",
+							connector.getEndpointAsString());
+						return;
+					}
+					continue;
+				}
+
+				Message message = sitemonitorControllerServerListener.waitForMessage();
+				handle(message);
+			} while (!isShutdownServer());
+		} finally {
+			shutdown();
+		}
+	}
+
+	@Override
+	public void shutdown() {
+		if (sendStatusTimer != null) {
+			sendStatusTimer.cancel();
+		}
+		if (clientSender != null) {
+			clientSender.shutdown();
+			clientSender = null;
+		}
+		if (messagePump != null) {
+			messagePump.shutdown();
+			messagePump = null;
+		}
+		if (sitemonitorControllerServerListener != null) {
+			sitemonitorControllerServerListener.shutdown();
+		}
+		connected = false;
+	}
+
+	private void handle(Message message) throws EngineException {
+		if (message instanceof ShutdownServerMessage) {
+			LOGGER.info("received shutdown message from server");
+			setShutdownServer(true);
+		} else if (message instanceof RegistScheduleMessage) {
+			LOGGER.info("received regist schedule message from server");
+			monitorScheduler.regist(((RegistScheduleMessage) message).getSitemonitorSetting());
+		} else if (message instanceof UnregistScheduleMessage) {
+			LOGGER.info("received unregist schedule message from server");
+			monitorScheduler.unregist(((UnregistScheduleMessage) message).getSitemonitorSetting());
+		} else if (message instanceof CreateGroupMessage) {
+			initFileStore(((CreateGroupMessage) message).getGroupName());
+		} else {
+			LOGGER.warn("received invalid message");
+		}
+	}
+
+	public void setMonitorScheduler(MonitorScheduler monitorScheduler) {
+		this.monitorScheduler = monitorScheduler;
+	}
+
+	private void sendCurrentState() throws CommunicationException {
+		clientSender.send(new AgentControllerProcessReportMessage(AgentControllerState.STARTED,
+			new SystemDataModel(), agentConfig.getSitemonitorControllerPort(), version));
+	}
+
+	private synchronized boolean isShutdownServer() {
+		return shutdownServer;
+	}
+
+	private synchronized void setShutdownServer(boolean shutdownServer) {
+		this.shutdownServer = shutdownServer;
+	}
+
+	private void initFileStore(String groupName) throws EngineException {
+		Preconditions.checkNotNull(messageDispatcher);
+		File base = agentConfig.getHome().getDirectory();
+		File storeDicrectory = new File(base, SITEMONITOR_FILE + "/" + groupName);
+		new FileStoreSupport(storeDicrectory, messageDispatcher, LOGGER);
+	}
+
+	private synchronized void connect(Connector connector) throws CommunicationException,
+		EngineException {
+		ClientReceiver receiver = ClientReceiver.connect(connector, new AgentAddress(agentIdentity));
+
+		messageDispatcher = new MessageDispatchSender();
+		sitemonitorControllerServerListener.registerMessageHandlers(messageDispatcher);
+		messagePump = new MessagePump(receiver, messageDispatcher, 1);
+		messagePump.start();
+
+		clientSender = ClientSender.connect(receiver);
+
+		sendStatusTimer = new Timer(false);
+		sendStatusTimer.schedule(new TimerTask() {
+			public void run() {
+				try {
+					sendCurrentState();
+				} catch (CommunicationException e) {
+					cancel();
+					LOGGER.error("Error while sending current state:" + e.getMessage());
+					LOGGER.debug("The error detail is", e);
+				}
+			}
+		}, 0, GrinderConstants.AGENT_CONTROLLER_HEARTBEAT_INTERVAL);
+		connected = true;
+	}
+}

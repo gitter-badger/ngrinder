@@ -16,6 +16,8 @@ package org.ngrinder;
 import com.beust.jcommander.JCommander;
 import net.grinder.AgentControllerDaemon;
 import net.grinder.util.VersionNumber;
+import net.grinder.util.thread.Condition;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hyperic.sigar.ProcState;
@@ -26,6 +28,8 @@ import org.ngrinder.common.constants.CommonConstants;
 import org.ngrinder.infra.AgentConfig;
 import org.ngrinder.infra.ArchLoaderInit;
 import org.ngrinder.monitor.agent.MonitorServer;
+import org.ngrinder.sitemonitor.SitemonitorController;
+import org.ngrinder.sitemonitor.SitemonitorControllerDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -181,7 +185,11 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 			LOG.info("connecting to controller {}, owner-{}", (controllerIP + ":" + controllerPort), owner);
 
 			try {
-				// TODO : connection sitemonitor Controller!
+				Condition eventSyncCondition = new Condition();
+				SitemonitorController controller = new SitemonitorController(agentConfig,
+					eventSyncCondition);
+				SitemonitorControllerDaemon daemon = new SitemonitorControllerDaemon(controller);
+				daemon.run();
 			} catch (Exception e) {
 				LOG.error("Error while connecting to : {}:{}", controllerIP, controllerPort);
 				printHelpAndExit("Error while starting Agent", e);
