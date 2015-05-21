@@ -23,6 +23,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.ngrinder.common.constants.AgentConstants;
 import org.ngrinder.common.constants.CommonConstants;
+import org.ngrinder.common.constants.SitemonitorConstants;
 import org.ngrinder.common.constants.MonitorConstants;
 import org.ngrinder.common.util.PropertiesKeyMapper;
 import org.ngrinder.common.util.PropertiesWrapper;
@@ -48,7 +49,7 @@ import static org.ngrinder.common.util.Preconditions.checkNotNull;
  * @author JunHo Yoon
  * @since 3.0
  */
-public class AgentConfig implements AgentConstants, MonitorConstants, CommonConstants {
+public class AgentConfig implements AgentConstants, MonitorConstants, SitemonitorConstants, CommonConstants {
 	private static final String NGRINDER_DEFAULT_FOLDER = ".ngrinder_agent";
 	private static final Logger LOGGER = LoggerFactory.getLogger("agent config");
 
@@ -56,12 +57,14 @@ public class AgentConfig implements AgentConstants, MonitorConstants, CommonCons
 
 	private PropertiesWrapper agentProperties;
 	private PropertiesWrapper monitorProperties;
+	private PropertiesWrapper sitemonitorProperties;
 	private PropertiesWrapper commonProperties;
 	private PropertiesWrapper internalProperties;
 
 	private PropertiesKeyMapper internalPropertyMapper = PropertiesKeyMapper.create("internal-properties.map");
 	private PropertiesKeyMapper agentPropertyMapper = PropertiesKeyMapper.create("agent-properties.map");
 	private PropertiesKeyMapper monitorPropertyMapper = PropertiesKeyMapper.create("monitor-properties.map");
+	private PropertiesKeyMapper sitemonitorPropertyMapper = PropertiesKeyMapper.create("sitemonitor-properties.map");
 	private PropertiesKeyMapper commonPropertyMapper = PropertiesKeyMapper.create("common-properties.map");
 
 	/**
@@ -111,6 +114,7 @@ public class AgentConfig implements AgentConstants, MonitorConstants, CommonCons
 		properties.putAll(System.getProperties());
 		agentProperties = new PropertiesWrapper(properties, agentPropertyMapper);
 		monitorProperties = new PropertiesWrapper(properties, monitorPropertyMapper);
+		sitemonitorProperties = new PropertiesWrapper(properties, sitemonitorPropertyMapper);
 		commonProperties = new PropertiesWrapper(properties, commonPropertyMapper);
 	}
 
@@ -175,8 +179,10 @@ public class AgentConfig implements AgentConstants, MonitorConstants, CommonCons
 		Properties properties = home.getProperties("pid");
 		if ("agent".equalsIgnoreCase(startMode)) {
 			properties.put("agent.pid", agentPid);
-		} else {
+		} else if ("monitor".equalsIgnoreCase(startMode)) {
 			properties.put("monitor.pid", agentPid);
+		} else {
+			properties.put("sitemonitor.pid", agentPid);
 		}
 		home.saveProperties("pid", properties);
 	}
@@ -201,16 +207,18 @@ public class AgentConfig implements AgentConstants, MonitorConstants, CommonCons
 	/**
 	 * Get the agent pid in the form of string.
 	 *
-	 * @param startMode agent or monitor
+	 * @param startMode agent or monitor or sitemonitor
 	 * @return pid
 	 */
 	public String getAgentPidProperties(String startMode) {
 		checkNotNull(home);
 		Properties properties = home.getProperties("pid");
 		if ("agent".equalsIgnoreCase(startMode)) {
-			return (String) properties.get("agent.pid");
+			return properties.getProperty("agent.pid");
+		} else if ("monitor".equalsIgnoreCase(startMode)) {
+			return properties.getProperty("monitor.pid");
 		} else {
-			return (String) properties.get("monitor.pid");
+			return properties.getProperty("sitemonitor.pid");
 		}
 	}
 
@@ -302,6 +310,15 @@ public class AgentConfig implements AgentConstants, MonitorConstants, CommonCons
 	}
 
 	/**
+	 * Get sitemonitor properties.
+	 *
+	 * @return sitemonitor properties
+	 */
+	public PropertiesWrapper getSitemonitorProperties() {
+		return checkNotNull(sitemonitorProperties);
+	}
+
+	/**
 	 * Get internal properties.
 	 *
 	 * @return internalProperties
@@ -349,6 +366,18 @@ public class AgentConfig implements AgentConstants, MonitorConstants, CommonCons
 		} else {
 			return properties.getPropertyBoolean(PROP_COMMON_SILENT_MODE);
 		}
+	}
+	
+	public String getSitemonitorControllerIp() {
+		return getSitemonitorProperties().getProperty(PROP_SITEMONITOR_CONTROLLER_IP);
+	}
+	
+	public int getSitemonitorControllerPort() {
+		return getSitemonitorProperties().getPropertyInt(PROP_SITEMONITOR_CONTROLLER_PORT);
+	}
+	
+	public String getSitemonitorOwner() {
+		return getSitemonitorProperties().getProperty(PROP_SITEMONITOR_OWNER, "");
 	}
 
 	public PropertiesWrapper getCommonProperties() {

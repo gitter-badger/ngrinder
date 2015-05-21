@@ -166,6 +166,31 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 		agentController.shutdown();
 	}
 
+	/**
+	 * Start the sitemonitor.
+	 */
+	public void startSitemonitor() {
+		printLog("***************************************************");
+		printLog("* Start nGrinder sitemonitor... ");
+		printLog("***************************************************");
+		
+		try {
+			String controllerIP = getIP(agentConfig.getSitemonitorControllerIp());
+			int controllerPort = agentConfig.getSitemonitorControllerPort();
+			String owner = agentConfig.getSitemonitorOwner();
+			LOG.info("connecting to controller {}, owner-{}", (controllerIP + ":" + controllerPort), owner);
+
+			try {
+				// TODO : connection sitemonitor Controller!
+			} catch (Exception e) {
+				LOG.error("Error while connecting to : {}:{}", controllerIP, controllerPort);
+				printHelpAndExit("Error while starting Agent", e);
+			}
+		} catch (Exception e) {
+			LOG.error("ERROR: {}", e.getMessage());
+			printHelpAndExit("Error while starting sitemonitor", e);
+		}
+	}
 
 	public static NGrinderAgentStarterParam.NGrinderModeParam modeParam;
 
@@ -215,8 +240,10 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 			starter.startAgent();
 		} else if (startMode.equalsIgnoreCase("monitor")) {
 			starter.startMonitor();
+		} else if (startMode.equalsIgnoreCase("sitemonitor")) {
+			starter.startSitemonitor();
 		} else {
-			staticPrintHelpAndExit("Invalid agent.conf, '--mode' must be set as 'monitor' or 'agent'.");
+			staticPrintHelpAndExit("Invalid agent.conf, '--mode' must be set as 'monitor' or 'agent' or 'sitemonitor'.");
 		}
 	}
 
@@ -248,7 +275,7 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 	/**
 	 * Stop process.
 	 *
-	 * @param mode agent or monitor.
+	 * @param mode agent or monitor or sitemonitor.
 	 */
 	protected void stopProcess(String mode) {
 		String pid = agentConfig.getAgentPidProperties(mode);

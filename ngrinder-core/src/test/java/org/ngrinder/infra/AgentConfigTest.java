@@ -60,7 +60,7 @@ public class AgentConfigTest {
 		// Then
 		homeDir = config.getHome().getDirectory();
 		assertThat(homeDir.getAbsolutePath()).contains(File.separator + "tmp_agent_home");
-		FileUtils.deleteDirectory(homeDir);
+		FileUtils.deleteQuietly(homeDir);
 		System.setProperty("ngrinder.agent.home", "");
 
 	}

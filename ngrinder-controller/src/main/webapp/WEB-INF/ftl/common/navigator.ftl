@@ -97,6 +97,9 @@
 						<li>
 							<a href="${req.getContextPath()}/monitor/download"><@spring.message "navigator.dropDown.downloadMonitor"/></a>
 						</li>
+						<li>
+							<a href="${req.getContextPath()}/sitemonitor/download"><@spring.message "navigator.dropDown.downloadSitemonitor"/></a>
+						</li>
 						<@security.authorize ifAnyGranted="A">
 							<li class="divider"></li>
 							<li>

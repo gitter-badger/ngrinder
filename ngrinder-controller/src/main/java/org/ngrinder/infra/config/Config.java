@@ -45,6 +45,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Properties;
 
@@ -156,6 +158,27 @@ public class Config extends AbstractConfig implements ControllerConstants, Clust
 		announcementWatchDog.interrupt();
 		systemConfWatchDog.interrupt();
 		policyJsWatchDog.interrupt();
+	}
+	
+	/**
+	 * Return a controller ip address of the site monitor.
+	 * @return a controller ip address, if doesn't set, it returns a local ip address.
+	 */
+	public String getSitemonitorControllerIp() throws UnknownHostException {
+		String ip = getControllerProperties().getProperty(ControllerConstants.PROP_CONTROLLER_SITEMONITOR_CONTROLLER_IP);
+		if (ip == null) {
+			// If there was not defined a controller ip that should be received a response from the site monitor agent,
+			// instead, ngrinder will use the controller ip where generate the site monitor agent package.
+			LOG.warn("Undefined controller ip that should be received a response from the site monitor agent." +
+					"use current conroller ip : {}", InetAddress.getLocalHost().getHostAddress());
+			return InetAddress.getLocalHost().getHostAddress();
+		} else {
+			return ip;
+		}
+	}
+	
+	public int getSitemonitorControllerPort() {
+		return getControllerProperties().getPropertyInt(ControllerConstants.PROP_CONTROLLER_SITEMONITOR_CONTROLLER_PORT);
 	}
 
 	/**

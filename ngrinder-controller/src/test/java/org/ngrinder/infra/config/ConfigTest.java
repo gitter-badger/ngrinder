@@ -22,10 +22,11 @@ import org.ngrinder.common.util.PropertiesWrapper;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.File;
+import java.net.InetAddress;
 import java.util.Properties;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -117,5 +118,12 @@ public class ConfigTest implements ControllerConstants, ClusterConstants {
 		ReflectionTestUtils.setField(config, "exHome", mockExHome);
 		config.loadProperties();
 		assertThat(config.getRegion(), is("TestNewRegion"));
+	}
+	
+	@Test
+	public void testGetSitemonitorControllerIpForDefaultValue() throws Exception {
+		String ip = config.getSitemonitorControllerIp();
+		
+		assertThat(ip, is(InetAddress.getLocalHost().getHostAddress()));
 	}
 }

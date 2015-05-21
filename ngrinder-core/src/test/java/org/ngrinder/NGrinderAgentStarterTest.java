@@ -61,6 +61,11 @@ public class NGrinderAgentStarterTest {
 		starter.stopMonitor();
 	}
 
+	@Test
+	public void testStartSitemonitor() {
+		starter.startSitemonitor();
+	}
+
 }
 
 class MockNGrinderStarter extends NGrinderAgentStarter {

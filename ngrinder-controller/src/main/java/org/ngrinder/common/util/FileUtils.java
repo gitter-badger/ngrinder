@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -53,5 +54,25 @@ public abstract class FileUtils {
 			IOUtils.closeQuietly(fos);
 		}
 
+	}
+	
+	/**
+	 * list of all files in root.
+	 * if the folder exist, get sub-files in the recursive call. 
+	 * 
+	 * @param folder root folder
+	 * @param allFiles list to append files
+	 * @return
+	 */
+	public static List<File> listContainSubFolder(File folder, List<File> allFiles) {
+		for (File file : folder.listFiles()) {
+			if (file.isDirectory()) {
+				listContainSubFolder(file, allFiles);
+			} else {
+				allFiles.add(file);
+			}
+		}
+		
+		return allFiles;
 	}
 }
