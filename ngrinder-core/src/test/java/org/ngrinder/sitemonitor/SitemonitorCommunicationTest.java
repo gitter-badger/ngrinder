@@ -138,13 +138,13 @@ public class SitemonitorCommunicationTest {
 
 	private void sendRegistScheduleMessage(SitemonitorControllerServerDaemon serverDaemon) {
 		RegistScheduleMessage regist = new RegistScheduleMessage();
-		regist.setSitemonitorSetting(new SitemonitorSetting());
+		regist.setSitemonitorSetting(new SitemonitorSetting(null, null, -1));
 		serverDaemon.sendToAgents(regist);
 	}
 
 	private void sendUnregistScheduleMessage(SitemonitorControllerServerDaemon serverDaemon) {
 		UnregistScheduleMessage regist = new UnregistScheduleMessage();
-		regist.setSitemonitorSetting(new SitemonitorSetting());
+		regist.setSitemonitorSetting(new SitemonitorSetting(null, null, -1));
 		serverDaemon.sendToAgents(regist);
 	}
 

@@ -19,6 +19,41 @@ import java.io.Serializable;
  * @author Gisoo Gwon
  */
 public class SitemonitorSetting implements Serializable {
+	private static final int TEN_SECOND = 10 * 1000;
+
 	private static final long serialVersionUID = -1828068594209763814L;
 
+	private String groupName = null;
+	private String errorCallback = null;
+	private int repeatCycle = TEN_SECOND;
+
+	public SitemonitorSetting(String groupName, String errorCallback, int repeatCycle) {
+		this.groupName = groupName;
+		this.errorCallback = errorCallback;
+		this.repeatCycle = repeatCycle;
+	}
+
+	public String getGroupName() {
+		return groupName;
+	}
+
+	public void setGroupName(String groupName) {
+		this.groupName = groupName;
+	}
+
+	public String getErrorCallback() {
+		return errorCallback;
+	}
+
+	public void setErrorCallback(String errorCallback) {
+		this.errorCallback = errorCallback;
+	}
+
+	public int getRepeatCycle() {
+		return repeatCycle;
+	}
+
+	public void setRepeatCycle(int repeatCycle) {
+		this.repeatCycle = repeatCycle;
+	}
 }
