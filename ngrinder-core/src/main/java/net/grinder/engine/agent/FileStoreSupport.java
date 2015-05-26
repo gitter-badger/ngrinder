@@ -17,8 +17,11 @@ import java.io.File;
 
 import org.slf4j.Logger;
 
+import net.grinder.communication.CommunicationException;
 import net.grinder.communication.MessageDispatchSender;
+import net.grinder.communication.MessageDispatchRegistry.AbstractHandler;
 import net.grinder.engine.common.EngineException;
+import net.grinder.messages.agent.ClearCacheMessage;
 
 /**
  * Wrapping {@link FileStore} for public access. 
@@ -26,10 +29,21 @@ import net.grinder.engine.common.EngineException;
  */
 public class FileStoreSupport {
 	private final FileStore fileStore;
+	private final MessageDispatchSender messageDispatcherSender;
 
 	public FileStoreSupport(File directory, MessageDispatchSender messageDispatcherSender,
-				Logger LOGGER) throws EngineException {
+		Logger LOGGER) throws EngineException {
+		this.messageDispatcherSender = messageDispatcherSender;
 		fileStore = new FileStore(directory, LOGGER);
 		fileStore.registerMessageHandlers(messageDispatcherSender);
+	}
+
+	public void ignoreClearCacheMessage() {
+		messageDispatcherSender.set(ClearCacheMessage.class,
+			new AbstractHandler<ClearCacheMessage>() {
+				public void handle(ClearCacheMessage message) throws CommunicationException {
+					// ignore clear cache message
+				}
+			});
 	}
 }

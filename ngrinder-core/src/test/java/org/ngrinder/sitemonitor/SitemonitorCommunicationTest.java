@@ -22,7 +22,6 @@ import org.ngrinder.sitemonitor.SitemonitorController;
 import org.ngrinder.sitemonitor.SitemonitorControllerDaemon;
 import org.ngrinder.sitemonitor.SitemonitorControllerServerDaemon;
 import org.ngrinder.sitemonitor.SitemonitorControllerServerDaemon.FileDistributeListener;
-import org.ngrinder.sitemonitor.messages.CreateGroupMessage;
 import org.ngrinder.sitemonitor.messages.RegistScheduleMessage;
 import org.ngrinder.sitemonitor.messages.UnregistScheduleMessage;
 
@@ -100,7 +99,6 @@ public class SitemonitorCommunicationTest {
 		SitemonitorControllerDaemon controllerDaemon = new SitemonitorControllerDaemon(controller);
 		controllerDaemon.run();
 
-		// distribute file test
 		// given
 		Thread.sleep(2000);
 		assertThat(serverDaemon.getAllAvailableAgents().size(), is(1));
@@ -113,14 +111,11 @@ public class SitemonitorCommunicationTest {
 
 		String groupName = "new";
 		File downloadFolder = new File(myAgentConfig.getHome().getDirectory(),
-			SitemonitorController.SITEMONITOR_FILE + "/" + groupName + "/incoming");
+			SitemonitorController.SITEMONITOR_FILE + File.separator + "incoming" + File.separator + groupName);
 		FileUtils.deleteQuietly(downloadFolder);
 
-		// when
-		serverDaemon.sendToAddressedAgents(new AgentAddress(agentIdentity), new CreateGroupMessage(
-			groupName));
-		Thread.sleep(500);
-		serverDaemon.sendFile(new AgentAddress(agentIdentity), new Directory(sendFolder),
+		// when, send file
+		serverDaemon.sendFile(new AgentAddress(agentIdentity), groupName, new Directory(sendFolder),
 			Pattern.compile(ConsoleProperties.DEFAULT_DISTRIBUTION_FILE_FILTER_EXPRESSION),
 			listenerSupport);
 		Thread.sleep(1000);

@@ -107,6 +107,7 @@ public class SitemonitorController implements Agent {
 						connector = connectorFactory.create(ip, port);
 
 						connect(connector);
+						initFileStore();
 						LOGGER.info("Connected to sitemonitor controller server at {}",
 							connector.getEndpointAsString());
 					} catch (CommunicationException e) {
@@ -156,7 +157,7 @@ public class SitemonitorController implements Agent {
 			LOGGER.info("received unregist schedule message from server");
 			monitorScheduler.unregist(((UnregistScheduleMessage) message).getSitemonitorSetting());
 		} else if (message instanceof CreateGroupMessage) {
-			initFileStore(((CreateGroupMessage) message).getGroupName());
+			// TODO : run ScriptRunner proccess.
 		} else {
 			LOGGER.warn("received invalid message");
 		}
@@ -179,11 +180,13 @@ public class SitemonitorController implements Agent {
 		this.shutdownServer = shutdownServer;
 	}
 
-	private void initFileStore(String groupName) throws EngineException {
+	private void initFileStore() throws EngineException {
 		Preconditions.checkNotNull(messageDispatcher);
 		File base = agentConfig.getHome().getDirectory();
-		File storeDicrectory = new File(base, SITEMONITOR_FILE + "/" + groupName);
-		new FileStoreSupport(storeDicrectory, messageDispatcher, LOGGER);
+		File storeDicrectory = new File(base, SITEMONITOR_FILE);
+		FileStoreSupport fileStoreSupport = new FileStoreSupport(storeDicrectory,
+			messageDispatcher, LOGGER);
+		fileStoreSupport.ignoreClearCacheMessage();
 	}
 
 	private synchronized void connect(Connector connector) throws CommunicationException,
