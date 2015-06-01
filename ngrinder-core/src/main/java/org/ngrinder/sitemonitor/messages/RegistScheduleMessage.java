@@ -13,22 +13,29 @@
  */
 package org.ngrinder.sitemonitor.messages;
 
-import org.ngrinder.sitemonitor.SitemonitorSetting;
-
 import net.grinder.communication.Message;
 
 /**
  * @author Gisoo Gwon
  */
 public class RegistScheduleMessage implements Message {
+	
 	private static final long serialVersionUID = 8032597041213935838L;
-	private SitemonitorSetting sitemonitorSetting;
+	
+	private final String groupName;
+	private final String scriptpath;
 
-	public SitemonitorSetting getSitemonitorSetting() {
-		return sitemonitorSetting;
+	public RegistScheduleMessage(String groupName, String scriptpath) {
+		this.groupName = groupName;
+		this.scriptpath = scriptpath;
 	}
 
-	public void setSitemonitorSetting(SitemonitorSetting sitemonitorSetting) {
-		this.sitemonitorSetting = sitemonitorSetting;
+	public String getGroupName() {
+		return groupName;
 	}
+
+	public String getScriptpath() {
+		return scriptpath;
+	}
+
 }

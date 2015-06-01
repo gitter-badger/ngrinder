@@ -15,6 +15,7 @@ package org.ngrinder;
 
 import com.beust.jcommander.JCommander;
 import net.grinder.AgentControllerDaemon;
+import net.grinder.util.NetworkUtils;
 import net.grinder.util.VersionNumber;
 import net.grinder.util.thread.Condition;
 
@@ -28,11 +29,14 @@ import org.ngrinder.common.constants.CommonConstants;
 import org.ngrinder.infra.AgentConfig;
 import org.ngrinder.infra.ArchLoaderInit;
 import org.ngrinder.monitor.agent.MonitorServer;
+import org.ngrinder.sitemonitor.MonitorSchedulerImplementation;
 import org.ngrinder.sitemonitor.SitemonitorController;
 import org.ngrinder.sitemonitor.SitemonitorControllerDaemon;
+import org.ngrinder.sitemonitor.SitemonitorControllerServerDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -52,6 +56,9 @@ import static org.ngrinder.common.util.NoOp.noOp;
 public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 
 	private static final Logger LOG = LoggerFactory.getLogger("starter");
+	
+	// folder for sitemonitorSetting and script file download
+	public static final String SITEMONITOR_FILE = "sitemonitor-file";
 
 	private AgentConfig agentConfig;
 
@@ -185,9 +192,17 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 			LOG.info("connecting to controller {}, owner-{}", (controllerIP + ":" + controllerPort), owner);
 
 			try {
+				File base = agentConfig.getHome().getDirectory();
+				File scriptBaseDirectory = new File(base, SITEMONITOR_FILE);
+
 				Condition eventSyncCondition = new Condition();
-				SitemonitorController controller = new SitemonitorController(agentConfig,
-					eventSyncCondition);
+				SitemonitorControllerServerDaemon serverDaemon = new SitemonitorControllerServerDaemon(
+					NetworkUtils.getFreePortOfLocal());
+				MonitorSchedulerImplementation monitorScheduler = new MonitorSchedulerImplementation(
+					serverDaemon, scriptBaseDirectory);
+				SitemonitorController controller = new SitemonitorController(
+					scriptBaseDirectory, agentConfig, eventSyncCondition);
+				controller.setMonitorScheduler(monitorScheduler);
 				SitemonitorControllerDaemon daemon = new SitemonitorControllerDaemon(controller);
 				daemon.run();
 			} catch (Exception e) {

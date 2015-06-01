@@ -17,12 +17,11 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.net.ServerSocket;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.ngrinder.model.ScriptType;
 import org.ngrinder.sitemonitor.SitemonitorControllerServerDaemon;
 import org.ngrinder.sitemonitor.SitemonitorSetting;
 import org.ngrinder.sitemonitor.messages.AddScriptMessage;
@@ -32,73 +31,74 @@ import net.grinder.communication.CommunicationException;
 import net.grinder.communication.MessageDispatchRegistry;
 import net.grinder.communication.MessageDispatchRegistry.Handler;
 import net.grinder.console.communication.ConsoleCommunicationImplementationEx;
-import net.grinder.engine.agent.SitemonitorScriptRunner.ScriptType;
 import net.grinder.messages.console.ReportStatisticsMessage;
+import net.grinder.util.NetworkUtils;
 
 public class SitemonitorScriptRunnerTest {
-	private static final int LITTLE_DELAY = 50;
 	private static final int LONG_DELAY = 2000;
 	private int count;
-	int freePort;
 	SitemonitorScriptRunner sitemonitorScriptRunner;
 	SitemonitorControllerServerDaemon serverDaemon;
-	
+
 	@Before
 	public void before() throws Exception {
-		ServerSocket socket = new ServerSocket(0);
-		int consolePort = socket.getLocalPort();
-		IOUtils.closeQuietly(socket);
-		
+		int consolePort = NetworkUtils.getFreePortOfLocal();
+
 		serverDaemon = new SitemonitorControllerServerDaemon(consolePort);
 		serverDaemon.start();
 		Thread.sleep(1000);
-		
-		sitemonitorScriptRunner = new SitemonitorScriptRunner(serverDaemon);
+
+		sitemonitorScriptRunner = new SitemonitorScriptRunner(consolePort);
 	}
-	
+
 	@After
 	public void after() throws Exception {
 		sitemonitorScriptRunner.shutdown();
 	}
-	
+
 	@Test
 	public void testInitWithThread() throws Exception {
 		int repteatCount = 2;
 		String groupName = "groupName";
 		String errerCallback = "";
 		int repeatCycle = 2000;
-		SitemonitorSetting setting = new SitemonitorSetting(groupName, errerCallback, repeatCycle);
-		
+		SitemonitorSetting setting = new SitemonitorSetting(groupName, ScriptType.PYTHON,
+			errerCallback, repeatCycle);
+
 		count = 0;
 		registCountReportMessage();
-		
+
 		File base = new File(getClass().getResource("/").getFile());
-		sitemonitorScriptRunner.initWithThread(setting, base, ScriptType.PYTHON);
+		sitemonitorScriptRunner.initWithThread(setting, base);
 		Thread.sleep(1000);
-		
+
 		assertThat(count, is(0));
-		
-		sitemonitorScriptRunner.sendMessage(groupName, new AddScriptMessage(new File(base, "sitemonitor.py").getAbsolutePath()));
-		Thread.sleep(repeatCycle * repteatCount + LITTLE_DELAY);
-		sitemonitorScriptRunner.sendMessage(groupName, new RemoveScriptMessage(new File(base, "sitemonitor.py").getAbsolutePath()));
+
+		sitemonitorScriptRunner.sendMessage(groupName, new AddScriptMessage(new File(base,
+			"sitemonitor.py").getAbsolutePath()));
+		Thread.sleep(repeatCycle * repteatCount);
+		sitemonitorScriptRunner.sendMessage(groupName, new RemoveScriptMessage(new File(base,
+			"sitemonitor.py").getAbsolutePath()));
 		Thread.sleep(LONG_DELAY);
-		
+
 		assertThat(count, is(repteatCount));
 	}
 
 	private void registCountReportMessage() {
-		ConsoleCommunicationImplementationEx console = serverDaemon.getComponent(ConsoleCommunicationImplementationEx.class);
+		ConsoleCommunicationImplementationEx console = serverDaemon.getComponent(
+			ConsoleCommunicationImplementationEx.class);
 		MessageDispatchRegistry messageDispatchRegistry = console.getMessageDispatchRegistry();
-		messageDispatchRegistry.set(ReportStatisticsMessage.class, new Handler<ReportStatisticsMessage>() {
-			@Override
-			public void handle(ReportStatisticsMessage message) throws CommunicationException {
-				count += message.getStatisticsDelta().size();
-			}
+		messageDispatchRegistry.set(ReportStatisticsMessage.class,
+			new Handler<ReportStatisticsMessage>() {
+				@Override
+				public void handle(ReportStatisticsMessage message) throws CommunicationException {
+					count += message.getStatisticsDelta().size();
+				}
 
-			@Override
-			public void shutdown() {
-				
-			}
-		});
+				@Override
+				public void shutdown() {
+
+				}
+			});
 	}
 }

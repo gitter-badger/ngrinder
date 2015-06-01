@@ -504,4 +504,21 @@ public abstract class NetworkUtils {
 		}
 		return dnsServers;
 	}
+	
+	public static int getFreePortOfLocal() {
+		ServerSocket socket = null;
+
+		while (true) {
+			try {
+				socket = new ServerSocket(0);
+				break;
+			} catch (IOException e) {
+				// retry
+			}
+		}
+
+		int port = socket.getLocalPort();
+		IOUtils.closeQuietly(socket);
+		return port;
+	}
 }

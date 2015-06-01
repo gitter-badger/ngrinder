@@ -13,24 +13,29 @@
  */
 package org.ngrinder.sitemonitor.messages;
 
+import org.ngrinder.sitemonitor.SitemonitorSetting;
+
 import net.grinder.communication.Message;
 
 /**
  * @author Gisoo Gwon
  */
 public class CreateGroupMessage implements Message {
-	private static final long serialVersionUID = -4558006969376493960L;
-	private String groupName;
 	
-	public CreateGroupMessage(String groupName) {
-		this.groupName = groupName;
+	private static final long serialVersionUID = -4558006969376493960L;
+	
+	private SitemonitorSetting sitemonitorSetting;
+	
+	public CreateGroupMessage(SitemonitorSetting sitemonitorSetting) {
+		this.sitemonitorSetting = sitemonitorSetting;
 	}
 
-	public String getGroupName() {
-		return groupName;
+	public SitemonitorSetting getSitemonitorSetting() {
+		return sitemonitorSetting;
 	}
 
-	public void setGroupName(String groupName) {
-		this.groupName = groupName;
+	public void setSitemonitorSetting(SitemonitorSetting sitemonitorSetting) {
+		this.sitemonitorSetting = sitemonitorSetting;
 	}
+	
 }

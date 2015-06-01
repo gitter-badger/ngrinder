@@ -55,12 +55,10 @@ import net.grinder.util.thread.Condition;
  * @since 3.4
  */
 public class SitemonitorController implements Agent {
-	/**
-	 * folder for sitemonitorSetting and script file download
-	 */
-	public static final String SITEMONITOR_FILE = "sitemonitor-file";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("site monitor controller");
+	
+	private final File scriptBaseDirectory;
 
 	private final AgentControllerIdentityImplementation agentIdentity;
 	private final Condition eventSyncCondition;
@@ -77,7 +75,8 @@ public class SitemonitorController implements Agent {
 	private Timer sendStatusTimer;
 	private MessageDispatchSender messageDispatcher;
 
-	public SitemonitorController(AgentConfig agentConfig, Condition eventSyncCondition) {
+	public SitemonitorController(File scriptBaseDirectory, AgentConfig agentConfig, Condition eventSyncCondition) {
+		this.scriptBaseDirectory = scriptBaseDirectory;
 		this.agentConfig = agentConfig;
 		this.eventSyncCondition = eventSyncCondition;
 		this.version = agentConfig.getInternalProperties().getProperty(
@@ -148,16 +147,16 @@ public class SitemonitorController implements Agent {
 
 	private void handle(Message message) throws EngineException {
 		if (message instanceof ShutdownServerMessage) {
-			LOGGER.info("received shutdown message from server");
 			setShutdownServer(true);
 		} else if (message instanceof RegistScheduleMessage) {
-			LOGGER.info("received regist schedule message from server");
-			monitorScheduler.regist(((RegistScheduleMessage) message).getSitemonitorSetting());
+			RegistScheduleMessage registSchedule = (RegistScheduleMessage) message;
+			monitorScheduler.regist(registSchedule.getGroupName(), registSchedule.getScriptpath());
 		} else if (message instanceof UnregistScheduleMessage) {
-			LOGGER.info("received unregist schedule message from server");
-			monitorScheduler.unregist(((UnregistScheduleMessage) message).getSitemonitorSetting());
+			UnregistScheduleMessage unregistSchedule = (UnregistScheduleMessage) message;
+			monitorScheduler.unregist(unregistSchedule.getGroupName(), unregistSchedule.getScriptpath());
 		} else if (message instanceof CreateGroupMessage) {
-			// TODO : run ScriptRunner proccess.
+			SitemonitorSetting sitemonitorSetting = ((CreateGroupMessage) message).getSitemonitorSetting();
+			monitorScheduler.startProcess(sitemonitorSetting);
 		} else {
 			LOGGER.warn("received invalid message");
 		}
@@ -182,9 +181,7 @@ public class SitemonitorController implements Agent {
 
 	private void initFileStore() throws EngineException {
 		Preconditions.checkNotNull(messageDispatcher);
-		File base = agentConfig.getHome().getDirectory();
-		File storeDicrectory = new File(base, SITEMONITOR_FILE);
-		FileStoreSupport fileStoreSupport = new FileStoreSupport(storeDicrectory,
+		FileStoreSupport fileStoreSupport = new FileStoreSupport(scriptBaseDirectory,
 			messageDispatcher, LOGGER);
 		fileStoreSupport.ignoreClearCacheMessage();
 	}

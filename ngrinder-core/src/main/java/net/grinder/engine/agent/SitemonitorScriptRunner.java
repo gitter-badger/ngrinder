@@ -18,8 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
-import org.ngrinder.sitemonitor.SitemonitorControllerServerDaemon;
+import org.ngrinder.model.ScriptType;
 import org.ngrinder.sitemonitor.SitemonitorSetting;
 import org.ngrinder.sitemonitor.engine.process.SitemonitorProcessEntryPoint;
 import org.ngrinder.sitemonitor.messages.ShutdownSitemonitorProcessMessage;
@@ -30,14 +31,10 @@ import net.grinder.common.GrinderProperties;
 import net.grinder.communication.CommunicationException;
 import net.grinder.communication.FanOutStreamSender;
 import net.grinder.communication.Message;
-import net.grinder.communication.MessageDispatchRegistry;
-import net.grinder.communication.MessageDispatchRegistry.Handler;
 import net.grinder.communication.StreamSender;
-import net.grinder.console.communication.ConsoleCommunicationImplementationEx;
 import net.grinder.engine.common.ScriptLocation;
 import net.grinder.lang.AbstractLanguageHandler;
 import net.grinder.lang.Lang;
-import net.grinder.messages.console.ReportStatisticsMessage;
 import net.grinder.util.AbstractGrinderClassPathProcessor;
 import net.grinder.util.Directory;
 import net.grinder.util.NetworkUtils;
@@ -46,51 +43,20 @@ import net.grinder.util.NetworkUtils;
  * @author Gisoo Gwon
  */
 public class SitemonitorScriptRunner {
-	enum ScriptType {
-		PYTHON(".py"), GROOVY(".groovy");
-
-		ScriptType(String fileExtension) {
-			this.tmpScript = new File(fileExtension);
-		}
-
-		public final File tmpScript;
-	}
 
 	private Logger LOGGER = LoggerFactory.getLogger("site monitor script runner");
 	private Map<String, ProcessWorker> workers = new HashMap<String, ProcessWorker>();
-	private SitemonitorControllerServerDaemon serverDaemon = null;
-	private final int consolePort;
+	private final int serverConsolePort;
 
-	public SitemonitorScriptRunner(SitemonitorControllerServerDaemon serverDaemon) {
-		this.serverDaemon = serverDaemon;
-		consolePort = this.serverDaemon.getPort();
-		registMessageDispatcher();
+	public SitemonitorScriptRunner(int serverConsolePort) {
+		this.serverConsolePort = serverConsolePort;
 	}
 
-	private void registMessageDispatcher() {
-		ConsoleCommunicationImplementationEx console = serverDaemon.getComponent(ConsoleCommunicationImplementationEx.class);
-		MessageDispatchRegistry messageDispatchRegistry = console.getMessageDispatchRegistry();
-		// TODO : regit
-		messageDispatchRegistry.set(ReportStatisticsMessage.class,
-			new Handler<ReportStatisticsMessage>() {
-				@Override
-				public void handle(ReportStatisticsMessage message) throws CommunicationException {
-					// TODO : ReportStatisticsMessage > 원하는 메세지로..
-				}
-
-				@Override
-				public void shutdown() {
-
-				}
-			});
-	}
-
-	public Thread initWithThread(final SitemonitorSetting sitemonitorSetting, final File base,
-		final ScriptType scriptType) {
+	public Thread initWithThread(final SitemonitorSetting sitemonitorSetting, final File base) {
 		Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				init(sitemonitorSetting, base, scriptType);
+				init(sitemonitorSetting, base);
 			}
 		});
 
@@ -98,16 +64,17 @@ public class SitemonitorScriptRunner {
 		return thread;
 	}
 
-	private void init(SitemonitorSetting sitemonitorSetting, File base, ScriptType scriptType) {
+	private void init(SitemonitorSetting sitemonitorSetting, File base) {
 		FanOutStreamSender fanOutStreamSender = null;
 		ProcessWorker worker = null;
 		String groupName = sitemonitorSetting.getGroupName();
+		ScriptType scriptType = sitemonitorSetting.getScriptType();
 
 		try {
 			// create
 			fanOutStreamSender = new FanOutStreamSender(1);
 			Directory workingDirectory = new Directory(base);
-			AbstractLanguageHandler handler = Lang.getByFileName(scriptType.tmpScript).getHandler();
+			AbstractLanguageHandler handler = Lang.getByFileName(scriptType.getTmpScript()).getHandler();
 			AbstractGrinderClassPathProcessor classPathProcessor = handler.getClassPathProcessor();
 			Properties systemProperties = new Properties();
 			GrinderProperties properties = new GrinderProperties();
@@ -118,7 +85,7 @@ public class SitemonitorScriptRunner {
 			properties.setProperty("grinder.errorCallback", sitemonitorSetting.getErrorCallback());
 			properties.setInt("grinder.repeatCycle", sitemonitorSetting.getRepeatCycle());
 			properties.setProperty("grinder.consoleHost", "localhost");
-			properties.setInt("grinder.consolePort", consolePort);
+			properties.setInt("grinder.consolePort", serverConsolePort);
 			String newClassPath = classPathProcessor.buildClasspathBasedOnCurrentClassLoader(LOGGER);
 			PropertyBuilder builder = new PropertyBuilder(properties, new Directory(base), false,
 				"", NetworkUtils.getLocalHostName());
@@ -141,7 +108,7 @@ public class SitemonitorScriptRunner {
 				systemProperties, buildJVMArgumentWithoutMemory, workingDirectory,
 				SitemonitorProcessEntryPoint.class);
 			ProcessWorkerFactory workerFactory = new ProcessWorkerFactory(workerCommandLine,
-				agentIdentity, fanOutStreamSender, true, new ScriptLocation(scriptType.tmpScript),
+				agentIdentity, fanOutStreamSender, true, new ScriptLocation(scriptType.getTmpScript()),
 				properties);
 			worker = (ProcessWorker) workerFactory.create(System.out, System.err);
 
@@ -173,9 +140,6 @@ public class SitemonitorScriptRunner {
 				processWorker.destroy();
 			}
 		}
-		if (serverDaemon != null) {
-			serverDaemon.shutdown();
-		}
 	}
 
 	public void saveWorker(String groupName, ProcessWorker newWorker) {
@@ -196,4 +160,9 @@ public class SitemonitorScriptRunner {
 		}
 		return false;
 	}
+	
+	public Set<String> getRunningGroups() {
+		return workers.keySet();
+	}
+	
 }

@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
-import java.net.ServerSocket;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -14,10 +13,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.ngrinder.infra.AgentConfig;
 import org.ngrinder.sitemonitor.MonitorScheduler;
-import org.ngrinder.sitemonitor.SitemonitorSetting;
 import org.ngrinder.sitemonitor.SitemonitorController;
 import org.ngrinder.sitemonitor.SitemonitorControllerDaemon;
 import org.ngrinder.sitemonitor.SitemonitorControllerServerDaemon;
@@ -30,6 +27,7 @@ import net.grinder.console.model.ConsoleProperties;
 import net.grinder.messages.console.AgentAddress;
 import net.grinder.util.Directory;
 import net.grinder.util.ListenerSupport;
+import net.grinder.util.NetworkUtils;
 import net.grinder.util.thread.Condition;
 
 /**
@@ -37,13 +35,13 @@ import net.grinder.util.thread.Condition;
  */
 public class SitemonitorCommunicationTest {
 	private int freePort;
+	private String groupname = "group";
+	private String scriptpath = "scriptpath";
+	private File baseDirectory = new File(getClass().getResource("/").getFile());
 
 	@Before
 	public void before() throws Exception {
-		// find free port
-		ServerSocket socket = new ServerSocket(0);
-		freePort = socket.getLocalPort();
-		socket.close();
+		freePort = NetworkUtils.getFreePortOfLocal();
 	}
 
 	@Test
@@ -61,7 +59,7 @@ public class SitemonitorCommunicationTest {
 
 		// run sitemonitor agent
 		for (int i = 0; i < controllerCount; i++) {
-			SitemonitorController controller = new SitemonitorController(myAgentConfig,
+			SitemonitorController controller = new SitemonitorController(baseDirectory, myAgentConfig,
 				new Condition());
 			SitemonitorControllerDaemon controllerDaemon = new SitemonitorControllerDaemon(
 				controller);
@@ -78,8 +76,8 @@ public class SitemonitorCommunicationTest {
 		sendUnregistScheduleMessage(serverDaemon);
 
 		Thread.sleep(500);
-		verify(scheduler, times(controllerCount)).regist(Matchers.any(SitemonitorSetting.class));
-		verify(scheduler, times(controllerCount)).unregist(Matchers.any(SitemonitorSetting.class));
+		verify(scheduler, times(controllerCount)).regist(groupname, scriptpath);
+		verify(scheduler, times(controllerCount)).unregist(groupname, scriptpath);
 
 		Thread.sleep(2000);
 		assertThat(serverDaemon.getAllAvailableAgents().size(), is(controllerCount));
@@ -95,7 +93,7 @@ public class SitemonitorCommunicationTest {
 			freePort);
 		serverDaemon.start();
 		// run sitemonitor agent
-		SitemonitorController controller = new SitemonitorController(myAgentConfig, new Condition());
+		SitemonitorController controller = new SitemonitorController(baseDirectory, myAgentConfig, new Condition());
 		SitemonitorControllerDaemon controllerDaemon = new SitemonitorControllerDaemon(controller);
 		controllerDaemon.run();
 
@@ -110,8 +108,8 @@ public class SitemonitorCommunicationTest {
 		File sendFolder = new File(getClass().getResource("/sendfolder").getFile());
 
 		String groupName = "new";
-		File downloadFolder = new File(myAgentConfig.getHome().getDirectory(),
-			SitemonitorController.SITEMONITOR_FILE + File.separator + "incoming" + File.separator + groupName);
+		File downloadFolder = new File(baseDirectory,
+			File.separator + "incoming" + File.separator + groupName);
 		FileUtils.deleteQuietly(downloadFolder);
 
 		// when, send file
@@ -132,15 +130,13 @@ public class SitemonitorCommunicationTest {
 	}
 
 	private void sendRegistScheduleMessage(SitemonitorControllerServerDaemon serverDaemon) {
-		RegistScheduleMessage regist = new RegistScheduleMessage();
-		regist.setSitemonitorSetting(new SitemonitorSetting(null, null, -1));
+		RegistScheduleMessage regist = new RegistScheduleMessage(groupname, scriptpath);
 		serverDaemon.sendToAgents(regist);
 	}
 
 	private void sendUnregistScheduleMessage(SitemonitorControllerServerDaemon serverDaemon) {
-		UnregistScheduleMessage regist = new UnregistScheduleMessage();
-		regist.setSitemonitorSetting(new SitemonitorSetting(null, null, -1));
-		serverDaemon.sendToAgents(regist);
+		UnregistScheduleMessage unregist = new UnregistScheduleMessage(groupname, scriptpath);
+		serverDaemon.sendToAgents(unregist);
 	}
 
 	class MyAgentConfig extends AgentConfig {

@@ -11,17 +11,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. 
  */
-package org.ngrinder.sitemonitor;
+package org.ngrinder.model;
+
+import java.io.File;
 
 /**
- * The site monitoring run manager.
+ * The script type.
  * 
  * @author Gisoo Gwon
  */
-public interface MonitorScheduler {
+public enum ScriptType {
 	
-	public void startProcess(SitemonitorSetting sitemonitorSetting);
-	public void regist(String groupName, String scriptpath);
-	public void unregist(String groupName, String scriptpath);
-	public void shutdown();
+	PYTHON(".py"), GROOVY(".groovy");
+
+	ScriptType(String fileExtension) {
+		this.tmpScript = new File(fileExtension);
+	}
+
+	final File tmpScript;
+
+	public File getTmpScript() {
+		return tmpScript;
+	}
+	
 }

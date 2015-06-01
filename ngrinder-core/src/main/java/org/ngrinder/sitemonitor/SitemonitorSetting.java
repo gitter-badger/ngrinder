@@ -15,20 +15,25 @@ package org.ngrinder.sitemonitor;
 
 import java.io.Serializable;
 
+import org.ngrinder.model.ScriptType;
+
 /**
  * @author Gisoo Gwon
  */
 public class SitemonitorSetting implements Serializable {
+	
 	private static final int TEN_SECOND = 10 * 1000;
 
 	private static final long serialVersionUID = -1828068594209763814L;
 
 	private String groupName = null;
+	private ScriptType scriptType;
 	private String errorCallback = null;
 	private int repeatCycle = TEN_SECOND;
 
-	public SitemonitorSetting(String groupName, String errorCallback, int repeatCycle) {
+	public SitemonitorSetting(String groupName, ScriptType scriptType, String errorCallback, int repeatCycle) {
 		this.groupName = groupName;
+		this.scriptType = scriptType;
 		this.errorCallback = errorCallback;
 		this.repeatCycle = repeatCycle;
 	}
@@ -39,6 +44,14 @@ public class SitemonitorSetting implements Serializable {
 
 	public void setGroupName(String groupName) {
 		this.groupName = groupName;
+	}
+
+	public ScriptType getScriptType() {
+		return scriptType;
+	}
+
+	public void setScriptType(ScriptType scriptType) {
+		this.scriptType = scriptType;
 	}
 
 	public String getErrorCallback() {
@@ -56,4 +69,5 @@ public class SitemonitorSetting implements Serializable {
 	public void setRepeatCycle(int repeatCycle) {
 		this.repeatCycle = repeatCycle;
 	}
+	
 }
