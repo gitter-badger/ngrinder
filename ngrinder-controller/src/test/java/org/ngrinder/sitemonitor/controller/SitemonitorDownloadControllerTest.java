@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. 
  */
-package org.ngrinder.agent.controller;
+package org.ngrinder.sitemonitor.controller;
 
 import static org.mockito.Mockito.*;
 
@@ -24,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.ngrinder.agent.service.AgentPackageService;
 import org.ngrinder.infra.config.Config;
+import org.ngrinder.sitemonitor.controller.SitemonitorDownloadController;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
