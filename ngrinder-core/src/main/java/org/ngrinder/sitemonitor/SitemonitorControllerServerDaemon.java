@@ -19,6 +19,7 @@ import net.grinder.console.distribution.FileDistribution;
 import net.grinder.console.distribution.FileDistributionHandler;
 import net.grinder.console.distribution.FileDistributionHandler.Result;
 import net.grinder.console.distribution.FileDistributionImplementation;
+import net.grinder.message.console.AgentControllerState;
 import net.grinder.util.Directory;
 import net.grinder.util.FileContents.FileContentsException;
 import net.grinder.util.ListenerSupport;
@@ -58,6 +59,18 @@ public class SitemonitorControllerServerDaemon {
 
 	public Set<AgentIdentity> getAllAvailableAgents() {
 		return serverDaemon.getComponent(AgentProcessControlImplementation.class).getAllAgents();
+	}
+	
+	public int getAgentConnectingPort(AgentIdentity agentIdentity) {
+		return serverDaemon.getAgentConnectingPort(agentIdentity);
+	}
+	
+	public String getAgentVersion(AgentIdentity agentIdentity) {
+		return serverDaemon.getAgentVersion(agentIdentity);
+	}
+	
+	public AgentControllerState getAgentState(AgentIdentity agentIdentity) {
+		return serverDaemon.getAgentState(agentIdentity);
 	}
 
 	public void sendFile(Address address, String groupName, Directory directory, Pattern fileFilterPattern,
