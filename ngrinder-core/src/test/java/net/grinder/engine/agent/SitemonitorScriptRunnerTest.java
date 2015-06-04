@@ -57,7 +57,7 @@ public class SitemonitorScriptRunnerTest {
 	}
 
 	@Test
-	public void testInitWithThread() throws Exception {
+	public void testRunWorkerWithThread() throws Exception {
 		int repteatCount = 2;
 		String groupName = "groupName";
 		String errerCallback = "";
@@ -69,7 +69,7 @@ public class SitemonitorScriptRunnerTest {
 		registCountReportMessage();
 
 		File base = new File(getClass().getResource("/").getFile());
-		sitemonitorScriptRunner.initWithThread(setting, base);
+		sitemonitorScriptRunner.runWorkerWithThread(setting, base);
 		Thread.sleep(1000);
 
 		assertThat(count, is(0));

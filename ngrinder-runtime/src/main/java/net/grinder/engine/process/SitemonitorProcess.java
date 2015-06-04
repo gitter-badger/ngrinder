@@ -97,6 +97,7 @@ public class SitemonitorProcess {
 	private final LoggerContext m_logbackLoggerContext;
 	private final Logger m_terminalLogger;
 	private Logger m_logger = null;
+	private Logger m_result = null;
 
 	// value from InitialiseGrinderMessage
 	private final GrinderProperties properties;
@@ -161,7 +162,8 @@ public class SitemonitorProcess {
 			// init logger
 			m_logbackLoggerContext = configureLogging(groupName, logDirectory);
 			m_terminalLogger = LoggerFactory.getLogger(groupName);
-			m_logger = LoggerFactory.getLogger("worker." + groupName);
+			m_logger = LoggerFactory.getLogger("worker");
+			m_result = LoggerFactory.getLogger("minitor-result");
 
 			m_logger.info("The Grinder version {}", GrinderBuild.getVersionString());
 			m_logger.info(JVM.getInstance().toString());
@@ -447,6 +449,7 @@ public class SitemonitorProcess {
 						m_testStatisticsHelper.removeTestTimeFromSample(sample);
 					}
 
+					m_result.info("result : {}", sample);
 					m_consoleSender.send(new ReportStatisticsMessage(sample));
 				}
 			} catch (final CommunicationException e) {

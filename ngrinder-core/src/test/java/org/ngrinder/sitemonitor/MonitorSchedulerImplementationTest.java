@@ -10,8 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.ngrinder.model.ScriptType;
 
-import net.grinder.util.NetworkUtils;
-
 /**
  * @author Gisoo Gwon
  */
@@ -25,11 +23,8 @@ public class MonitorSchedulerImplementationTest {
 	
 	@Before
 	public void before() throws Exception {
-		SitemonitorControllerServerDaemon serverDaemon = new SitemonitorControllerServerDaemon(
-			NetworkUtils.getFreePortOfLocal());
-		serverDaemon.start();
-		Thread.sleep(500);
-		scheduler = new MonitorSchedulerImplementation(serverDaemon, baseDirectory);
+		scheduler = new MonitorSchedulerImplementation(baseDirectory);
+		Thread.sleep(500);	// wait for initialize.
 	}
 
 	@Test

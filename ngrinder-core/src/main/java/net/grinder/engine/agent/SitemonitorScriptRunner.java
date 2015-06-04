@@ -52,11 +52,11 @@ public class SitemonitorScriptRunner {
 		this.serverConsolePort = serverConsolePort;
 	}
 
-	public Thread initWithThread(final SitemonitorSetting sitemonitorSetting, final File base) {
+	public Thread runWorkerWithThread(final SitemonitorSetting sitemonitorSetting, final File base) {
 		Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				init(sitemonitorSetting, base);
+				runWorker(sitemonitorSetting, base);
 			}
 		});
 
@@ -64,7 +64,7 @@ public class SitemonitorScriptRunner {
 		return thread;
 	}
 
-	private void init(SitemonitorSetting sitemonitorSetting, File base) {
+	private void runWorker(SitemonitorSetting sitemonitorSetting, File base) {
 		FanOutStreamSender fanOutStreamSender = null;
 		ProcessWorker worker = null;
 		String groupName = sitemonitorSetting.getGroupName();

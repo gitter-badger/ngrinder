@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import net.grinder.communication.CommunicationException;
 import net.grinder.engine.agent.SitemonitorScriptRunner;
-import net.grinder.engine.process.SitemonitorProcess;
+import net.grinder.util.NetworkUtils;
 
 /**
  * Managing process for execute sitemonitoring script.
@@ -22,23 +22,20 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 	private static final Logger LOGGER = LoggerFactory.getLogger("monitor scheduler impl");
 
 	private final SitemonitorScriptRunner scriptRunner;
-	/**
-	 * serverDaemon is receive message by {@link SitemonitorProcess}.
-	 * Use serverDaemon.getComponent(ConsoleCommunication.class).getMessageDispatchRegistry()
-	 */
-	private final SitemonitorControllerServerDaemon serverDaemon;
 	private final File baseDirectory;
+
+	private SitemonitorControllerServerDaemon serverDaemon;
 
 	/**
 	 * The constructor.
 	 * 
 	 * @param agentConfig
 	 */
-	public MonitorSchedulerImplementation(SitemonitorControllerServerDaemon serverDaemon,
-		File baseDirectory) {
+	public MonitorSchedulerImplementation(File baseDirectory) {
+		this.baseDirectory = baseDirectory;		
+		serverDaemon = new SitemonitorControllerServerDaemon(NetworkUtils.getFreePortOfLocal());
+		serverDaemon.start();
 		scriptRunner = new SitemonitorScriptRunner(serverDaemon.getPort());
-		this.serverDaemon = serverDaemon;
-		this.baseDirectory = baseDirectory;
 	}
 
 	/**
@@ -47,7 +44,7 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 	 */
 	@Override
 	public void startProcess(SitemonitorSetting sitemonitorSetting) {
-		scriptRunner.initWithThread(sitemonitorSetting, baseDirectory);
+		scriptRunner.runWorkerWithThread(sitemonitorSetting, baseDirectory);
 	}
 
 	/**
@@ -82,6 +79,7 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 	@Override
 	public void shutdown() {
 		scriptRunner.shutdown();
+		serverDaemon.shutdown();
 	}
 	
 	public Set<String> getRunningGroups() {
