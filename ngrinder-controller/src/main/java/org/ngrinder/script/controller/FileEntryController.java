@@ -85,7 +85,7 @@ public class FileEntryController extends BaseController {
 	private ScriptHandlerFactory handlerFactory;
 
 	@Autowired
-	HttpContainerContext httpContainerContext;
+	protected HttpContainerContext httpContainerContext;
 
 	/**
 	 * Get the list of file entries for the given user.

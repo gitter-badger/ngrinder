@@ -4,7 +4,7 @@
 		<h4><@spring.message "script.action.upload"/></h4>
 	</div>
 	<div class="modal-body">
-		<form class="form-horizontal" method="post" target="_self" action="${req.getContextPath()}/script/upload/${currentPath}"
+		<form class="form-horizontal" method="post" target="_self" action="${req.getContextPath()}${urlPrefix!}/script/upload/${currentPath}"
 				id="uploadForm" enctype="multipart/form-data">
 			<fieldset>
 				<input type="hidden" id="path" name="path"/>
