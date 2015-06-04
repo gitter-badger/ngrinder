@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import net.grinder.common.processidentity.AgentIdentity;
+import net.grinder.communication.Message;
 
 /**
  * @author Gisoo Gwon
@@ -46,7 +47,7 @@ public class SitemonitorManager implements ControllerConstants {
 	}
 
 	/**
-	 * @return 
+	 * @return connecting agent list.
 	 */
 	public Set<AgentIdentity> getAllAgent() {
 		return sitemonitorServerDaemon.getAllAvailableAgents();

@@ -194,10 +194,15 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 			try {
 				File base = agentConfig.getHome().getDirectory();
 				File scriptBaseDirectory = new File(base, SITEMONITOR_FILE);
+				
+				if (!scriptBaseDirectory.exists()) {
+					scriptBaseDirectory.mkdir();
+				}
 
 				Condition eventSyncCondition = new Condition();
 				SitemonitorControllerServerDaemon serverDaemon = new SitemonitorControllerServerDaemon(
 					NetworkUtils.getFreePortOfLocal());
+				serverDaemon.start();
 				MonitorSchedulerImplementation monitorScheduler = new MonitorSchedulerImplementation(
 					serverDaemon, scriptBaseDirectory);
 				SitemonitorController controller = new SitemonitorController(
