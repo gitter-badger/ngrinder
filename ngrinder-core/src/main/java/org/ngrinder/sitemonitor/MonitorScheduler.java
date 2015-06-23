@@ -13,15 +13,18 @@
  */
 package org.ngrinder.sitemonitor;
 
+import org.ngrinder.sitemonitor.messages.RegistScheduleMessage;
+
 /**
  * The site monitoring run manager.
  * 
  * @author Gisoo Gwon
  */
 public interface MonitorScheduler {
-	
-	public void startProcess(SitemonitorSetting sitemonitorSetting);
-	public void regist(String groupName, String scriptpath);
-	public void unregist(String groupName, String scriptpath);
+
+	public void regist(RegistScheduleMessage message);
+
+	public void unregist(String sitemonitorId);
+
 	public void shutdown();
 }

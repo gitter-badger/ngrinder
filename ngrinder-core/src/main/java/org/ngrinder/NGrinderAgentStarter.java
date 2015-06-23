@@ -28,6 +28,7 @@ import org.ngrinder.common.constants.CommonConstants;
 import org.ngrinder.infra.AgentConfig;
 import org.ngrinder.infra.ArchLoaderInit;
 import org.ngrinder.monitor.agent.MonitorServer;
+import org.ngrinder.sitemonitor.MonitorScheduler;
 import org.ngrinder.sitemonitor.MonitorSchedulerImplementation;
 import org.ngrinder.sitemonitor.SitemonitorController;
 import org.ngrinder.sitemonitor.SitemonitorControllerDaemon;
@@ -56,7 +57,8 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 	private static final Logger LOG = LoggerFactory.getLogger("starter");
 	
 	// folder for sitemonitorSetting and script file download
-	public static final String SITEMONITOR_FILE = "sitemonitor-file";
+	public static final String SITEMONITOR_ROOT_DIR = "sitemonitor-file";
+	public static final String FILESTORE_SUB_DIR = "incoming";
 
 	private AgentConfig agentConfig;
 
@@ -190,18 +192,19 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 			LOG.info("connecting to controller {}, owner-{}", (controllerIP + ":" + controllerPort), owner);
 
 			try {
-				File base = agentConfig.getHome().getDirectory();
-				File scriptBaseDirectory = new File(base, SITEMONITOR_FILE);
+				File agentRootDir = agentConfig.getHome().getDirectory();
+				File sitemonitorDir = new File(agentRootDir, SITEMONITOR_ROOT_DIR);
+				File scriptDistDir = new File(sitemonitorDir, FILESTORE_SUB_DIR);
 				
-				if (!scriptBaseDirectory.exists()) {
-					scriptBaseDirectory.mkdir();
+				if (!sitemonitorDir.exists()) {
+					sitemonitorDir.mkdir();
 				}
 
 				Condition eventSyncCondition = new Condition();
-				MonitorSchedulerImplementation monitorScheduler = new MonitorSchedulerImplementation(
-					scriptBaseDirectory);
+				MonitorScheduler monitorScheduler = new MonitorSchedulerImplementation(
+					scriptDistDir);
 				SitemonitorController controller = new SitemonitorController(
-					scriptBaseDirectory, agentConfig, eventSyncCondition);
+					sitemonitorDir, agentConfig, eventSyncCondition);
 				controller.setMonitorScheduler(monitorScheduler);
 				SitemonitorControllerDaemon daemon = new SitemonitorControllerDaemon(controller);
 				daemon.run();

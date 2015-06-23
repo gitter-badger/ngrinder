@@ -16,25 +16,27 @@ package org.ngrinder.sitemonitor.messages;
 import net.grinder.communication.Message;
 
 /**
+ * The unregist sitemonitoring message to Sitemonitor agent.
+ * 
  * @author Gisoo Gwon
  */
 public class UnregistScheduleMessage implements Message {
 	private static final long serialVersionUID = -7272801198614843623L;
 	
-	private final String groupName;
-	private final String scriptpath;
+	private final String sitemonitorId;
+	private final String scriptname;
 
-	public UnregistScheduleMessage(String groupName, String scriptpath) {
-		this.groupName = groupName;
-		this.scriptpath = scriptpath;
+	public UnregistScheduleMessage(String sitemonitorId, String scriptname) {
+		this.sitemonitorId = sitemonitorId;
+		this.scriptname = scriptname;
 	}
 
-	public String getGroupName() {
-		return groupName;
+	public String getSitemonitorId() {
+		return sitemonitorId;
 	}
 
-	public String getScriptpath() {
-		return scriptpath;
+	public String getScriptname() {
+		return scriptname;
 	}
 
 }

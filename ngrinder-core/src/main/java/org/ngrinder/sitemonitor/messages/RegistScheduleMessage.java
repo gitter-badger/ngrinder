@@ -19,23 +19,44 @@ import net.grinder.communication.Message;
  * @author Gisoo Gwon
  */
 public class RegistScheduleMessage implements Message {
-	
+
 	private static final long serialVersionUID = 8032597041213935838L;
+
+	private final String sitemonitorId;
+	private final String scriptname;
+	private final String propHosts;
+	private final String propParam;
 	
-	private final String groupName;
-	private final String scriptpath;
-
-	public RegistScheduleMessage(String groupName, String scriptpath) {
-		this.groupName = groupName;
-		this.scriptpath = scriptpath;
+	/**
+	 * The Constructor.
+	 * 
+	 * @param sitemonitorId
+	 * @param scriptname
+	 * @param propHosts
+	 * @param propParam
+	 */
+	public RegistScheduleMessage(String sitemonitorId, String scriptname, String propHosts,
+		String propParam) {
+		this.sitemonitorId = sitemonitorId;
+		this.scriptname = scriptname;
+		this.propHosts = propHosts;
+		this.propParam = propParam;
 	}
 
-	public String getGroupName() {
-		return groupName;
+	public String getSitemonitorId() {
+		return sitemonitorId;
 	}
 
-	public String getScriptpath() {
-		return scriptpath;
+	public String getScriptname() {
+		return scriptname;
+	}
+
+	public String getPropHosts() {
+		return propHosts;
+	}
+
+	public String getPropParam() {
+		return propParam;
 	}
 
 }

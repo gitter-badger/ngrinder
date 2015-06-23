@@ -73,7 +73,7 @@ public class SitemonitorControllerServerDaemon {
 		return serverDaemon.getAgentState(agentIdentity);
 	}
 
-	public void sendFile(Address address, String groupName, Directory directory, Pattern fileFilterPattern,
+	public void sendFile(Address address, Directory directory, Pattern fileFilterPattern,
 		ListenerSupport<FileDistributeListener> listener) throws FileContentsException {
 
 		ConsoleCommunication consoleCommunication = serverDaemon.getComponent(ConsoleCommunication.class);
@@ -86,7 +86,7 @@ public class SitemonitorControllerServerDaemon {
 		FileDistributionHandler handler = fileDistribution.getHandler();
 
 		while (true) {
-			final Result result = handler.sendNextFile(groupName);
+			final Result result = handler.sendNextFile();
 
 			if (result == null) {
 				break;

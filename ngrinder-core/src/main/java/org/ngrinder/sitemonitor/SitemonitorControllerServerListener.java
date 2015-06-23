@@ -15,7 +15,6 @@ package org.ngrinder.sitemonitor;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.ngrinder.sitemonitor.messages.CreateGroupMessage;
 import org.ngrinder.sitemonitor.messages.RegistScheduleMessage;
 import org.ngrinder.sitemonitor.messages.ShutdownServerMessage;
 import org.ngrinder.sitemonitor.messages.UnregistScheduleMessage;
@@ -64,7 +63,6 @@ public class SitemonitorControllerServerListener {
 	public void registerMessageHandlers(MessageDispatchSender messageDispatcher) {
 		messageDispatcher.set(RegistScheduleMessage.class, messageHandler);
 		messageDispatcher.set(UnregistScheduleMessage.class, messageHandler);
-		messageDispatcher.set(CreateGroupMessage.class, messageHandler);
 	}
 	
 	public void shutdown() {

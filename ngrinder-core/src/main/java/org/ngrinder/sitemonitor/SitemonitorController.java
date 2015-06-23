@@ -21,7 +21,6 @@ import java.util.TimerTask;
 
 import org.ngrinder.infra.AgentConfig;
 import org.ngrinder.monitor.controller.model.SystemDataModel;
-import org.ngrinder.sitemonitor.messages.CreateGroupMessage;
 import org.ngrinder.sitemonitor.messages.RegistScheduleMessage;
 import org.ngrinder.sitemonitor.messages.ShutdownServerMessage;
 import org.ngrinder.sitemonitor.messages.UnregistScheduleMessage;
@@ -57,7 +56,7 @@ import net.grinder.util.thread.Condition;
 public class SitemonitorController implements Agent {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("site monitor controller");
-	
+
 	private final File scriptBaseDirectory;
 
 	private final AgentControllerIdentityImplementation agentIdentity;
@@ -75,7 +74,8 @@ public class SitemonitorController implements Agent {
 	private Timer sendStatusTimer;
 	private MessageDispatchSender messageDispatcher;
 
-	public SitemonitorController(File scriptBaseDirectory, AgentConfig agentConfig, Condition eventSyncCondition) {
+	public SitemonitorController(File scriptBaseDirectory, AgentConfig agentConfig,
+		Condition eventSyncCondition) {
 		this.scriptBaseDirectory = scriptBaseDirectory;
 		this.agentConfig = agentConfig;
 		this.eventSyncCondition = eventSyncCondition;
@@ -150,13 +150,10 @@ public class SitemonitorController implements Agent {
 			setShutdownServer(true);
 		} else if (message instanceof RegistScheduleMessage) {
 			RegistScheduleMessage registSchedule = (RegistScheduleMessage) message;
-			monitorScheduler.regist(registSchedule.getGroupName(), registSchedule.getScriptpath());
+			monitorScheduler.regist(registSchedule);
 		} else if (message instanceof UnregistScheduleMessage) {
 			UnregistScheduleMessage unregistSchedule = (UnregistScheduleMessage) message;
-			monitorScheduler.unregist(unregistSchedule.getGroupName(), unregistSchedule.getScriptpath());
-		} else if (message instanceof CreateGroupMessage) {
-			SitemonitorSetting sitemonitorSetting = ((CreateGroupMessage) message).getSitemonitorSetting();
-			monitorScheduler.startProcess(sitemonitorSetting);
+			monitorScheduler.unregist(unregistSchedule.getSitemonitorId());
 		} else {
 			LOGGER.warn("received invalid message");
 		}

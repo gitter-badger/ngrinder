@@ -13,20 +13,14 @@
  */
 package net.grinder.engine.process;
 
-import java.io.File;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
-import org.ngrinder.sitemonitor.messages.AddScriptMessage;
-import org.ngrinder.sitemonitor.messages.RemoveScriptMessage;
 import org.ngrinder.sitemonitor.messages.ShutdownSitemonitorProcessMessage;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
@@ -89,10 +83,6 @@ import ch.qos.logback.core.joran.spi.JoranException;
  * @author Gisoo Gwon
  */
 public class SitemonitorProcess {
-	private static final int TEN_SEC = 10 * 1000;
-	private ConcurrentMap<String, File> scripts = new ConcurrentHashMap<String, File>();
-	private ConcurrentMap<ScriptLocation, ScriptEngine> scriptEngineCache = new ConcurrentHashMap<ScriptLocation, ScriptEngine>();
-
 	// logger
 	private final LoggerContext m_logbackLoggerContext;
 	private final Logger m_terminalLogger;
@@ -100,16 +90,16 @@ public class SitemonitorProcess {
 	private Logger m_result = null;
 
 	// value from InitialiseGrinderMessage
+	private final ScriptLocation script;
 	private final GrinderProperties properties;
 	private final boolean m_reportTimesToConsole;
-	private final String errorCallback;
-	private final int repeatCycle;
-	private final String groupName;
+	private final String sitemonitorId;
 	private final String logDirectory;
 	private final WorkerIdentity workerIdentity;
 
 	// script engine
-	private ScriptEngineContainer scriptEngineContainer;
+	private final ScriptEngineContainer scriptEngineContainer;
+	private final ScriptEngine scriptEngine;
 
 	private final Condition m_eventSynchronisation = new Condition();
 	private final QueuedSender m_consoleSender;
@@ -149,19 +139,17 @@ public class SitemonitorProcess {
 				throw new EngineException("No control stream from agent");
 			}
 
-			ScriptLocation script = initialisationMessage.getScript();
+			script = initialisationMessage.getScript();
 			properties = initialisationMessage.getProperties();
 			workerIdentity = initialisationMessage.getWorkerIdentity();
 
-			groupName = workerIdentity.getName();
+			sitemonitorId = workerIdentity.getName();
 			logDirectory = properties.getProperty(GrinderProperties.LOG_DIRECTORY, ".");
 			m_reportTimesToConsole = properties.getBoolean("grinder.reportTimesToConsole", true);
-			errorCallback = properties.getProperty("grinder.errorCallback", null);
-			repeatCycle = properties.getInt("grinder.repeatCycle", TEN_SEC);
 
 			// init logger
-			m_logbackLoggerContext = configureLogging(groupName, logDirectory);
-			m_terminalLogger = LoggerFactory.getLogger(groupName);
+			m_logbackLoggerContext = configureLogging(sitemonitorId, logDirectory);
+			m_terminalLogger = LoggerFactory.getLogger(sitemonitorId);
 			m_logger = LoggerFactory.getLogger("worker");
 			m_result = LoggerFactory.getLogger("minitor-result");
 
@@ -234,29 +222,6 @@ public class SitemonitorProcess {
 			}
 
 			m_messagePump = new MessagePump(agentReceiver, messageDispatcher, 1);
-			messageDispatcher.set(AddScriptMessage.class, new Handler<AddScriptMessage>() {
-				@Override
-				public void handle(AddScriptMessage message) throws CommunicationException {
-					m_terminalLogger.debug("recieved script path : {}", message.getScriptpath());
-					scripts.put(message.getScriptpath(), new File(message.getScriptpath()));
-				}
-
-				@Override
-				public void shutdown() {
-				}
-			});
-			messageDispatcher.set(RemoveScriptMessage.class, new Handler<RemoveScriptMessage>() {
-				@Override
-				public void handle(RemoveScriptMessage message) throws CommunicationException {
-					m_terminalLogger.debug("remove script path : {}", message.getScriptpath());
-					File remove = scripts.remove(message.getScriptpath());
-					m_terminalLogger.debug("remove complete script - {}", remove.getName());
-				}
-
-				@Override
-				public void shutdown() {
-				}
-			});
 			messageDispatcher.set(ShutdownSitemonitorProcessMessage.class, new Handler<ShutdownSitemonitorProcessMessage>() {
 				@Override
 				public void handle(ShutdownSitemonitorProcessMessage message) throws CommunicationException {
@@ -275,6 +240,8 @@ public class SitemonitorProcess {
 			Instrumenter instrumenter = scriptEngineContainer.createInstrumenter();
 			m_testRegistryImplementation.setInstrumenter(instrumenter);
 			m_terminalLogger.info("Instrumentation agents: {}", instrumenter.getDescription());
+			
+			scriptEngine = scriptEngineContainer.getScriptEngine(script);
 
 			// init send process status schedule
 			Timer timer = new Timer(true);
@@ -316,54 +283,8 @@ public class SitemonitorProcess {
 		}
 	}
 
-	public void run() throws GrinderException, InterruptedException {
-		while (!m_recievedShutdown) {
-			if (scripts.size() == 0) {
-				m_terminalLogger.debug("no have scripts... wait 100ms");
-				Thread.sleep(100);
-				continue;
-			}
-
-			m_terminalLogger.debug("run {} script", scripts.size());
-			
-			for (Entry<String, File> entry : scripts.entrySet()) {
-				final File script = entry.getValue();
-
-				if (script.exists()) {
-					// TODO : Runnable -> InterruptiableRunnable..
-					Thread scriptRunnerThread = new Thread(new Runnable() {
-						@Override
-						public void run() {
-							try {
-								SitemonitorProcess.this.run(new ScriptLocation(script));
-							} catch (EngineException e) {
-								m_terminalLogger.error("Script error - {}", e.getMessage(), e);
-							} catch (GrinderException e) {
-								m_terminalLogger.error("ScriptEngine error - {}", e.getMessage(), e);
-							}
-						}
-					}, script.getName() + " runner");
-					scriptRunnerThread.start();
-				}
-			}
-
-			Thread.sleep(repeatCycle);
-		}
-	}
-
-	private ScriptEngine getScriptEngine(ScriptLocation script) throws EngineException {
-		ScriptEngine scriptEngine = scriptEngineCache.get(script);
-		if (scriptEngine == null) {
-			scriptEngine = scriptEngineContainer.getScriptEngine(script);
-		}
-		scriptEngineCache.put(script, scriptEngine);
-		return scriptEngine;
-	}
-
-	private void run(ScriptLocation script) throws GrinderException {
+	public void run() throws GrinderException {
 		try {
-			ScriptEngine scriptEngine = getScriptEngine(script);
-
 			m_terminalLogger.info("Running \"{}\" using {}", script, scriptEngine.getDescription());
 
 			final ThreadSynchronisation threadSynchronisation = new ThreadSynchronisation(m_eventSynchronisation);
@@ -382,9 +303,12 @@ public class SitemonitorProcess {
 			// Wait for a termination event.
 			synchronized (m_eventSynchronisation) {
 				while (!threadSynchronisation.isFinished()) {
+					if (m_recievedShutdown) {
+						m_terminalLogger.info("Script {} shutdown.", script.getFile());
+						break;
+					}
 					m_eventSynchronisation.waitNoInterrruptException();
 				}
-
 			}
 
 			final long elapsedTime = times.getElapsedTime();
@@ -422,16 +346,12 @@ public class SitemonitorProcess {
 		if (m_consoleSender != null) {
 			m_consoleSender.shutdown();
 		}
-
-		if (scriptEngineCache != null && scriptEngineCache.size() > 0) {
-			for (Entry<ScriptLocation, ScriptEngine> entry : scriptEngineCache.entrySet()) {
-				ScriptEngine engine = scriptEngineCache.remove(entry.getKey());
-				try {
-					if (engine != null) {
-						engine.shutdown();
-					}
-				} catch (EngineException e) {
-				}
+		
+		if (scriptEngine != null) {
+			try {
+				scriptEngine.shutdown();
+			} catch (EngineException e) {
+				m_terminalLogger.warn("Failed shutdown {} script engine.", script.getFile());
 			}
 		}
 	}
@@ -451,6 +371,7 @@ public class SitemonitorProcess {
 
 					m_result.info("result : {}", sample);
 					m_consoleSender.send(new ReportStatisticsMessage(sample));
+					m_consoleSender.flush();
 				}
 			} catch (final CommunicationException e) {
 				m_terminalLogger.info("Report to console failed", e);

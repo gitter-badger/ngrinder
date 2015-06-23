@@ -11,27 +11,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. 
  */
-package org.ngrinder.model;
+package org.ngrinder.sitemonitor.model;
 
 import java.io.File;
 
 /**
- * The script type.
- * 
  * @author Gisoo Gwon
  */
-public enum ScriptType {
-	
-	PYTHON(".py"), GROOVY(".groovy");
+public class SitemonitorDistDirectory {
+	private File RootDirectory;
+	private File ScriptDirectory;
 
-	ScriptType(String fileExtension) {
-		this.tmpScript = new File(fileExtension);
+	public File getRootDirectory() {
+		return RootDirectory;
 	}
 
-	final File tmpScript;
-
-	public File getTmpScript() {
-		return tmpScript;
+	public void setRootDirectory(File rootDirectory) {
+		RootDirectory = rootDirectory;
 	}
-	
+
+	public File getScriptDirectory() {
+		return ScriptDirectory;
+	}
+
+	public void setScriptDirectory(File scriptDirectory) {
+		ScriptDirectory = scriptDirectory;
+	}
+
 }

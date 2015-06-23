@@ -35,8 +35,10 @@ import net.grinder.util.thread.Condition;
  */
 public class SitemonitorCommunicationTest {
 	private int freePort;
-	private String groupname = "group";
-	private String scriptpath = "scriptpath";
+	private String sitemonitorId = "monitor1";
+	private String scriptname = "scriptname";
+	private String hosts = "www.naver.com:123.123.123.123,localhost:127.0.0.1";
+	private String param = "param|value.1";
 	private File baseDirectory = new File(getClass().getResource("/").getFile());
 
 	@Before
@@ -59,8 +61,8 @@ public class SitemonitorCommunicationTest {
 
 		// run sitemonitor agent
 		for (int i = 0; i < controllerCount; i++) {
-			SitemonitorController controller = new SitemonitorController(baseDirectory, myAgentConfig,
-				new Condition());
+			SitemonitorController controller = new SitemonitorController(baseDirectory,
+				myAgentConfig, new Condition());
 			SitemonitorControllerDaemon controllerDaemon = new SitemonitorControllerDaemon(
 				controller);
 			controller.setMonitorScheduler(scheduler);
@@ -76,8 +78,8 @@ public class SitemonitorCommunicationTest {
 		sendUnregistScheduleMessage(serverDaemon);
 
 		Thread.sleep(500);
-		verify(scheduler, times(controllerCount)).regist(groupname, scriptpath);
-		verify(scheduler, times(controllerCount)).unregist(groupname, scriptpath);
+		verify(scheduler, times(controllerCount)).regist((RegistScheduleMessage) any());
+		verify(scheduler, times(controllerCount)).unregist(sitemonitorId);
 
 		Thread.sleep(2000);
 		assertThat(serverDaemon.getAllAvailableAgents().size(), is(controllerCount));
@@ -93,7 +95,8 @@ public class SitemonitorCommunicationTest {
 			freePort);
 		serverDaemon.start();
 		// run sitemonitor agent
-		SitemonitorController controller = new SitemonitorController(baseDirectory, myAgentConfig, new Condition());
+		SitemonitorController controller = new SitemonitorController(baseDirectory, myAgentConfig,
+			new Condition());
 		SitemonitorControllerDaemon controllerDaemon = new SitemonitorControllerDaemon(controller);
 		controllerDaemon.run();
 
@@ -107,13 +110,11 @@ public class SitemonitorCommunicationTest {
 		listenerSupport.add(listener);
 		File sendFolder = new File(getClass().getResource("/sendfolder").getFile());
 
-		String groupName = "new";
-		File downloadFolder = new File(baseDirectory,
-			File.separator + "incoming" + File.separator + groupName);
+		File downloadFolder = new File(baseDirectory, File.separator + "incoming");
 		FileUtils.deleteQuietly(downloadFolder);
 
 		// when, send file
-		serverDaemon.sendFile(new AgentAddress(agentIdentity), groupName, new Directory(sendFolder),
+		serverDaemon.sendFile(new AgentAddress(agentIdentity), new Directory(sendFolder),
 			Pattern.compile(ConsoleProperties.DEFAULT_DISTRIBUTION_FILE_FILTER_EXPRESSION),
 			listenerSupport);
 		Thread.sleep(1000);
@@ -130,12 +131,12 @@ public class SitemonitorCommunicationTest {
 	}
 
 	private void sendRegistScheduleMessage(SitemonitorControllerServerDaemon serverDaemon) {
-		RegistScheduleMessage regist = new RegistScheduleMessage(groupname, scriptpath);
+		RegistScheduleMessage regist = new RegistScheduleMessage(sitemonitorId, scriptname, hosts, param);
 		serverDaemon.sendToAgents(regist);
 	}
 
 	private void sendUnregistScheduleMessage(SitemonitorControllerServerDaemon serverDaemon) {
-		UnregistScheduleMessage unregist = new UnregistScheduleMessage(groupname, scriptpath);
+		UnregistScheduleMessage unregist = new UnregistScheduleMessage(sitemonitorId, scriptname);
 		serverDaemon.sendToAgents(unregist);
 	}
 

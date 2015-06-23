@@ -20,8 +20,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import org.ngrinder.model.ScriptType;
-import org.ngrinder.sitemonitor.SitemonitorSetting;
+import org.ngrinder.common.constants.GrinderConstants;
 import org.ngrinder.sitemonitor.engine.process.SitemonitorProcessEntryPoint;
 import org.ngrinder.sitemonitor.messages.ShutdownSitemonitorProcessMessage;
 import org.slf4j.Logger;
@@ -42,80 +41,70 @@ import net.grinder.util.NetworkUtils;
 /**
  * @author Gisoo Gwon
  */
-public class SitemonitorScriptRunner {
+public class SitemonitorScriptRunner implements GrinderConstants {
 
 	private Logger LOGGER = LoggerFactory.getLogger("site monitor script runner");
 	private Map<String, ProcessWorker> workers = new HashMap<String, ProcessWorker>();
 	private final int serverConsolePort;
+	private final File baseDirectory;
 
-	public SitemonitorScriptRunner(int serverConsolePort) {
+	public SitemonitorScriptRunner(int serverConsolePort, File baseDirectory) {
 		this.serverConsolePort = serverConsolePort;
+		this.baseDirectory = baseDirectory;
 	}
 
-	public Thread runWorkerWithThread(final SitemonitorSetting sitemonitorSetting, final File base) {
-		Thread thread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				runWorker(sitemonitorSetting, base);
-			}
-		});
-
-		thread.start();
-		return thread;
-	}
-
-	private void runWorker(SitemonitorSetting sitemonitorSetting, File base) {
+	public void runWorker(String sitemonitorId, String scriptname, String hosts, String params,
+		File base) {
 		FanOutStreamSender fanOutStreamSender = null;
 		ProcessWorker worker = null;
-		String groupName = sitemonitorSetting.getGroupName();
-		ScriptType scriptType = sitemonitorSetting.getScriptType();
 
 		try {
 			// create
+			File scriptDir = new File(baseDirectory, sitemonitorId);
+			File scriptFile = new File(scriptDir, scriptname);
 			fanOutStreamSender = new FanOutStreamSender(1);
 			Directory workingDirectory = new Directory(base);
-			AbstractLanguageHandler handler = Lang.getByFileName(scriptType.getTmpScript()).getHandler();
-			AbstractGrinderClassPathProcessor classPathProcessor = handler.getClassPathProcessor();
+			AbstractLanguageHandler handler = Lang.getByFileName(scriptFile).getHandler();
 			Properties systemProperties = new Properties();
 			GrinderProperties properties = new GrinderProperties();
-			AgentIdentityImplementation agentIdentity = new AgentIdentityImplementation(groupName);
-
-			// init
-			agentIdentity.setNumber(0);
-			properties.setProperty("grinder.errorCallback", sitemonitorSetting.getErrorCallback());
-			properties.setInt("grinder.repeatCycle", sitemonitorSetting.getRepeatCycle());
-			properties.setProperty("grinder.consoleHost", "localhost");
-			properties.setInt("grinder.consolePort", serverConsolePort);
-			String newClassPath = classPathProcessor.buildClasspathBasedOnCurrentClassLoader(LOGGER);
-			PropertyBuilder builder = new PropertyBuilder(properties, new Directory(base), false,
+			PropertyBuilder builder = new PropertyBuilder(properties, new Directory(scriptDir), false,
 				"", NetworkUtils.getLocalHostName());
-			String buildJVMArgumentWithoutMemory = builder.buildJVMArgumentWithoutMemory();
+			AgentIdentityImplementation agentIdentity = new AgentIdentityImplementation(sitemonitorId);
+			
+			// init
+			AbstractGrinderClassPathProcessor classPathProcessor = handler.getClassPathProcessor();
 			String grinderJVMClassPath = classPathProcessor.buildForemostClasspathBasedOnCurrentClassLoader(LOGGER)
 				+ File.pathSeparator
 				+ classPathProcessor.buildPatchClasspathBasedOnCurrentClassLoader(LOGGER)
 				+ File.pathSeparator + builder.buildCustomClassPath(true);
+			properties.setProperty("grinder.jvm.classpath", grinderJVMClassPath);
+			properties.setProperty("grinder.consoleHost", "localhost");
+			properties.setInt("grinder.consolePort", serverConsolePort);
 			systemProperties.put("java.class.path", base.getAbsolutePath() + File.pathSeparator
-				+ newClassPath);
+				+ classPathProcessor.buildClasspathBasedOnCurrentClassLoader(LOGGER));
+			agentIdentity.setNumber(0);
+
+			String buildJVMArgumentWithoutMemory = builder.buildJVMArgumentWithoutMemory();
 			properties.setProperty("grinder.jvm.classpath", grinderJVMClassPath);
 
 			// logging
 			LOGGER.info("grinder.jvm.classpath  : {} ", grinderJVMClassPath);
-			LOGGER.debug("sitemonitor class path " + newClassPath);
+			LOGGER.debug("sitemonitor class path " + classPathProcessor.buildClasspathBasedOnCurrentClassLoader(LOGGER));
 			LOGGER.info("jvm args : {} ", buildJVMArgumentWithoutMemory);
 
 			// worker init
+			
 			WorkerProcessCommandLine workerCommandLine = new WorkerProcessCommandLine(properties,
 				systemProperties, buildJVMArgumentWithoutMemory, workingDirectory,
 				SitemonitorProcessEntryPoint.class);
 			ProcessWorkerFactory workerFactory = new ProcessWorkerFactory(workerCommandLine,
-				agentIdentity, fanOutStreamSender, true, new ScriptLocation(scriptType.getTmpScript()),
-				properties);
+				agentIdentity, fanOutStreamSender, true, new ScriptLocation(scriptFile), properties);
 			worker = (ProcessWorker) workerFactory.create(System.out, System.err);
 
-			saveWorker(groupName, worker);
+			saveWorker(sitemonitorId, worker);
 			worker.waitFor();
 		} catch (Exception e) {
-			LOGGER.error("Error while executing {} because {}", groupName, e.getMessage());
+			LOGGER.error("Error while executing {} because {}", sitemonitorId, e.getMessage());
 			LOGGER.info("The error detail is ", e);
 			// TODO : send error message to console
 		} finally {
@@ -135,34 +124,42 @@ public class SitemonitorScriptRunner {
 				try {
 					sendMessage(entry.getKey(), new ShutdownSitemonitorProcessMessage());
 				} catch (CommunicationException e) {
-					LOGGER.error("{} shutdown failed", entry.getKey());
+					LOGGER.warn("{} shutdown failed", entry.getKey());
 				}
 				processWorker.destroy();
 			}
 		}
 	}
 
-	public void saveWorker(String groupName, ProcessWorker newWorker) {
-		Worker pastWorker = workers.get(groupName);
+	public void saveWorker(String sitemonitorId, ProcessWorker newWorker) {
+		Worker pastWorker = workers.get(sitemonitorId);
 		if (pastWorker != null) {
 			pastWorker.destroy();
-			System.out.println("destroy " + groupName);
+			LOGGER.debug("destroy " + sitemonitorId);
 		}
 
-		workers.put(groupName, newWorker);
+		workers.put(sitemonitorId, newWorker);
 	}
 
-	public boolean sendMessage(String groupName, Message message) throws CommunicationException {
-		Worker groupWorker = workers.get(groupName);
-		if (groupWorker != null) {
-			new StreamSender(groupWorker.getCommunicationStream()).send(message);
+	/**
+	 * Send message to worker.
+	 * 
+	 * @param sitemonitorId
+	 * @param message
+	 * @return
+	 * @throws CommunicationException
+	 */
+	public boolean sendMessage(String sitemonitorId, Message message) throws CommunicationException {
+		Worker worker = workers.get(sitemonitorId);
+		if (worker != null) {
+			new StreamSender(worker.getCommunicationStream()).send(message);
 			return true;
 		}
 		return false;
 	}
-	
+
 	public Set<String> getRunningGroups() {
 		return workers.keySet();
 	}
-	
+
 }

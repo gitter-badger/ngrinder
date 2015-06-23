@@ -56,6 +56,11 @@
 		<fieldSet>
 			<legend>
 				<@spring.message "perfTest.report.tpsGraph"/>
+			<#if test.status.category == "FINISHED">
+				<a id="add_sitemonitoring_btn" class="btn btn-primary pull-right">
+					<@spring.message "perfTest.report.addSitemonitoring"/>
+				</a>
+			</#if>
 				<a id="detail_report_btn" class="btn btn-primary pull-right">
 					<@spring.message "perfTest.report.detailedReport"/>
 				</a>
@@ -109,6 +114,13 @@
 				{ "testComment": comment, "tagString":tagString },
 				"<@spring.message "perfTest.report.message.leaveComment"/>"
 		);
+		ajaxObj.call();
+	});
+
+	$("#add_sitemonitoring_btn").click(function () {
+		var ajaxObj = new AjaxObj("/sitemonitor/api/add/${(test.id)?c}"
+				, "<@spring.message "common.message.success"/>"
+				, "<@spring.message "common.error.error"/>");
 		ajaxObj.call();
 	});
 

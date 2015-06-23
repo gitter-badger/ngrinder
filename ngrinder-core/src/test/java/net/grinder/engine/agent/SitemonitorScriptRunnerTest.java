@@ -21,11 +21,7 @@ import java.io.File;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.ngrinder.model.ScriptType;
 import org.ngrinder.sitemonitor.SitemonitorControllerServerDaemon;
-import org.ngrinder.sitemonitor.SitemonitorSetting;
-import org.ngrinder.sitemonitor.messages.AddScriptMessage;
-import org.ngrinder.sitemonitor.messages.RemoveScriptMessage;
 
 import net.grinder.communication.CommunicationException;
 import net.grinder.communication.MessageDispatchRegistry;
@@ -35,10 +31,10 @@ import net.grinder.messages.console.ReportStatisticsMessage;
 import net.grinder.util.NetworkUtils;
 
 public class SitemonitorScriptRunnerTest {
-	private static final int LONG_DELAY = 2000;
 	private int count;
 	SitemonitorScriptRunner sitemonitorScriptRunner;
 	SitemonitorControllerServerDaemon serverDaemon;
+	File scriptDir = new File(getClass().getResource("/").getFile());
 
 	@Before
 	public void before() throws Exception {
@@ -48,7 +44,7 @@ public class SitemonitorScriptRunnerTest {
 		serverDaemon.start();
 		Thread.sleep(1000);
 
-		sitemonitorScriptRunner = new SitemonitorScriptRunner(consolePort);
+		sitemonitorScriptRunner = new SitemonitorScriptRunner(consolePort, scriptDir);
 	}
 
 	@After
@@ -57,34 +53,21 @@ public class SitemonitorScriptRunnerTest {
 	}
 
 	@Test
-	public void testRunWorkerWithThread() throws Exception {
-		int repteatCount = 2;
-		String groupName = "groupName";
-		String errerCallback = "";
-		int repeatCycle = 2000;
-		SitemonitorSetting setting = new SitemonitorSetting(groupName, ScriptType.PYTHON,
-			errerCallback, repeatCycle);
+	public void testRun() throws Exception {
+		// monitorId use to script file path in SitemonitorScriptRunner.
+		// "." mean current folder. (ex, ~/BASE_DIR/./SCRIPT_FILE) 
+		String monitorId = ".";
 
 		count = 0;
-		registCountReportMessage();
+		countingReportMessage();
 
 		File base = new File(getClass().getResource("/").getFile());
-		sitemonitorScriptRunner.runWorkerWithThread(setting, base);
-		Thread.sleep(1000);
+		sitemonitorScriptRunner.runWorker(monitorId, "sitemonitor.py", null, null, base);
 
-		assertThat(count, is(0));
-
-		sitemonitorScriptRunner.sendMessage(groupName, new AddScriptMessage(new File(base,
-			"sitemonitor.py").getAbsolutePath()));
-		Thread.sleep(repeatCycle * repteatCount);
-		sitemonitorScriptRunner.sendMessage(groupName, new RemoveScriptMessage(new File(base,
-			"sitemonitor.py").getAbsolutePath()));
-		Thread.sleep(LONG_DELAY);
-
-		assertThat(count, is(repteatCount));
+		assertThat(count, is(1));
 	}
 
-	private void registCountReportMessage() {
+	private void countingReportMessage() {
 		ConsoleCommunicationImplementationEx console = serverDaemon.getComponent(
 			ConsoleCommunicationImplementationEx.class);
 		MessageDispatchRegistry messageDispatchRegistry = console.getMessageDispatchRegistry();
