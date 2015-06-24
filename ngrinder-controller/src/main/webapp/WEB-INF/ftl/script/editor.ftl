@@ -144,7 +144,7 @@
 			return "<@spring.message "script.editor.message.exitWithoutSave"/>";
 		}
 		function saveScript() {
-			document.forms.content_form.action = "${req.getContextPath()}${urlPrefix!}/script/save";
+			document.forms.content_form.action = "${req.getContextPath()}/script/save";
 			document.forms.content_form.submit();
 		}
 		$(document).ready(function() {
@@ -206,7 +206,7 @@
 				var newContent = editor.getValue();
 				showProgressBar("<@spring.message 'script.editor.message.validate'/>");
 
-				var ajaxObj = new AjaxPostObj("${urlPrefix!}/script/api/validate",
+				var ajaxObj = new AjaxPostObj("/script/api/validate",
 								{
 									'path':scriptPath, 'content': newContent,
 									<@security.authorize ifAnyGranted="A, S"><#if ownerId??>'ownerId': "${ownerId}",</#if></@security.authorize>

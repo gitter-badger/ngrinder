@@ -100,7 +100,7 @@
 				<tr>
 					<th><input type="checkbox" class="checkbox" value=""></th>
 					<th class="no-click">
-						<a href="${req.getContextPath()}${urlPrefix!}/script/list/${currentPath}/../" target="_self">
+						<a href="${req.getContextPath()}/script/list/${currentPath}/../" target="_self">
 							<img src="${req.getContextPath()}/img/up_folder.png?${nGrinderVersion}"/>
 						</a>
 					</th>
@@ -127,11 +127,11 @@
 						</td>
 						<td class="ellipsis">
 							<#if script.fileType.fileCategory.isEditable()>
-								<a href="${req.getContextPath()}${urlPrefix!}/script/detail/${script.path}" target="_self" title="${script.path}">${script.fileName}</a>
+								<a href="${req.getContextPath()}/script/detail/${script.path}" target="_self" title="${script.path}">${script.fileName}</a>
 							<#elseif script.fileType == "dir">
-								<a href="${req.getContextPath()}${urlPrefix!}/script/list/${script.path}" target="_self" title="${script.path}">${script.fileName}</a>
+								<a href="${req.getContextPath()}/script/list/${script.path}" target="_self" title="${script.path}">${script.fileName}</a>
 							<#else>
-								<a href="${req.getContextPath()}${urlPrefix!}/script/download/${script.path}" target="_blank" title="${script.path}">${script.fileName}</a>
+								<a href="${req.getContextPath()}/script/download/${script.path}" target="_blank" title="${script.path}">${script.fileName}</a>
 							</#if>
 						</td>
 						<td class="ellipsis" title="${(script.description)!?html}">${(script.description)!}</td>
@@ -161,11 +161,7 @@
 	<#include "../common/copyright.ftl">
 	<script type="text/javascript">
 		$(document).ready(function() {
-		<#if urlPrefix?? && urlPrefix == "/sitemonitor">
-			$("#nav_sitemonitor_script").addClass("active");
-		<#else>
 			$("#nav_script").addClass("active");
-		</#if>
 			$("#delete_script_button").click(function() {
 				var list = $("td input:checked");
 				if(list.length == 0) {
@@ -178,7 +174,7 @@
 							return $(this).val();
 						}).get().join(",");
 
-						var ajaxObj = new AjaxObj("${urlPrefix!}/script/delete/${currentPath}");
+						var ajaxObj = new AjaxObj("/script/delete/${currentPath}");
 						ajaxObj.type = "POST";
 						ajaxObj.params = {'filesString': scriptsStr};
 						ajaxObj.success = function () {
@@ -196,7 +192,7 @@
 			enableCheckboxSelectAll("script_list_table");
 			
 			$("i.script-download").on('click', function() {
-				window.location  = "${req.getContextPath()}${urlPrefix!}/script/download/" + $(this).attr("spath");
+				window.location  = "${req.getContextPath()}/script/download/" + $(this).attr("spath");
 			});
 
 			<#if files?has_content>
@@ -221,7 +217,7 @@
 		});
 		
 		function searchScriptList() {
-			document.location.href = "${req.getContextPath()}${urlPrefix!}/script/search?query=" + $("#searchText").val();
+			document.location.href = "${req.getContextPath()}/script/search?query=" + $("#searchText").val();
 		}
 	</script>
 	</body>

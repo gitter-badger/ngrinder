@@ -18,9 +18,6 @@
 					<li id="nav_script">
 						<a href="${req.getContextPath()}/script/"><@spring.message "navigator.script"/></a>
 					</li>
-					<li id="nav_sitemonitor_script">
-						<a href="${req.getContextPath()}/sitemonitor/script/"><@spring.message "navigator.sitemonitor.script"/></a>
-					</li>
 				</ul>
 
 				<ul class="nav pull-right">
