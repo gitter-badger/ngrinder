@@ -61,7 +61,7 @@ import net.grinder.util.FileContents.FileContentsException;
 public class SitemonitorManagerService implements ControllerConstants {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(SitemonitorManagerService.class);
-	private SitemonitorControllerServerDaemon sitemonitorServerDaemon;
+	SitemonitorControllerServerDaemon sitemonitorServerDaemon;
 
 	@Autowired
 	private Config config;
@@ -106,6 +106,20 @@ public class SitemonitorManagerService implements ControllerConstants {
 
 		return agentInfos;
 	}
+	
+	/**
+	 * Check running agent by Connecting Agent list
+	 * @param agentName
+	 * @return
+	 */
+	public boolean isRunningAgent(String agentName) {
+		for (AgentIdentity identity : getAllAgents()) {
+			if (identity.getName().equals(agentName)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * @return connecting agent list.
@@ -114,6 +128,19 @@ public class SitemonitorManagerService implements ControllerConstants {
 		return sitemonitorServerDaemon.getAllAvailableAgents();
 	}
 
+	/**
+	 * If exist sitemonitoringId, remove old sitemonitoring.
+	 * Distribute script file and resource to agent.
+	 * Send run command to agent.
+	 * 
+	 * @param user regist user
+	 * @param sitemonitorId	sitemonitoring id
+	 * @param script		script entity
+	 * @param targetHosts	host setting
+	 * @param param			system param
+	 * @throws FileContentsException
+	 * @throws DirectoryException
+	 */
 	public void addSitemonitoring(User user, String sitemonitorId, FileEntry script,
 			String targetHosts, String param) throws FileContentsException, DirectoryException {
 		Set<AgentIdentity> allAgents = sitemonitorServerDaemon.getAllAvailableAgents();
@@ -131,12 +158,28 @@ public class SitemonitorManagerService implements ControllerConstants {
 		FileUtils.deleteQuietly(tmpDistDir.getRootDirectory());
 	}
 
-	private void unregistSitemonitoring(String sitemonitorId) {
-		Sitemonitoring sitemonitoring = sitemonitoringRepository.findOne(sitemonitorId);
+	/**
+	 * Delete sitemonitoring info in DB.
+	 * Send unregist command to target agent. 
+	 * 
+	 * @param user	request user
+	 * @param sitemonitoringId	sitemonitoring id
+	 */
+	public void delSitemonitoring(User user, String sitemonitoringId) {
+		Sitemonitoring sitemonitoring = sitemonitoringRepository.findOne(sitemonitoringId);
+		checkNotNull(sitemonitoring);
+		checkTrue(sitemonitoring.getRegistUser().getId() == user.getId(), 
+			"No have grant user {}" + user.getUserName());
+		
+		unregistSitemonitoring(sitemonitoringId);
+	}
+
+	private void unregistSitemonitoring(String sitemonitoringId) {
+		Sitemonitoring sitemonitoring = sitemonitoringRepository.findOne(sitemonitoringId);
 		if (sitemonitoring != null) {
 			unregistSitemonitoringToAgent(sitemonitoring.getId(),
 				sitemonitoring.getAgentName(), sitemonitoring.getScriptName());
-			sitemonitoringRepository.delete(sitemonitorId);
+			sitemonitoringRepository.delete(sitemonitoringId);
 		}
 	}
 
@@ -181,7 +224,7 @@ public class SitemonitorManagerService implements ControllerConstants {
 		ProcessingResultPrintStream processingResult = new ProcessingResultPrintStream(
 			new ByteArrayOutputStream());
 		ScriptHandler handler = scriptHandlerFactory.getHandler(script);
-		handler.prepareDist(-0l, user, script, tmpDist.getScriptDirectory(),
+		handler.prepareDistWithRevsion(-0l, user, script, tmpDist.getScriptDirectory(),
 			config.getControllerProperties(), processingResult);
 		checkTrue(processingResult.isSuccess(), "Failed " + script.getFileName()
 			+ " script file prepare.");

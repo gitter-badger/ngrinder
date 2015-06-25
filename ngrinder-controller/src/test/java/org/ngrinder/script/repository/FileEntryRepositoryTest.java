@@ -28,12 +28,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 public class FileEntryRepositoryTest extends AbstractNGrinderTransactionalTest {
 
@@ -152,5 +154,48 @@ public class FileEntryRepositoryTest extends AbstractNGrinderTransactionalTest {
 		byte[] byteArray = IOUtils.toByteArray(new ClassPathResource("TEST_USER.zip").getInputStream());
 		fileEntry.setContentBytes(byteArray);
 		repo.save(getTestUser(), fileEntry, null);
+	}
+	
+	@Test
+	public void test() throws Exception {
+		// given
+		String path = "/commit/test/";
+		String file = "hello.txt";
+		String filePath = path + file;
+		String firstTxt = "hello";
+		String secondTxt = "bye";
+		File tmpDir = repo.getUserRepoDirectory(getTestUser());
+		File testFile = new File(tmpDir, file);
+		
+		FileEntry fileEntry = new FileEntry();
+		fileEntry.setPath(filePath);
+		fileEntry.setFileType(FileType.TXT);
+		
+		// when
+		fileEntry.setContent(firstTxt);
+		repo.save(getTestUser(), fileEntry, null);
+		FileEntry first = repo.findOne(getTestUser(), filePath, SVNRevision.HEAD);
+		fileEntry.setContent(secondTxt);
+		repo.save(getTestUser(), fileEntry, null);
+
+		// then
+		repo.writeContentTo(getTestUser(), filePath, tmpDir);
+		assertFileContent(testFile, secondTxt);
+		
+		repo.writeContentTo(getTestUser(), filePath, tmpDir, first.getRevision());
+		assertFileContent(testFile, firstTxt);
+	}
+	
+	private void assertFileContent(File file, String content) {
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(file));
+			String readLine = br.readLine();
+			assertTrue(readLine.equals(content));
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			IOUtils.closeQuietly(br);
+		}
 	}
 }

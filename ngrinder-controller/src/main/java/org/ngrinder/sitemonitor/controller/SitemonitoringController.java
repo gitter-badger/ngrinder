@@ -13,36 +13,32 @@
  */
 package org.ngrinder.sitemonitor.controller;
 
-import java.util.List;
-
 import org.ngrinder.common.controller.BaseController;
-import org.ngrinder.model.AgentInfo;
+import org.ngrinder.model.User;
+import org.ngrinder.sitemonitor.repository.SitemonitoringRepository;
 import org.ngrinder.sitemonitor.service.SitemonitorManagerService;
+import org.ngrinder.sitemonitor.service.SitemonitoringService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
- * Sitemonitor manager controller.
- *
+ * Sitemonitoring regist/unregist Controller.
+ * 
  * @author Gisoo Gwon
  */
 @Controller
-@RequestMapping("/sitemonitor")
-public class SitemonitorManagerController extends BaseController {
+@RequestMapping("/sitemonitoring")
+public class SitemonitoringController extends BaseController {
 	
 	@Autowired
-	private SitemonitorManagerService sitemonitorManager;
+	private SitemonitoringService sitemonitoringService;
 	
-	@PreAuthorize("hasAnyRole('A')")
 	@RequestMapping({"", "/", "/list"})
-	public String getAll(ModelMap model) {
-		List<AgentInfo> agents = sitemonitorManager.getAllAgentInfo();
-		model.addAttribute("agents", agents);
-		
-		return "sitemonitor/list";
+	public String list(User user, ModelMap modelMap) {
+		modelMap.put("sitemonitorings", sitemonitoringService.getRegistSitemonitorings(user));
+		return "sitemonitoring/list";
 	}
 	
 }

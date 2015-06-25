@@ -25,7 +25,6 @@ import org.ngrinder.model.User;
 import org.ngrinder.script.model.FileCategory;
 import org.ngrinder.script.model.FileEntry;
 import org.ngrinder.script.model.FileType;
-import org.ngrinder.user.repository.UserRepository;
 import org.ngrinder.user.service.UserContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,9 +87,6 @@ public class FileEntryRepository {
 		home = config.getHome();
 		subversionHome = home.getSubFile("subversion");
 	}
-
-	@Autowired
-	private UserRepository userRepository;
 
 	/**
 	 * Get user repository.
@@ -508,6 +504,20 @@ public class FileEntryRepository {
 	 * @param toPathDir file dir path to write.
 	 */
 	public void writeContentTo(User user, String path, File toPathDir) {
+		writeContentTo(user, path, toPathDir, -1L);
+	}
+
+	/**
+	 * Copy {@link FileEntry} to the given path use revision.
+	 *
+	 * This method only work for the file not dir.
+	 *
+	 * @param user      user
+	 * @param path      path of {@link FileEntry}
+	 * @param toPathDir file dir path to write.
+	 * @param revision	revision of file.
+	 */
+	public void writeContentTo(User user, String path, File toPathDir, long revision) {
 		SVNClientManager svnClientManager = null;
 		FileOutputStream fileOutputStream = null;
 		try {
@@ -527,7 +537,7 @@ public class FileEntryRepository {
 			fileOutputStream = new FileOutputStream(destFile);
 			SVNProperties fileProperty = new SVNProperties();
 			// Get file.
-			repo.getFile(path, -1L, fileProperty, fileOutputStream);
+			repo.getFile(path, revision, fileProperty, fileOutputStream);
 		} catch (Exception e) {
 			LOG.error("Error while fetching files from SVN", e);
 			throw processException("Error while fetching files from SVN", e);

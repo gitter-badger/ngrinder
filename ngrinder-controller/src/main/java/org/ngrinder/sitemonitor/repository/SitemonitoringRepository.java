@@ -16,6 +16,7 @@ package org.ngrinder.sitemonitor.repository;
 import java.util.List;
 
 import org.ngrinder.model.Sitemonitoring;
+import org.ngrinder.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -24,8 +25,11 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
  * 
  * @author Gisoo Gwon
  */
-public interface SitemonitoringRepository extends JpaRepository<Sitemonitoring, String>, JpaSpecificationExecutor<Sitemonitoring> {
+public interface SitemonitoringRepository extends JpaRepository<Sitemonitoring, String>,
+	JpaSpecificationExecutor<Sitemonitoring> {
 	
+	List<Sitemonitoring> findByRegistUser(User registUser);
+
 	List<Sitemonitoring> findByAgentName(String agentName);
 
 }

@@ -1,3 +1,16 @@
+/* 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. 
+ */
 package org.ngrinder.sitemonitor.controller;
 
 import static org.ngrinder.common.util.Preconditions.*;
@@ -46,8 +59,8 @@ public class SitemonitorApiController extends BaseController {
 	@RestAPI
 	@RequestMapping("/add/{perfTestId}")
 	public HttpEntity<String> addSitemonitoring(User user,
-		@PathVariable("perfTestId") Long perfTestId) throws FileContentsException,
-		DirectoryException {
+			@PathVariable("perfTestId") Long perfTestId) throws FileContentsException,
+			DirectoryException {
 		PerfTest perfTest = perfTestService.getOne(perfTestId);
 		checkNotNull(perfTest, "no perftest for %s exits", perfTestId);
 		checkTrue(hasGrant(perfTest, user), "invalid grant for " + perfTestId + " perftest");
@@ -60,6 +73,14 @@ public class SitemonitorApiController extends BaseController {
 		sitemonitorManagerService.addSitemonitoring(user, sitemonitorId, script,
 			perfTest.getTargetHosts(), perfTest.getParam());
 
+		return toJsonHttpEntity("success");
+	}
+	
+	@RestAPI
+	@RequestMapping("/del/{sitemonitoringId}")
+	public HttpEntity<String> delSitemonitoring(User user,
+			@PathVariable("sitemonitoringId") String sitemonitoringId) {
+		sitemonitorManagerService.delSitemonitoring(user , sitemonitoringId);
 		return toJsonHttpEntity("success");
 	}
 

@@ -123,7 +123,7 @@ public abstract class ScriptHandler implements ControllerConstants {
 	}
 
 	/**
-	 * Prepare the distribution.
+	 * Prepare the distribution with head revision.
 	 *
 	 * @param testCaseId       id of the test case. This is for the log identification.
 	 * @param user             user who will distribute the script.
@@ -136,6 +136,41 @@ public abstract class ScriptHandler implements ControllerConstants {
 	                        User user, //
 	                        FileEntry scriptEntry, File distDir, PropertiesWrapper properties,
 	                        ProcessingResultPrintStream processingResult) {
+		prepareDist(testCaseId, user, scriptEntry, distDir, properties, processingResult, false);
+	}
+
+	/**
+	 * Prepare the distribution with revision of script entity.
+	 *
+	 * @param testCaseId       id of the test case. This is for the log identification.
+	 * @param user             user who will distribute the script.
+	 * @param scriptEntry      script to be distributed.
+	 * @param distDir          distribution target dir.
+	 * @param properties       properties set which is used for detailed distribution control.
+	 * @param processingResult processing result holder.
+	 */
+	public void prepareDistWithRevsion(Long testCaseId,
+	                        User user, //
+	                        FileEntry scriptEntry, File distDir, PropertiesWrapper properties,
+	                        ProcessingResultPrintStream processingResult) {
+		prepareDist(testCaseId, user, scriptEntry, distDir, properties, processingResult, true);
+	}
+
+	/**
+	 * Prepare the distribution.
+	 *
+	 * @param testCaseId       id of the test case. This is for the log identification.
+	 * @param user             user who will distribute the script.
+	 * @param scriptEntry      script to be distributed.
+	 * @param distDir          distribution target dir.
+	 * @param properties       properties set which is used for detailed distribution control.
+	 * @param processingResult processing result holder.
+	 * @param useRevision      use revision of entity.
+	 */
+	private void prepareDist(Long testCaseId,
+	                        User user, //
+	                        FileEntry scriptEntry, File distDir, PropertiesWrapper properties,
+	                        ProcessingResultPrintStream processingResult, boolean useRevision) {
 		prepareDefaultFile(distDir, properties);
 		List<FileEntry> fileEntries = getLibAndResourceEntries(user, scriptEntry, -1);
 		if (scriptEntry.getRevision() != 0) {
@@ -151,7 +186,11 @@ public abstract class ScriptHandler implements ControllerConstants {
 			File toDir = new File(distDir, calcDistSubPath(basePath, each));
 			processingResult.printf("%s is being written.\n", each.getPath());
 			LOGGER.info("{} is being written in {} for test {}", new Object[]{each.getPath(), toDir, testCaseId});
-			getFileEntryRepository().writeContentTo(user, each.getPath(), toDir);
+			if (useRevision) {
+				getFileEntryRepository().writeContentTo(user, each.getPath(), toDir, each.getRevision());
+			} else {
+				getFileEntryRepository().writeContentTo(user, each.getPath(), toDir);
+			}
 		}
 		processingResult.setSuccess(true);
 		prepareDistMore(testCaseId, user, scriptEntry, distDir, properties, processingResult);

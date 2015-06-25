@@ -19,6 +19,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 
 /**
@@ -53,6 +54,9 @@ public class Sitemonitoring {
 	
 	@Column(name = "agent_name")
 	private String agentName;
+	
+	@Transient
+	private boolean agentRunning;
 
 	public Sitemonitoring() {
 		
@@ -125,6 +129,14 @@ public class Sitemonitoring {
 
 	public void setAgentName(String agentName) {
 		this.agentName = agentName;
+	}
+
+	public boolean isAgentRunning() {
+		return agentRunning;
+	}
+
+	public void setAgentRunning(boolean agentRunning) {
+		this.agentRunning = agentRunning;
 	}
 
 }
