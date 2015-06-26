@@ -39,6 +39,11 @@ public class AgentControllerProcessReportMessage implements AddressAwareMessage 
 	private int connectingPort = 0;
 
 	private String version;
+	
+	// For sitemonitoring status
+	private double maxCpuUsePer;
+	private double minFreeMemory;
+	private long maxUseTimeMilisec;
 
 	/**
 	 * Creates a new <code>AgentProcessReportMessage</code> instance.
@@ -108,4 +113,29 @@ public class AgentControllerProcessReportMessage implements AddressAwareMessage 
 	public String getVersion() {
 		return version;
 	}
+
+	public double getMaxCpuUsePer() {
+		return maxCpuUsePer;
+	}
+
+	public void setMaxCpuUsePer(double maxCpuUsePer) {
+		this.maxCpuUsePer = maxCpuUsePer;
+	}
+
+	public double getMinFreeMemory() {
+		return minFreeMemory;
+	}
+
+	public void setMinFreeMemory(double minFreeMemory) {
+		this.minFreeMemory = minFreeMemory;
+	}
+
+	public long getMaxUseTimeMilisec() {
+		return maxUseTimeMilisec;
+	}
+
+	public void setMaxUseTimeMilisec(long maxUseTimeMilisec) {
+		this.maxUseTimeMilisec = maxUseTimeMilisec;
+	}
+	
 }

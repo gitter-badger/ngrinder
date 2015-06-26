@@ -20,6 +20,9 @@
 			<col width="60">
 			<col width="*">
 			<col width="100">
+			<col width="70">
+			<col width="70">
+			<col width="70">
 		</colgroup>
 		<thead>
 		<tr>
@@ -28,24 +31,30 @@
 			<th class="no-click"><@spring.message "agent.list.port"/></th>
 			<th class="ellipsis"><@spring.message "agent.list.name"/></th>
 			<th><@spring.message "agent.list.version"/></th>
+			<th><@spring.message "sitemonitor.list.maxCpu"/></th>
+			<th><@spring.message "sitemonitor.list.minMem"/></th>
+			<th><@spring.message "sitemonitor.list.maxTime"/></th>
 		</tr>
 		</thead>
 		<tbody>
-		<@list list_items=agents others="table_list" colspan="8"; agent>
+		<@list list_items=allAgentStatus others="table_list" colspan="8"; agentStatus>
 		<tr>
 			<td class="center">
 				<div class="ball"
 					 data-html="true"
 					 rel="popover">
-					<img class="status" src="${req.getContextPath()}/img/ball/${agent.state.iconName}"/>
+					<img class="status" src="${req.getContextPath()}/img/ball/${agentStatus.agentControllerState.iconName}"/>
 				</div>
 			</td>
 			<td>
-				<div class="ellipsis" title="${agent.ip}">${agent.ip}</div>
+				<div class="ellipsis" title="${agentStatus.agentIdentity.ip}">${agentStatus.agentIdentity.ip}</div>
 			</td>
-			<td>${(agent.port)!}</td>
-			<td class="ellipsis agent-name" title="${(agent.hostName)!}">${(agent.hostName)!}</td>
-			<td class="ellipsis"><#if agent.version?has_content>${agent.version}<#else>Prior to 3.3</#if></td>
+			<td>${(agentStatus.connectingPort)!}</td>
+			<td class="ellipsis agent-name" title="${(agentStatus.agentName)!}">${(agentStatus.agentName)!}</td>
+			<td class="ellipsis"><#if agentStatus.version?has_content>${agentStatus.version}<#else>Prior to 3.3</#if></td>
+			<td>${agentStatus.maxCpuUsePer ? string["0.#"]}%</td>
+			<td>${(agentStatus.minFreeMemory / 1024 / 1024) ? string["0.##"]}GB</td>
+			<td>${(agentStatus.maxUseTimeMilisec / 1000) ? string["0"]}sec</td>
 		</tr>
 		</@list>
 		</tbody>

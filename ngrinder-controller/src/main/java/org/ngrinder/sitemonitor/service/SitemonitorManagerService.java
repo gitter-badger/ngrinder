@@ -14,10 +14,7 @@
 package org.ngrinder.sitemonitor.service;
 
 import static org.ngrinder.common.util.Preconditions.*;
-import static org.ngrinder.common.util.TypeConvertUtils.*;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -29,7 +26,6 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.ngrinder.common.constant.ControllerConstants;
 import org.ngrinder.common.model.Home;
 import org.ngrinder.infra.config.Config;
-import org.ngrinder.model.AgentInfo;
 import org.ngrinder.model.Sitemonitoring;
 import org.ngrinder.model.User;
 import org.ngrinder.script.handler.ProcessingResultPrintStream;
@@ -47,8 +43,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import net.grinder.common.processidentity.AgentIdentity;
+import net.grinder.console.communication.AgentProcessControlImplementation.AgentStatus;
 import net.grinder.console.model.ConsoleProperties;
-import net.grinder.engine.controller.AgentControllerIdentityImplementation;
 import net.grinder.messages.console.AgentAddress;
 import net.grinder.util.Directory;
 import net.grinder.util.Directory.DirectoryException;
@@ -89,22 +85,9 @@ public class SitemonitorManagerService implements ControllerConstants {
 	public void destroy() {
 		sitemonitorServerDaemon.shutdown();
 	}
-
-	public List<AgentInfo> getAllAgentInfo() {
-		Set<AgentControllerIdentityImplementation> agents = cast(sitemonitorServerDaemon.getAllAvailableAgents());
-
-		List<AgentInfo> agentInfos = new LinkedList<AgentInfo>();
-		for (AgentControllerIdentityImplementation agent : agents) {
-			AgentInfo agentInfo = new AgentInfo();
-			agentInfo.setIp(agent.getIp());
-			agentInfo.setName(agent.getName());
-			agentInfo.setPort(sitemonitorServerDaemon.getAgentConnectingPort(agent));
-			agentInfo.setVersion(sitemonitorServerDaemon.getAgentVersion(agent));
-			agentInfo.setState(sitemonitorServerDaemon.getAgentState(agent));
-			agentInfos.add(agentInfo);
-		}
-
-		return agentInfos;
+	
+	public Set<AgentStatus> getAllAgentStatus() {
+		return sitemonitorServerDaemon.getAllAgentStatus();
 	}
 	
 	/**

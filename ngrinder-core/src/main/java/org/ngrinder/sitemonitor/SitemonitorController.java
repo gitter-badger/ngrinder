@@ -24,6 +24,7 @@ import org.ngrinder.monitor.controller.model.SystemDataModel;
 import org.ngrinder.sitemonitor.messages.RegistScheduleMessage;
 import org.ngrinder.sitemonitor.messages.ShutdownServerMessage;
 import org.ngrinder.sitemonitor.messages.UnregistScheduleMessage;
+import org.ngrinder.util.AgentStateMonitor;
 import org.python.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +67,7 @@ public class SitemonitorController implements Agent {
 	private boolean shutdownServer = false;
 	private String version;
 	private MonitorScheduler monitorScheduler;
+	private AgentStateMonitor agentStateMonitor;
 	private SitemonitorControllerServerListener sitemonitorControllerServerListener;
 	private final AgentControllerConnectorFactory connectorFactory = new AgentControllerConnectorFactory(
 		ConnectionType.AGENT);
@@ -163,9 +165,18 @@ public class SitemonitorController implements Agent {
 		this.monitorScheduler = monitorScheduler;
 	}
 
+	public void setAgentStateMonitor(AgentStateMonitor agentStateMonitor) {
+		this.agentStateMonitor = agentStateMonitor;
+	}
+
 	private void sendCurrentState() throws CommunicationException {
-		clientSender.send(new AgentControllerProcessReportMessage(AgentControllerState.STARTED,
-			new SystemDataModel(), agentConfig.getSitemonitorControllerPort(), version));
+		AgentControllerProcessReportMessage message = new AgentControllerProcessReportMessage(
+			AgentControllerState.STARTED, new SystemDataModel(),
+			agentConfig.getSitemonitorControllerPort(), version);
+		message.setMaxCpuUsePer(agentStateMonitor.maxCpuUsePer());
+		message.setMinFreeMemory(agentStateMonitor.minFreeMemory());
+		message.setMaxUseTimeMilisec(agentStateMonitor.maxUseTimeMilisec());
+		clientSender.send(message);
 	}
 
 	private synchronized boolean isShutdownServer() {

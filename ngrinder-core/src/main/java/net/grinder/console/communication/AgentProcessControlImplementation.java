@@ -13,6 +13,22 @@
  */
 package net.grinder.console.communication;
 
+import static org.ngrinder.common.util.CollectionUtils.*;
+
+import java.util.EventListener;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.ngrinder.monitor.controller.model.SystemDataModel;
+import org.python.google.common.base.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.grinder.common.GrinderProperties;
 import net.grinder.common.processidentity.AgentIdentity;
 import net.grinder.common.processidentity.ProcessIdentity;
@@ -29,21 +45,12 @@ import net.grinder.messages.agent.StopGrinderMessage;
 import net.grinder.messages.console.AgentAddress;
 import net.grinder.util.ListenerSupport;
 import net.grinder.util.ListenerSupport.Informer;
-import org.ngrinder.monitor.controller.model.SystemDataModel;
-import org.python.google.common.base.Predicate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static org.ngrinder.common.util.CollectionUtils.newLinkedHashSet;
 
 /**
  * Implementation of {@link AgentProcessControl}.
  *
  * @author JunHo Yoon
+ * @author Gisoo Gwon
  */
 @SuppressWarnings("SynchronizeOnNonFinalField")
 public class AgentProcessControlImplementation implements AgentProcessControl {
@@ -319,6 +326,18 @@ public class AgentProcessControlImplementation implements AgentProcessControl {
 		public String getAgentName() {
 			return m_agentReference == null ? "" : m_agentReference.m_agentProcessReportMessage.getAgentIdentity()
 					.getName();
+		}
+		
+		public double getMaxCpuUsePer() {
+			return m_agentReference == null ? -1 : m_agentReference.m_agentProcessReportMessage.getMaxCpuUsePer();
+		}
+		
+		public double getMinFreeMemory() {
+			return m_agentReference == null ? -1 : m_agentReference.m_agentProcessReportMessage.getMinFreeMemory();
+		}
+		
+		public long getMaxUseTimeMilisec() {
+			return m_agentReference == null ? -1 : m_agentReference.m_agentProcessReportMessage.getMaxUseTimeMilisec();
 		}
 	}
 

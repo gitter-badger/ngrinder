@@ -13,10 +13,7 @@
  */
 package org.ngrinder.sitemonitor.controller;
 
-import java.util.List;
-
 import org.ngrinder.common.controller.BaseController;
-import org.ngrinder.model.AgentInfo;
 import org.ngrinder.sitemonitor.service.SitemonitorManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,9 +36,7 @@ public class SitemonitorManagerController extends BaseController {
 	@PreAuthorize("hasAnyRole('A')")
 	@RequestMapping({"", "/", "/list"})
 	public String getAll(ModelMap model) {
-		List<AgentInfo> agents = sitemonitorManager.getAllAgentInfo();
-		model.addAttribute("agents", agents);
-		
+		model.addAttribute("allAgentStatus", sitemonitorManager.getAllAgentStatus());
 		return "sitemonitor/list";
 	}
 	

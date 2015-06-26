@@ -32,6 +32,8 @@ import org.ngrinder.sitemonitor.MonitorScheduler;
 import org.ngrinder.sitemonitor.MonitorSchedulerImplementation;
 import org.ngrinder.sitemonitor.SitemonitorController;
 import org.ngrinder.sitemonitor.SitemonitorControllerDaemon;
+import org.ngrinder.util.AgentStateMonitor;
+import org.ngrinder.util.AgentStateMonitorImplementation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -195,6 +197,7 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 				File agentRootDir = agentConfig.getHome().getDirectory();
 				File sitemonitorDir = new File(agentRootDir, SITEMONITOR_ROOT_DIR);
 				File scriptDistDir = new File(sitemonitorDir, FILESTORE_SUB_DIR);
+				AgentStateMonitor agentStateMonitor = new AgentStateMonitorImplementation(agentConfig);
 				
 				if (!sitemonitorDir.exists()) {
 					sitemonitorDir.mkdir();
@@ -202,10 +205,11 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 
 				Condition eventSyncCondition = new Condition();
 				MonitorScheduler monitorScheduler = new MonitorSchedulerImplementation(
-					scriptDistDir);
+					scriptDistDir, agentStateMonitor);
 				SitemonitorController controller = new SitemonitorController(
 					sitemonitorDir, agentConfig, eventSyncCondition);
 				controller.setMonitorScheduler(monitorScheduler);
+				controller.setAgentStateMonitor(agentStateMonitor);
 				SitemonitorControllerDaemon daemon = new SitemonitorControllerDaemon(controller);
 				daemon.run();
 			} catch (Exception e) {

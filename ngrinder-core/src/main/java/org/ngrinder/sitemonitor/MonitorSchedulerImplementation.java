@@ -26,6 +26,7 @@ import java.util.concurrent.Future;
 
 import org.ngrinder.common.util.ThreadUtils;
 import org.ngrinder.sitemonitor.messages.RegistScheduleMessage;
+import org.ngrinder.util.AgentStateMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +34,7 @@ import net.grinder.engine.agent.SitemonitorScriptRunner;
 import net.grinder.util.NetworkUtils;
 
 /**
- * Managing process for execute sitemonitoring script.
+ * Manage process for execute sitemonitoring script.
  * 
  * @author Gisoo Gwon
  */
@@ -45,6 +46,7 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 
 	private final SitemonitorScriptRunner scriptRunner;
 	private final File baseDirectory;
+	private final AgentStateMonitor agentStatMonitor;
 
 	private SitemonitorControllerServerDaemon serverDaemon;
 	private ExecutorService executor;
@@ -56,8 +58,9 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 	 * 
 	 * @param agentConfig
 	 */
-	public MonitorSchedulerImplementation(File baseDirectory) {
+	public MonitorSchedulerImplementation(File baseDirectory, AgentStateMonitor agentStatMonitor) {
 		this.baseDirectory = baseDirectory;
+		this.agentStatMonitor = agentStatMonitor;
 		serverDaemon = new SitemonitorControllerServerDaemon(NetworkUtils.getFreePortOfLocal());
 		serverDaemon.start();
 		executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
@@ -81,6 +84,7 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 	@Override
 	public void unregist(String sitemonitorId) {
 		sitemonitorMap.remove(sitemonitorId);
+		agentStatMonitor.clear();
 	}
 
 	/**
@@ -109,8 +113,9 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 				futures.clear();
 				runScriptUsingThreadPool(futures);
 				waitScriptComplete(futures);
-				long end = System.currentTimeMillis();
-				sleepForRepeatCycle(end - st);
+				long useTime = System.currentTimeMillis() - st;
+				agentStatMonitor.recordUseTime(useTime);
+				sleepForRepeatCycle(useTime);
 			}
 		}
 

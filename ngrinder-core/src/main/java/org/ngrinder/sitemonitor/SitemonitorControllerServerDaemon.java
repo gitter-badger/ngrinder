@@ -4,12 +4,15 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.regex.Pattern;
 
+import org.python.google.common.base.Predicate;
+
 import net.grinder.AgentControllerServerDaemon;
 import net.grinder.common.processidentity.AgentIdentity;
 import net.grinder.communication.Address;
 import net.grinder.communication.Message;
 import net.grinder.communication.MessageDispatchRegistry;
 import net.grinder.console.communication.AgentProcessControlImplementation;
+import net.grinder.console.communication.AgentProcessControlImplementation.AgentStatus;
 import net.grinder.console.communication.ConsoleCommunication;
 import net.grinder.console.communication.DistributionControl;
 import net.grinder.console.communication.DistributionControlImplementationAddressDecorator;
@@ -19,7 +22,6 @@ import net.grinder.console.distribution.FileDistribution;
 import net.grinder.console.distribution.FileDistributionHandler;
 import net.grinder.console.distribution.FileDistributionHandler.Result;
 import net.grinder.console.distribution.FileDistributionImplementation;
-import net.grinder.message.console.AgentControllerState;
 import net.grinder.util.Directory;
 import net.grinder.util.FileContents.FileContentsException;
 import net.grinder.util.ListenerSupport;
@@ -60,17 +62,15 @@ public class SitemonitorControllerServerDaemon {
 	public Set<AgentIdentity> getAllAvailableAgents() {
 		return serverDaemon.getComponent(AgentProcessControlImplementation.class).getAllAgents();
 	}
-	
-	public int getAgentConnectingPort(AgentIdentity agentIdentity) {
-		return serverDaemon.getAgentConnectingPort(agentIdentity);
-	}
-	
-	public String getAgentVersion(AgentIdentity agentIdentity) {
-		return serverDaemon.getAgentVersion(agentIdentity);
-	}
-	
-	public AgentControllerState getAgentState(AgentIdentity agentIdentity) {
-		return serverDaemon.getAgentState(agentIdentity);
+
+	public Set<AgentStatus> getAllAgentStatus() {
+		return serverDaemon.getComponent(AgentProcessControlImplementation.class).getAgentStatusSet(
+			new Predicate<AgentProcessControlImplementation.AgentStatus>() {
+				@Override
+				public boolean apply(AgentStatus arg0) {
+					return true;
+				}
+			});
 	}
 
 	public void sendFile(Address address, Directory directory, Pattern fileFilterPattern,
