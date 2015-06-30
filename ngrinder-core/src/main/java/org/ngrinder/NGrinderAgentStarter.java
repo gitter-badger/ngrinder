@@ -15,6 +15,7 @@ package org.ngrinder;
 
 import com.beust.jcommander.JCommander;
 import net.grinder.AgentControllerDaemon;
+import net.grinder.engine.agent.SitemonitorScriptRunner;
 import net.grinder.util.VersionNumber;
 import net.grinder.util.thread.Condition;
 
@@ -204,13 +205,18 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 				}
 
 				Condition eventSyncCondition = new Condition();
-				MonitorScheduler monitorScheduler = new MonitorSchedulerImplementation(
-					scriptDistDir, agentStateMonitor);
+				// init for script runner process
+				SitemonitorScriptRunner scriptRunner
+					= new SitemonitorScriptRunner(scriptDistDir);
+				MonitorScheduler monitorScheduler
+					= new MonitorSchedulerImplementation(scriptRunner, agentStateMonitor);
+				// init for agent main process
 				SitemonitorController controller = new SitemonitorController(
 					sitemonitorDir, agentConfig, eventSyncCondition);
 				controller.setMonitorScheduler(monitorScheduler);
 				controller.setAgentStateMonitor(agentStateMonitor);
 				SitemonitorControllerDaemon daemon = new SitemonitorControllerDaemon(controller);
+				// start agent process
 				daemon.run();
 			} catch (Exception e) {
 				LOG.error("Error while connecting to : {}:{}", controllerIP, controllerPort);

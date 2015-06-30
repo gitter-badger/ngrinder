@@ -20,7 +20,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.ngrinder.common.constants.GrinderConstants;
+import org.ngrinder.sitemonitor.SitemonitorControllerServerDaemon;
 import org.ngrinder.sitemonitor.engine.process.SitemonitorProcessEntryPoint;
 import org.ngrinder.sitemonitor.messages.ShutdownSitemonitorProcessMessage;
 import org.slf4j.Logger;
@@ -45,16 +47,17 @@ public class SitemonitorScriptRunner implements GrinderConstants {
 
 	private Logger LOGGER = LoggerFactory.getLogger("site monitor script runner");
 	private Map<String, ProcessWorker> workers = new HashMap<String, ProcessWorker>();
-	private final int serverConsolePort;
 	private final File baseDirectory;
+	SitemonitorControllerServerDaemon scriptProcessConsole;
 
-	public SitemonitorScriptRunner(int serverConsolePort, File baseDirectory) {
-		this.serverConsolePort = serverConsolePort;
+	public SitemonitorScriptRunner(File baseDirectory) {
 		this.baseDirectory = baseDirectory;
+		scriptProcessConsole = new SitemonitorControllerServerDaemon(
+			NetworkUtils.getFreePortOfLocal());
+		scriptProcessConsole.start();
 	}
 
-	public void runWorker(String sitemonitorId, String scriptname, String hosts, String params,
-		File base) {
+	public void runWorker(String sitemonitorId, String scriptname, String hosts, String params) {
 		FanOutStreamSender fanOutStreamSender = null;
 		ProcessWorker worker = null;
 
@@ -63,12 +66,12 @@ public class SitemonitorScriptRunner implements GrinderConstants {
 			File scriptDir = new File(baseDirectory, sitemonitorId);
 			File scriptFile = new File(scriptDir, scriptname);
 			fanOutStreamSender = new FanOutStreamSender(1);
-			Directory workingDirectory = new Directory(base);
+			Directory workingDirectory = new Directory(baseDirectory);
 			AbstractLanguageHandler handler = Lang.getByFileName(scriptFile).getHandler();
 			Properties systemProperties = new Properties();
 			GrinderProperties properties = new GrinderProperties();
 			PropertyBuilder builder = new PropertyBuilder(properties, new Directory(scriptDir), false,
-				"", NetworkUtils.getLocalHostName());
+				hosts, NetworkUtils.getLocalHostName());
 			AgentIdentityImplementation agentIdentity = new AgentIdentityImplementation(sitemonitorId);
 			
 			// init
@@ -77,10 +80,14 @@ public class SitemonitorScriptRunner implements GrinderConstants {
 				+ File.pathSeparator
 				+ classPathProcessor.buildPatchClasspathBasedOnCurrentClassLoader(LOGGER)
 				+ File.pathSeparator + builder.buildCustomClassPath(true);
-			properties.setProperty("grinder.jvm.classpath", grinderJVMClassPath);
-			properties.setProperty("grinder.consoleHost", "localhost");
-			properties.setInt("grinder.consolePort", serverConsolePort);
-			systemProperties.put("java.class.path", base.getAbsolutePath() + File.pathSeparator
+			if (!StringUtils.isBlank(params)) {
+				params = params.replace("'", "\\'").replace(" ", "");
+				properties.setProperty(GRINDER_PROP_PARAM, params);
+			}
+			properties.setProperty(GRINDER_PROP_JVM_CLASSPATH, grinderJVMClassPath);
+			properties.setProperty(GrinderProperties.CONSOLE_HOST, "127.0.0.1");
+			properties.setInt(GrinderProperties.CONSOLE_PORT, scriptProcessConsole.getPort());
+			systemProperties.put("java.class.path", baseDirectory.getAbsolutePath() + File.pathSeparator
 				+ classPathProcessor.buildClasspathBasedOnCurrentClassLoader(LOGGER));
 			agentIdentity.setNumber(0);
 
@@ -129,6 +136,7 @@ public class SitemonitorScriptRunner implements GrinderConstants {
 				processWorker.destroy();
 			}
 		}
+		scriptProcessConsole.shutdown();
 	}
 
 	public void saveWorker(String sitemonitorId, ProcessWorker newWorker) {

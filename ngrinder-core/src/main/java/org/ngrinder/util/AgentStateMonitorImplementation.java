@@ -27,6 +27,7 @@ public class AgentStateMonitorImplementation implements AgentStateMonitor {
 	private double maxCpuUsePer = 0;
 	private double minFreeMemory = Double.MAX_VALUE;
 	private long maxUseTimeMilisec  = 0;
+	private int registScriptCount = 0;
 	
 	public AgentStateMonitorImplementation(AgentConfig config) {
 		collector.setAgentHome(config.getHome().getDirectory());
@@ -52,6 +53,11 @@ public class AgentStateMonitorImplementation implements AgentStateMonitor {
 	}
 
 	@Override
+	public int getRegistScriptCount() {
+		return registScriptCount;
+	}
+
+	@Override
 	public void recordCpuUsePer(double percent) {
 		if (percent > maxCpuUsePer) {
 			maxCpuUsePer = percent;
@@ -73,10 +79,16 @@ public class AgentStateMonitorImplementation implements AgentStateMonitor {
 	}
 
 	@Override
+	public void setRegistScriptCount(int registScriptCount) {
+		this.registScriptCount = registScriptCount;
+	}
+
+	@Override
 	public void clear() {
 		maxCpuUsePer = 0;
 		minFreeMemory = Double.MAX_VALUE;
 		maxUseTimeMilisec = 0;
+		registScriptCount = 0;
 		collect();
 	}
 	

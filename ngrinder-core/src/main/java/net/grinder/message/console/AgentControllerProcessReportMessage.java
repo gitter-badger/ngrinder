@@ -44,6 +44,7 @@ public class AgentControllerProcessReportMessage implements AddressAwareMessage 
 	private double maxCpuUsePer;
 	private double minFreeMemory;
 	private long maxUseTimeMilisec;
+	private int registScriptCount;
 
 	/**
 	 * Creates a new <code>AgentProcessReportMessage</code> instance.
@@ -118,6 +119,10 @@ public class AgentControllerProcessReportMessage implements AddressAwareMessage 
 		return maxCpuUsePer;
 	}
 
+	public int getRegistScriptCount() {
+		return registScriptCount;
+	}
+
 	public void setMaxCpuUsePer(double maxCpuUsePer) {
 		this.maxCpuUsePer = maxCpuUsePer;
 	}
@@ -136,6 +141,10 @@ public class AgentControllerProcessReportMessage implements AddressAwareMessage 
 
 	public void setMaxUseTimeMilisec(long maxUseTimeMilisec) {
 		this.maxUseTimeMilisec = maxUseTimeMilisec;
+	}
+
+	public void setRegistScriptCount(int registScriptCount) {
+		this.registScriptCount = registScriptCount;
 	}
 	
 }

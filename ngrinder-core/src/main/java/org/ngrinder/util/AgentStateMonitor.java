@@ -29,6 +29,13 @@ public interface AgentStateMonitor {
 	public long maxUseTimeMilisec();
 	
 	/**
+	 * The count of regist script.
+	 * 
+	 * @return
+	 */
+	public int getRegistScriptCount();
+	
+	/**
 	 * If new value is greater than max percent, then set new value.
 	 * 
 	 * @param percent new percent value
@@ -48,6 +55,13 @@ public interface AgentStateMonitor {
 	 * @param milisec time
 	 */
 	public void recordUseTime(long time);
+	
+	/**
+	 * Set count of regist script.
+	 * 
+	 * @return
+	 */
+	public void setRegistScriptCount(int count);
 	
 	/**
 	 * Clear record info.

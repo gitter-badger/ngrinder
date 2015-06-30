@@ -339,6 +339,10 @@ public class AgentProcessControlImplementation implements AgentProcessControl {
 		public long getMaxUseTimeMilisec() {
 			return m_agentReference == null ? -1 : m_agentReference.m_agentProcessReportMessage.getMaxUseTimeMilisec();
 		}
+		
+		public int getRegistScriptCount() {
+			return m_agentReference == null ? -1 : m_agentReference.m_agentProcessReportMessage.getRegistScriptCount();
+		}
 	}
 
 	/**

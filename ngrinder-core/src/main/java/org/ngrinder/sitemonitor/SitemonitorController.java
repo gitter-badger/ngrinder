@@ -176,6 +176,7 @@ public class SitemonitorController implements Agent {
 		message.setMaxCpuUsePer(agentStateMonitor.maxCpuUsePer());
 		message.setMinFreeMemory(agentStateMonitor.minFreeMemory());
 		message.setMaxUseTimeMilisec(agentStateMonitor.maxUseTimeMilisec());
+		message.setRegistScriptCount(agentStateMonitor.getRegistScriptCount());
 		clientSender.send(message);
 	}
 

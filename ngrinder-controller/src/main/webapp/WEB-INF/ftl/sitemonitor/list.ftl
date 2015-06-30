@@ -23,6 +23,7 @@
 			<col width="70">
 			<col width="70">
 			<col width="70">
+			<col width="60">
 		</colgroup>
 		<thead>
 		<tr>
@@ -34,10 +35,11 @@
 			<th><@spring.message "sitemonitor.list.maxCpu"/></th>
 			<th><@spring.message "sitemonitor.list.minMem"/></th>
 			<th><@spring.message "sitemonitor.list.maxTime"/></th>
+			<th><@spring.message "sitemonitor.list.registScript"/></th>
 		</tr>
 		</thead>
 		<tbody>
-		<@list list_items=allAgentStatus others="table_list" colspan="8"; agentStatus>
+		<@list list_items=allAgentStatus others="table_list" colspan="9"; agentStatus>
 		<tr>
 			<td class="center">
 				<div class="ball"
@@ -55,6 +57,7 @@
 			<td>${agentStatus.maxCpuUsePer ? string["0.#"]}%</td>
 			<td>${(agentStatus.minFreeMemory / 1024 / 1024) ? string["0.##"]}GB</td>
 			<td>${(agentStatus.maxUseTimeMilisec / 1000) ? string["0"]}sec</td>
+			<td>${agentStatus.registScriptCount}</td>
 		</tr>
 		</@list>
 		</tbody>
@@ -76,7 +79,7 @@
 			"aaSorting": [
 				[1, "asc"]
 			],
-			"aoColumns": [null, {"asSorting": []}, null, {"asSorting": []}, null],
+			"aoColumns": [null, {"asSorting": []}, null, {"asSorting": []}, null, null, null, null, null],
 			"sPaginationType": "bootstrap",
 			"oLanguage": {
 				"oPaginate": {

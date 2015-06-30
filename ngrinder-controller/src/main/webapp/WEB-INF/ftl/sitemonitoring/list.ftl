@@ -37,7 +37,7 @@
 		</tr>
 		</thead>
 		<tbody>
-		<@list list_items=sitemonitorings; sitemonitoring>
+		<@list list_items=sitemonitorings others="table_list" colspan="8"; sitemonitoring>
 		<tr>
 			<#if sitemonitoring.agentRunning><#assign iconName="green.png"/><#else><#assign iconName="red.png"/></#if>
 			<td class="center">

@@ -13,9 +13,8 @@
  */
 package org.ngrinder.sitemonitor;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.grinder.engine.agent.SitemonitorScriptRunner;
-import net.grinder.util.NetworkUtils;
 
 /**
  * Manage process for execute sitemonitoring script.
@@ -40,32 +38,44 @@ import net.grinder.util.NetworkUtils;
  */
 public class MonitorSchedulerImplementation implements MonitorScheduler {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger("monitor scheduler impl");
-	private static final int THREAD_POOL_SIZE = 10;
-	private static final long ONE_MINIUTE = 60 * 1000;
+	static final Logger LOGGER = LoggerFactory.getLogger("monitor scheduler impl");
+	static final int THREAD_POOL_SIZE = 10;
+	static final long DEFAULT_REPEAT_TIME = 60 * 1000;
 
 	private final SitemonitorScriptRunner scriptRunner;
-	private final File baseDirectory;
-	private final AgentStateMonitor agentStatMonitor;
+	private final AgentStateMonitor agentStateMonitor;
 
-	private SitemonitorControllerServerDaemon serverDaemon;
 	private ExecutorService executor;
+	private long repeatTime = DEFAULT_REPEAT_TIME;
+	private boolean shutdown = false;
 
 	Map<String, RegistScheduleMessage> sitemonitorMap = new HashMap<String, RegistScheduleMessage>();
 
 	/**
 	 * The constructor.
-	 * 
-	 * @param agentConfig
+	 * Default repeat time is {@code DEFAULT_REPEAT_TIME}
+	 * @param scriptRunner 
+	 * @param agentStateMonitor
 	 */
-	public MonitorSchedulerImplementation(File baseDirectory, AgentStateMonitor agentStatMonitor) {
-		this.baseDirectory = baseDirectory;
-		this.agentStatMonitor = agentStatMonitor;
-		serverDaemon = new SitemonitorControllerServerDaemon(NetworkUtils.getFreePortOfLocal());
-		serverDaemon.start();
+	public MonitorSchedulerImplementation(SitemonitorScriptRunner scriptRunner,
+		AgentStateMonitor agentStateMonitor) {
+		this(scriptRunner, agentStateMonitor, DEFAULT_REPEAT_TIME);
+	}
+	
+	/**
+	 * The constructor.
+	 * 
+	 * @param scriptRunner
+	 * @param agentStateMonitor
+	 * @param repeatTime
+	 */
+	public MonitorSchedulerImplementation(SitemonitorScriptRunner scriptRunner,
+		AgentStateMonitor agentStateMonitor, long repeatTime) {
+		this.agentStateMonitor = agentStateMonitor;
+		this.scriptRunner = scriptRunner;
+		this.repeatTime = repeatTime;
 		executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-		scriptRunner = new SitemonitorScriptRunner(serverDaemon.getPort(), baseDirectory);
-		new ScriptRunner().start();
+		new ScriptRunnerDaemon().start();
 	}
 
 	/**
@@ -74,8 +84,8 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 	 */
 	@Override
 	public void regist(final RegistScheduleMessage message) {
-		final String sitemonitorId = message.getSitemonitorId();
-		sitemonitorMap.put(sitemonitorId, message);
+		sitemonitorMap.put(message.getSitemonitorId(), message);
+		agentStateMonitor.setRegistScriptCount(sitemonitorMap.size());
 	}
 
 	/**
@@ -84,7 +94,12 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 	@Override
 	public void unregist(String sitemonitorId) {
 		sitemonitorMap.remove(sitemonitorId);
-		agentStatMonitor.clear();
+		agentStateMonitor.clear();
+		agentStateMonitor.setRegistScriptCount(sitemonitorMap.size());
+	}
+
+	public void setRepeatTime(long repeatTime) {
+		this.repeatTime = repeatTime;
 	}
 
 	/**
@@ -92,36 +107,35 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 	 */
 	@Override
 	public void shutdown() {
+		shutdown = true;
 		scriptRunner.shutdown();
-		serverDaemon.shutdown();
 	}
 
-	class ScriptRunner extends Thread {
+	class ScriptRunnerDaemon extends Thread {
 
-		ScriptRunner() {
+		ScriptRunnerDaemon() {
 			setDaemon(true);
 		}
 
 		@Override
 		public void run() {
-			List<Future<Object>> futures = new ArrayList<Future<Object>>();
-			while (true) {
-				LOGGER.debug("Sitemonitor runner awake! regist sitemonitor cnt is {}",
+			while (!shutdown) {
+				LOGGER.error("Sitemonitor runner awake! regist sitemonitor cnt is {}",
 					sitemonitorMap.size());
 
-				long st = System.currentTimeMillis();
-				futures.clear();
-				runScriptUsingThreadPool(futures);
+				long st = System.nanoTime();
+				List<Future<Object>> futures = runScriptUsingThreadPool();
 				waitScriptComplete(futures);
-				long useTime = System.currentTimeMillis() - st;
-				agentStatMonitor.recordUseTime(useTime);
+				long useTime = (System.nanoTime() - st) / 1000 / 1000 ;
+				agentStateMonitor.recordUseTime(useTime);
 				sleepForRepeatCycle(useTime);
 			}
+			System.err.println("Shut down ???");
 		}
 
 		private void sleepForRepeatCycle(long usedTime) {
-			if (usedTime < ONE_MINIUTE) {
-				ThreadUtils.sleep(ONE_MINIUTE - (usedTime));
+			if (usedTime < repeatTime) {
+				ThreadUtils.sleep(repeatTime - usedTime);
 			}
 		}
 
@@ -135,7 +149,8 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 			}
 		}
 
-		private void runScriptUsingThreadPool(List<Future<Object>> futures) {
+		private List<Future<Object>> runScriptUsingThreadPool() {
+			List<Future<Object>> futures = new LinkedList<Future<Object>>();
 			for (Entry<String, RegistScheduleMessage> entry : sitemonitorMap.entrySet()) {
 				final String sitemonitorId = entry.getKey();
 				final RegistScheduleMessage message = entry.getValue();
@@ -144,13 +159,14 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 					@Override
 					public Object call() throws Exception {
 						scriptRunner.runWorker(sitemonitorId, message.getScriptname(),
-							message.getPropHosts(), message.getPropParam(), baseDirectory);
+							message.getPropHosts(), message.getPropParam());
 						return null;
 					}
 				};
 				futures.add(executor.submit(task));
 				LOGGER.debug("submit task for {}", sitemonitorId);
 			}
+			return futures;
 		}
 	}
 
