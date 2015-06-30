@@ -38,9 +38,9 @@ import net.grinder.engine.agent.SitemonitorScriptRunner;
  */
 public class MonitorSchedulerImplementation implements MonitorScheduler {
 
-	static final Logger LOGGER = LoggerFactory.getLogger("monitor scheduler impl");
-	static final int THREAD_POOL_SIZE = 10;
-	static final long DEFAULT_REPEAT_TIME = 60 * 1000;
+	private static final Logger LOGGER = LoggerFactory.getLogger("monitor scheduler impl");
+	private static final int THREAD_POOL_SIZE = 10;
+	private static final long DEFAULT_REPEAT_TIME = 60 * 1000;
 
 	private final SitemonitorScriptRunner scriptRunner;
 	private final AgentStateMonitor agentStateMonitor;
@@ -120,7 +120,7 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 		@Override
 		public void run() {
 			while (!shutdown) {
-				LOGGER.error("Sitemonitor runner awake! regist sitemonitor cnt is {}",
+				LOGGER.debug("Sitemonitor runner awake! regist sitemonitor cnt is {}",
 					sitemonitorMap.size());
 
 				long st = System.nanoTime();

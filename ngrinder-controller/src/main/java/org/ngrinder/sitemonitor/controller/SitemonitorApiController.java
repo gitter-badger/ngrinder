@@ -70,10 +70,10 @@ public class SitemonitorApiController extends BaseController {
 			perfTest.getScriptRevision());
 		checkNotNull(perfTest, "Script file '%s' does not exist", perfTest.getScriptName());
 
-		sitemonitorManagerService.addSitemonitoring(user, sitemonitorId, script,
+		String result = sitemonitorManagerService.addSitemonitoring(user, sitemonitorId, script,
 			perfTest.getTargetHosts(), perfTest.getParam());
 
-		return toJsonHttpEntity("success");
+		return toJsonHttpEntity(result);
 	}
 	
 	@RestAPI

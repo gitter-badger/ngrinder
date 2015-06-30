@@ -57,8 +57,9 @@ import net.grinder.util.FileContents.FileContentsException;
 public class SitemonitorManagerService implements ControllerConstants {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(SitemonitorManagerService.class);
+	
 	SitemonitorControllerServerDaemon sitemonitorServerDaemon;
-
+	
 	@Autowired
 	private Config config;
 
@@ -121,14 +122,15 @@ public class SitemonitorManagerService implements ControllerConstants {
 	 * @param script		script entity
 	 * @param targetHosts	host setting
 	 * @param param			system param
+	 * @return 
 	 * @throws FileContentsException
 	 * @throws DirectoryException
 	 */
-	public void addSitemonitoring(User user, String sitemonitorId, FileEntry script,
+	public String addSitemonitoring(User user, String sitemonitorId, FileEntry script,
 			String targetHosts, String param) throws FileContentsException, DirectoryException {
 		Set<AgentIdentity> allAgents = sitemonitorServerDaemon.getAllAvailableAgents();
 		if (allAgents.size() == 0) {
-			return;
+			return "no have agent";
 		}
 		
 		unregistSitemonitoring(sitemonitorId);
@@ -139,6 +141,7 @@ public class SitemonitorManagerService implements ControllerConstants {
 			script.getFileName(), script.getRevision(), targetHosts, param,
 			targetAgent.getName()));
 		FileUtils.deleteQuietly(tmpDistDir.getRootDirectory());
+		return "success";
 	}
 
 	/**
@@ -180,8 +183,7 @@ public class SitemonitorManagerService implements ControllerConstants {
 	private AgentIdentity registSitemonitoringToAgent(String sitemonitorId, FileEntry script,
 			String hosts, String param, SitemonitorDistDirectory tmpDistDirectory)
 				throws FileContentsException, DirectoryException {
-		Set<AgentIdentity> allAgents = sitemonitorServerDaemon.getAllAvailableAgents();
-		AgentIdentity targetAgent = allAgents.iterator().next();
+		AgentIdentity targetAgent = getBestTargetAgent();
 		AgentAddress agentAddress = new AgentAddress(targetAgent);
 		sitemonitorServerDaemon.sendFile(agentAddress,
 			new Directory(tmpDistDirectory.getRootDirectory()),
@@ -189,6 +191,25 @@ public class SitemonitorManagerService implements ControllerConstants {
 			null);
 		sitemonitorServerDaemon.sendToAddressedAgents(agentAddress, new RegistScheduleMessage(
 			sitemonitorId, script.getFileName(), hosts, param));
+		return targetAgent;
+	}
+
+	/**
+	 * Find agent that minimum use time for script run.
+	 * 
+	 * @return
+	 */
+	AgentIdentity getBestTargetAgent() {
+		long minUseTime = Long.MAX_VALUE;
+		AgentIdentity targetAgent = null;
+		Set<AgentStatus> allAgents = sitemonitorServerDaemon.getAllAgentStatus();
+		for (AgentStatus agentStatus : allAgents) {
+			long useTime = agentStatus.getMaxUseTimeMilisec();
+			if (useTime < minUseTime) {
+				minUseTime = useTime;
+				targetAgent = agentStatus.getAgentIdentity();
+			}
+		}
 		return targetAgent;
 	}
 
