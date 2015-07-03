@@ -15,8 +15,6 @@ package org.ngrinder.sitemonitor.controller;
 
 import org.ngrinder.common.controller.BaseController;
 import org.ngrinder.model.User;
-import org.ngrinder.sitemonitor.repository.SitemonitoringRepository;
-import org.ngrinder.sitemonitor.service.SitemonitorManagerService;
 import org.ngrinder.sitemonitor.service.SitemonitoringService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

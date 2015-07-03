@@ -10,7 +10,6 @@ import net.grinder.AgentControllerServerDaemon;
 import net.grinder.common.processidentity.AgentIdentity;
 import net.grinder.communication.Address;
 import net.grinder.communication.Message;
-import net.grinder.communication.MessageDispatchRegistry;
 import net.grinder.console.communication.AgentProcessControlImplementation;
 import net.grinder.console.communication.AgentProcessControlImplementation.AgentStatus;
 import net.grinder.console.communication.ConsoleCommunication;
@@ -38,7 +37,6 @@ public class SitemonitorControllerServerDaemon {
 	public SitemonitorControllerServerDaemon(int port) {
 		serverDaemon = new AgentControllerServerDaemon(port);
 		timer = new Timer();
-		init();
 	}
 
 	public void start() {
@@ -100,25 +98,6 @@ public class SitemonitorControllerServerDaemon {
 				});
 			}
 		}
-	}
-
-	/**
-	 * TODO : init..
-	 * if want handle.. Handler is {@link MessageDispatchRegistry.Handler}
-	 */
-	private void init() {
-		/*MessageDispatchRegistry register = serverDaemon.getComponent(ConsoleCommunication.class).getMessageDispatchRegistry();
-		register.set(Message.class, new Handler<Message>() {
-
-			@Override
-			public void handle(Message message) throws CommunicationException {
-				
-			}
-
-			@Override
-			public void shutdown() {
-			}
-		});*/
 	}
 
 	public interface FileDistributeListener {

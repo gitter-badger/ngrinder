@@ -16,6 +16,8 @@ import org.ngrinder.model.Sitemonitoring;
 import org.ngrinder.model.User;
 import org.ngrinder.sitemonitor.repository.SitemonitoringRepository;
 
+import net.grinder.engine.controller.AgentControllerIdentityImplementation;
+
 @RunWith(MockitoJUnitRunner.class)
 public class SitemonitoringServiceTest {
 	
@@ -40,8 +42,9 @@ public class SitemonitoringServiceTest {
 		List<Sitemonitoring> monitorings = Arrays.asList(runSitemonitoring, stopSitemonitoring);
 		
 		when(sitemonitoringRepository.findByRegistUser((User) any())).thenReturn(monitorings);
-		when(sitemonitorManagerService.isRunningAgent(runningAgentName)).thenReturn(true);
-		when(sitemonitorManagerService.isRunningAgent(stoppedAgentName)).thenReturn(false);
+		when(sitemonitorManagerService.getConnectingAgentIdentity(runningAgentName)).thenReturn(
+			new AgentControllerIdentityImplementation(null, null));
+		when(sitemonitorManagerService.getConnectingAgentIdentity(stoppedAgentName)).thenReturn(null);
 		
 		// when
 		List<Sitemonitoring> actual = sut.getRegistSitemonitorings(new User());

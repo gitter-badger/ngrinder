@@ -15,6 +15,7 @@ package org.ngrinder.sitemonitor.service;
 
 import static org.ngrinder.common.util.Preconditions.*;
 
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -32,8 +33,10 @@ import org.ngrinder.script.handler.ProcessingResultPrintStream;
 import org.ngrinder.script.handler.ScriptHandler;
 import org.ngrinder.script.handler.ScriptHandlerFactory;
 import org.ngrinder.script.model.FileEntry;
+import org.ngrinder.script.service.FileEntryService;
 import org.ngrinder.sitemonitor.SitemonitorControllerServerDaemon;
 import org.ngrinder.sitemonitor.messages.RegistScheduleMessage;
+import org.ngrinder.sitemonitor.messages.SitemonitoringReloadMessage;
 import org.ngrinder.sitemonitor.messages.UnregistScheduleMessage;
 import org.ngrinder.sitemonitor.model.SitemonitorDistDirectory;
 import org.ngrinder.sitemonitor.repository.SitemonitoringRepository;
@@ -43,7 +46,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import net.grinder.common.processidentity.AgentIdentity;
+import net.grinder.communication.CommunicationException;
+import net.grinder.communication.MessageDispatchRegistry.Handler;
 import net.grinder.console.communication.AgentProcessControlImplementation.AgentStatus;
+import net.grinder.console.communication.ConsoleCommunicationImplementationEx;
 import net.grinder.console.model.ConsoleProperties;
 import net.grinder.messages.console.AgentAddress;
 import net.grinder.util.Directory;
@@ -65,6 +71,9 @@ public class SitemonitorManagerService implements ControllerConstants {
 
 	@Autowired
 	private ScriptHandlerFactory scriptHandlerFactory;
+
+	@Autowired
+	private FileEntryService fileEntryService;
 	
 	@Autowired
 	private SitemonitoringRepository sitemonitoringRepository;
@@ -77,6 +86,27 @@ public class SitemonitorManagerService implements ControllerConstants {
 		int port = config.getSitemonitorControllerPort();
 		sitemonitorServerDaemon = new SitemonitorControllerServerDaemon(port);
 		sitemonitorServerDaemon.start();
+		registMessage();
+	}
+
+	private void registMessage() {
+		Handler<SitemonitoringReloadMessage> handler = new Handler<SitemonitoringReloadMessage>() {
+			@Override
+			public void handle(final SitemonitoringReloadMessage message) throws CommunicationException {
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						initSitemonitoring(message.getAgentAddress().getIdentity());
+					}
+				}).start();
+			}
+
+			@Override
+			public void shutdown() {
+			}
+		};
+		sitemonitorServerDaemon.getComponent(ConsoleCommunicationImplementationEx.class)
+			.getMessageDispatchRegistry().set(SitemonitoringReloadMessage.class, handler);
 	}
 
 	/**
@@ -96,19 +126,19 @@ public class SitemonitorManagerService implements ControllerConstants {
 	 * @param agentName
 	 * @return
 	 */
-	public boolean isRunningAgent(String agentName) {
+	public AgentIdentity getConnectingAgentIdentity(String agentName) {
 		for (AgentIdentity identity : getAllAgents()) {
 			if (identity.getName().equals(agentName)) {
-				return true;
+				return identity;
 			}
 		}
-		return false;
+		return null;
 	}
 
 	/**
 	 * @return connecting agent list.
 	 */
-	public Set<AgentIdentity> getAllAgents() {
+	private Set<AgentIdentity> getAllAgents() {
 		return sitemonitorServerDaemon.getAllAvailableAgents();
 	}
 
@@ -126,20 +156,20 @@ public class SitemonitorManagerService implements ControllerConstants {
 	 * @throws FileContentsException
 	 * @throws DirectoryException
 	 */
-	public String addSitemonitoring(User user, String sitemonitorId, FileEntry script,
-			String targetHosts, String param) throws FileContentsException, DirectoryException {
+	public String addSitemonitoring(Sitemonitoring sitemonitoring) throws FileContentsException, DirectoryException {
 		Set<AgentIdentity> allAgents = sitemonitorServerDaemon.getAllAvailableAgents();
 		if (allAgents.size() == 0) {
 			return "no have agent";
 		}
 		
-		unregistSitemonitoring(sitemonitorId);
-		SitemonitorDistDirectory tmpDistDir = prepareDistributeFile(user, sitemonitorId, script);
-		AgentIdentity targetAgent = registSitemonitoringToAgent(sitemonitorId, script, targetHosts,
-			param, tmpDistDir);
-		sitemonitoringRepository.save(new Sitemonitoring(sitemonitorId, user,
-			script.getFileName(), script.getRevision(), targetHosts, param,
-			targetAgent.getName()));
+		FileEntry script = fileEntryService.getOne(sitemonitoring.getRegistUser(), sitemonitoring.getScriptName(),
+			sitemonitoring.getScriptRevision());
+		checkNotNull(script, "Script file '%s' does not exist", script.getFileName());
+		
+		unregistSitemonitoring(sitemonitoring.getId());
+		SitemonitorDistDirectory tmpDistDir = prepareDistributeFile(sitemonitoring, script);
+		registSitemonitoringToAgent(sitemonitoring, script, tmpDistDir);
+		sitemonitoringRepository.save(sitemonitoring);
 		FileUtils.deleteQuietly(tmpDistDir.getRootDirectory());
 		return "success";
 	}
@@ -163,43 +193,37 @@ public class SitemonitorManagerService implements ControllerConstants {
 	private void unregistSitemonitoring(String sitemonitoringId) {
 		Sitemonitoring sitemonitoring = sitemonitoringRepository.findOne(sitemonitoringId);
 		if (sitemonitoring != null) {
-			unregistSitemonitoringToAgent(sitemonitoring.getId(),
-				sitemonitoring.getAgentName(), sitemonitoring.getScriptName());
+			AgentIdentity agentIdentity = getConnectingAgentIdentity(sitemonitoring.getAgentName());
+			if (agentIdentity != null) {
+				AgentAddress agentAddress = new AgentAddress(agentIdentity);
+				sitemonitorServerDaemon.sendToAddressedAgents(agentAddress,
+					new UnregistScheduleMessage(sitemonitoring.getId(), sitemonitoring.getScriptName()));
+			}
 			sitemonitoringRepository.delete(sitemonitoringId);
 		}
 	}
 
-	private void unregistSitemonitoringToAgent(String sitemonitorId, String agentName,
-			String scriptName) {
-		for (AgentIdentity identity : sitemonitorServerDaemon.getAllAvailableAgents()) {
-			if (identity.getName().equals(agentName)) {
-				AgentAddress agentAddress = new AgentAddress(identity);
-				sitemonitorServerDaemon.sendToAddressedAgents(agentAddress,
-					new UnregistScheduleMessage(sitemonitorId, scriptName));
-			}
-		}
-	}
-
-	private AgentIdentity registSitemonitoringToAgent(String sitemonitorId, FileEntry script,
-			String hosts, String param, SitemonitorDistDirectory tmpDistDirectory)
+	private void registSitemonitoringToAgent(Sitemonitoring sitemonitoring, FileEntry script,
+			SitemonitorDistDirectory tmpDistDirectory)
 				throws FileContentsException, DirectoryException {
-		AgentIdentity targetAgent = getBestTargetAgent();
-		AgentAddress agentAddress = new AgentAddress(targetAgent);
+		AgentAddress agentAddress = new AgentAddress(
+			getConnectingAgentIdentity(sitemonitoring.getAgentName()));
 		sitemonitorServerDaemon.sendFile(agentAddress,
 			new Directory(tmpDistDirectory.getRootDirectory()),
 			Pattern.compile(ConsoleProperties.DEFAULT_DISTRIBUTION_FILE_FILTER_EXPRESSION),
 			null);
 		sitemonitorServerDaemon.sendToAddressedAgents(agentAddress, new RegistScheduleMessage(
-			sitemonitorId, script.getFileName(), hosts, param));
-		return targetAgent;
+			sitemonitoring.getId(), script.getFileName(), sitemonitoring.getTargetHosts(),
+			sitemonitoring.getParam()));
 	}
 
 	/**
-	 * Find agent that minimum use time for script run.
+	 * find agent that minimum use time for script run.
+	 * @param agentName 
 	 * 
 	 * @return
 	 */
-	AgentIdentity getBestTargetAgent() {
+	public String getIdleResouceAgentName() {
 		long minUseTime = Long.MAX_VALUE;
 		AgentIdentity targetAgent = null;
 		Set<AgentStatus> allAgents = sitemonitorServerDaemon.getAllAgentStatus();
@@ -210,7 +234,7 @@ public class SitemonitorManagerService implements ControllerConstants {
 				targetAgent = agentStatus.getAgentIdentity();
 			}
 		}
-		return targetAgent;
+		return targetAgent != null ? targetAgent.getName() : null;
 	}
 
 	/**
@@ -221,18 +245,30 @@ public class SitemonitorManagerService implements ControllerConstants {
 	 * @param script
 	 * @return
 	 */
-	private SitemonitorDistDirectory prepareDistributeFile(User user, String sitemonitorId,
+	private SitemonitorDistDirectory prepareDistributeFile(Sitemonitoring sitemonitoring,
 			FileEntry script) {
 		Home home = config.getHome();
-		SitemonitorDistDirectory tmpDist = home.createTempSitemonitorDistDirectory(sitemonitorId);
+		SitemonitorDistDirectory tmpDist = home.createTempSitemonitorDistDirectory(sitemonitoring.getId());
 		ProcessingResultPrintStream processingResult = new ProcessingResultPrintStream(
 			new ByteArrayOutputStream());
 		ScriptHandler handler = scriptHandlerFactory.getHandler(script);
-		handler.prepareDistWithRevsion(-0l, user, script, tmpDist.getScriptDirectory(),
-			config.getControllerProperties(), processingResult);
+		handler.prepareDistWithRevsion(-0l, sitemonitoring.getRegistUser(), script,
+			tmpDist.getScriptDirectory(), config.getControllerProperties(), processingResult);
 		checkTrue(processingResult.isSuccess(), "Failed " + script.getFileName()
 			+ " script file prepare.");
 		return tmpDist;
+	}
+	
+	private void initSitemonitoring(AgentIdentity identity)  {
+		List<Sitemonitoring> monitors = sitemonitoringRepository.findByAgentName(identity.getName());
+		for (Sitemonitoring monitor : monitors) {
+			try {
+				addSitemonitoring(monitor);
+			} catch (Exception e) {
+				LOGGER.error("Failed reload sitemonitoring setting. from agent {}",
+					identity.getName());
+			}
+		}
 	}
 
 }

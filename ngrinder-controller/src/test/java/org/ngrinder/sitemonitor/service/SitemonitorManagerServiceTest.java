@@ -39,16 +39,16 @@ public class SitemonitorManagerServiceTest {
 	}
 
 	@Test
-	public void testIsRunningAgent() throws Exception {
-		allAgents = Sets.newHashSet();
-		allAgents.add(agent1);
-		allAgents.add(agent2);
-		when(sut.sitemonitorServerDaemon.getAllAvailableAgents()).thenReturn(allAgents);
-
-		assertTrue(sut.isRunningAgent(agentName1));
-		assertTrue(sut.isRunningAgent(agentName2));
-		assertFalse(sut.isRunningAgent("Unknown"));
-	}
+			public void testGetConnectingAgentIdentity() throws Exception {
+				allAgents = Sets.newHashSet();
+				allAgents.add(agent1);
+				allAgents.add(agent2);
+				when(sut.sitemonitorServerDaemon.getAllAvailableAgents()).thenReturn(allAgents);
+		
+				assertNotNull(sut.getConnectingAgentIdentity(agentName1));
+				assertNotNull(sut.getConnectingAgentIdentity(agentName2));
+				assertNull(sut.getConnectingAgentIdentity("Unknown"));
+			}
 
 	@Test
 	public void testRegistBestTargetAgent() throws Exception {
@@ -73,18 +73,18 @@ public class SitemonitorManagerServiceTest {
 		// when
 		status1Message.setMaxUseTimeMilisec(small);
 		status2Message.setMaxUseTimeMilisec(big);
-		AgentIdentity bestTargetAgent = sut.getBestTargetAgent();
+		String agentName = sut.getIdleResouceAgentName();
 		
 		// then
-		assertThat(bestTargetAgent, is(agent1));
+		assertThat(agentName, is(agentName1));
 		
 		// when
 		status1Message.setMaxUseTimeMilisec(big);
 		status2Message.setMaxUseTimeMilisec(small);
-		bestTargetAgent = sut.getBestTargetAgent();
+		agentName = sut.getIdleResouceAgentName();
 		
 		// then
-		assertThat(bestTargetAgent, is(agent2));
+		assertThat(agentName, is(agentName2));
 	}
 
 }

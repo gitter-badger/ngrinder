@@ -21,6 +21,8 @@ import org.ngrinder.sitemonitor.repository.SitemonitoringRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import net.grinder.common.processidentity.AgentIdentity;
+
 /**
  * @author Gisoo Gwon
  */
@@ -46,7 +48,8 @@ public class SitemonitoringService {
 	private void initAgentRunning(List<Sitemonitoring> sitemonitorings) {
 		for (Sitemonitoring sitemonitor : sitemonitorings) {
 			String name = sitemonitor.getAgentName();
-			sitemonitor.setAgentRunning(sitemonitorManagerService.isRunningAgent(name));
+			AgentIdentity identity = sitemonitorManagerService.getConnectingAgentIdentity(name);
+			sitemonitor.setAgentRunning(identity != null);
 		}
 	}
 

@@ -21,6 +21,7 @@ import java.util.TimerTask;
 
 import org.ngrinder.infra.AgentConfig;
 import org.ngrinder.monitor.controller.model.SystemDataModel;
+import org.ngrinder.sitemonitor.messages.SitemonitoringReloadMessage;
 import org.ngrinder.sitemonitor.messages.RegistScheduleMessage;
 import org.ngrinder.sitemonitor.messages.ShutdownServerMessage;
 import org.ngrinder.sitemonitor.messages.UnregistScheduleMessage;
@@ -218,6 +219,17 @@ public class SitemonitorController implements Agent {
 				}
 			}
 		}, 0, GrinderConstants.AGENT_CONTROLLER_HEARTBEAT_INTERVAL);
+		sendStatusTimer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				try {
+					clientSender.send(new SitemonitoringReloadMessage());
+					LOGGER.debug("Send reload sitemonitoring setting to server.");
+				} catch (CommunicationException e) {
+					LOGGER.error("Fail send reload sitemonitoring setting to server.");
+				}
+			}
+		}, 3000);
 		connected = true;
 	}
 }
