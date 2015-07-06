@@ -54,10 +54,10 @@
 			<td>${(agentStatus.connectingPort)!}</td>
 			<td class="ellipsis agent-name" title="${(agentStatus.agentName)!}">${(agentStatus.agentName)!}</td>
 			<td class="ellipsis"><#if agentStatus.version?has_content>${agentStatus.version}<#else>Prior to 3.3</#if></td>
-			<td>${agentStatus.maxCpuUsePer ? string["0.#"]}%</td>
-			<td>${(agentStatus.minFreeMemory / 1024 / 1024) ? string["0.##"]}GB</td>
-			<td>${(agentStatus.maxUseTimeMilisec / 1000) ? string["0"]}sec</td>
-			<td>${agentStatus.registScriptCount}</td>
+			<td>${(agentStatus.agentStateMonitor.maxCpuUsePer) ? string["0.#"]}%</td>
+			<td>${(agentStatus.agentStateMonitor.minFreeMemory / 1024 / 1024) ? string["0.##"]}GB</td>
+			<td>${(agentStatus.agentStateMonitor.maxUseTimeMilisec / 1000) ? string["0"]}sec</td>
+			<td>${agentStatus.agentStateMonitor.registScriptCount}</td>
 		</tr>
 		</@list>
 		</tbody>

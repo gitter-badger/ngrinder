@@ -62,8 +62,6 @@ public class SitemonitorControllerDaemon implements Agent {
 		}, "Sitemonitor controller thread");
 		controllerThread.start();
 	}
-	
-	
 
 	public SitemonitorController getSitemonitorControll() {
 		return sitemonitorController;

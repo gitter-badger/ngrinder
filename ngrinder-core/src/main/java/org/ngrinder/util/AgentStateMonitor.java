@@ -1,32 +1,34 @@
 package org.ngrinder.util;
 
+import java.io.Serializable;
+
 /**
  * Record max of Cpu/Mem/Time value. 
  * 
  * @author Gisoo Gwon
  */
-public interface AgentStateMonitor {
+public interface AgentStateMonitor extends Serializable {
 
 	/**
 	 * The max recored cpu use per after last call clear()
 	 * 
 	 * @return
 	 */
-	public double maxCpuUsePer();
+	public double getMaxCpuUsePer();
 
 	/**
 	 * The min recored free memory after last call clear()
 	 * 
 	 * @return
 	 */
-	public double minFreeMemory();
+	public double getMinFreeMemory();
 	
 	/**
 	 * The max recored time use milisec after last call clear()
 	 * 
 	 * @return
 	 */
-	public long maxUseTimeMilisec();
+	public long getMaxUseTimeMilisec();
 	
 	/**
 	 * The count of regist script.
@@ -34,6 +36,13 @@ public interface AgentStateMonitor {
 	 * @return
 	 */
 	public int getRegistScriptCount();
+	
+	/**
+	 * The interval for repeat.
+	 * 
+	 * @return milisec
+	 */
+	public long getRepeatInterval();
 	
 	/**
 	 * If new value is greater than max percent, then set new value.
@@ -62,6 +71,13 @@ public interface AgentStateMonitor {
 	 * @return
 	 */
 	public void setRegistScriptCount(int count);
+	
+	/**
+	 * Set interval time for repeat.
+	 * 
+	 * @param repeatInterval milisec
+	 */
+	public void setRepeatInterval(long repeatInterval);
 	
 	/**
 	 * Clear record info.

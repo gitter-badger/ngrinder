@@ -74,6 +74,7 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 		this.agentStateMonitor = agentStateMonitor;
 		this.scriptRunner = scriptRunner;
 		this.repeatTime = repeatTime;
+		this.agentStateMonitor.setRepeatInterval(repeatTime);
 		executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 		new ScriptRunnerDaemon().start();
 	}

@@ -25,6 +25,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.ngrinder.monitor.controller.model.SystemDataModel;
+import org.ngrinder.util.AgentStateMonitor;
 import org.python.google.common.base.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -268,6 +269,7 @@ public class AgentProcessControlImplementation implements AgentProcessControl {
 	 * @author JunHo Yoon
 	 */
 	public final class AgentStatus implements Purgable {
+		static final int DEFAULT_GUESS_COUNT = 20;
 		private volatile AgentReference m_agentReference;
 
 		/**
@@ -328,20 +330,25 @@ public class AgentProcessControlImplementation implements AgentProcessControl {
 					.getName();
 		}
 		
-		public double getMaxCpuUsePer() {
-			return m_agentReference == null ? -1 : m_agentReference.m_agentProcessReportMessage.getMaxCpuUsePer();
+		public AgentStateMonitor getAgentStateMonitor() {
+			return m_agentReference == null ? null : m_agentReference.m_agentProcessReportMessage.getAgentStateMonitor();
 		}
 		
-		public double getMinFreeMemory() {
-			return m_agentReference == null ? -1 : m_agentReference.m_agentProcessReportMessage.getMinFreeMemory();
-		}
-		
-		public long getMaxUseTimeMilisec() {
-			return m_agentReference == null ? -1 : m_agentReference.m_agentProcessReportMessage.getMaxUseTimeMilisec();
-		}
-		
-		public int getRegistScriptCount() {
-			return m_agentReference == null ? -1 : m_agentReference.m_agentProcessReportMessage.getRegistScriptCount();
+		public int guessMoreRunnableScriptCount() {
+			if (m_agentReference == null) {
+				return 0;
+			}
+			if (getAgentStateMonitor().getRegistScriptCount() == 0) {	//  Agent is max idle state.
+				return DEFAULT_GUESS_COUNT;
+			}
+			if (getAgentStateMonitor().getMaxUseTimeMilisec() == 0) {	// can't guess state
+				return 0;
+			}
+			AgentStateMonitor agentStateMonitor = getAgentStateMonitor();
+			int registCount = agentStateMonitor.getRegistScriptCount();
+			long useTime = agentStateMonitor.getMaxUseTimeMilisec();
+			long idleTime = agentStateMonitor.getRepeatInterval() - useTime;
+			return (int) (idleTime * (1.0 * registCount / useTime));
 		}
 	}
 

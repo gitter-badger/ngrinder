@@ -19,6 +19,7 @@ import net.grinder.communication.AddressAwareMessage;
 import net.grinder.communication.CommunicationException;
 import net.grinder.messages.console.AgentAddress;
 import org.ngrinder.monitor.controller.model.SystemDataModel;
+import org.ngrinder.util.AgentStateMonitor;
 
 /**
  * Message for informing the console of agent process status.
@@ -41,10 +42,7 @@ public class AgentControllerProcessReportMessage implements AddressAwareMessage 
 	private String version;
 	
 	// For sitemonitoring status
-	private double maxCpuUsePer;
-	private double minFreeMemory;
-	private long maxUseTimeMilisec;
-	private int registScriptCount;
+	private AgentStateMonitor agentStateMonitor;
 
 	/**
 	 * Creates a new <code>AgentProcessReportMessage</code> instance.
@@ -115,36 +113,12 @@ public class AgentControllerProcessReportMessage implements AddressAwareMessage 
 		return version;
 	}
 
-	public double getMaxCpuUsePer() {
-		return maxCpuUsePer;
+	public AgentStateMonitor getAgentStateMonitor() {
+		return agentStateMonitor;
 	}
 
-	public int getRegistScriptCount() {
-		return registScriptCount;
-	}
-
-	public void setMaxCpuUsePer(double maxCpuUsePer) {
-		this.maxCpuUsePer = maxCpuUsePer;
-	}
-
-	public double getMinFreeMemory() {
-		return minFreeMemory;
-	}
-
-	public void setMinFreeMemory(double minFreeMemory) {
-		this.minFreeMemory = minFreeMemory;
-	}
-
-	public long getMaxUseTimeMilisec() {
-		return maxUseTimeMilisec;
-	}
-
-	public void setMaxUseTimeMilisec(long maxUseTimeMilisec) {
-		this.maxUseTimeMilisec = maxUseTimeMilisec;
-	}
-
-	public void setRegistScriptCount(int registScriptCount) {
-		this.registScriptCount = registScriptCount;
+	public void setAgentStateMonitor(AgentStateMonitor agentStateMonitor) {
+		this.agentStateMonitor = agentStateMonitor;
 	}
 	
 }

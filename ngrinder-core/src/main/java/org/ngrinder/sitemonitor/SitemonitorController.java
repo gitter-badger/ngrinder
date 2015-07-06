@@ -174,10 +174,7 @@ public class SitemonitorController implements Agent {
 		AgentControllerProcessReportMessage message = new AgentControllerProcessReportMessage(
 			AgentControllerState.STARTED, new SystemDataModel(),
 			agentConfig.getSitemonitorControllerPort(), version);
-		message.setMaxCpuUsePer(agentStateMonitor.maxCpuUsePer());
-		message.setMinFreeMemory(agentStateMonitor.minFreeMemory());
-		message.setMaxUseTimeMilisec(agentStateMonitor.maxUseTimeMilisec());
-		message.setRegistScriptCount(agentStateMonitor.getRegistScriptCount());
+		message.setAgentStateMonitor(agentStateMonitor);
 		clientSender.send(message);
 	}
 

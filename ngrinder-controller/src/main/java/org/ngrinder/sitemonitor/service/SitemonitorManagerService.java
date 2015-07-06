@@ -184,7 +184,7 @@ public class SitemonitorManagerService implements ControllerConstants {
 	public void delSitemonitoring(User user, String sitemonitoringId) {
 		Sitemonitoring sitemonitoring = sitemonitoringRepository.findOne(sitemonitoringId);
 		checkNotNull(sitemonitoring);
-		checkTrue(sitemonitoring.getRegistUser().getId() == user.getId(), 
+		checkTrue(sitemonitoring.getRegistUser().getId().equals(user.getId()), 
 			"No have grant user {}" + user.getUserName());
 		
 		unregistSitemonitoring(sitemonitoringId);
@@ -224,17 +224,19 @@ public class SitemonitorManagerService implements ControllerConstants {
 	 * @return
 	 */
 	public String getIdleResouceAgentName() {
-		long minUseTime = Long.MAX_VALUE;
-		AgentIdentity targetAgent = null;
 		Set<AgentStatus> allAgents = sitemonitorServerDaemon.getAllAgentStatus();
+		checkTrue(allAgents.size() > 0, "No have available agent.");
+		int maxIdle = 0;
+		String targetAgent = null;
+		String planBTargetAgent = allAgents.iterator().next().getAgentIdentity().getName();
 		for (AgentStatus agentStatus : allAgents) {
-			long useTime = agentStatus.getMaxUseTimeMilisec();
-			if (useTime < minUseTime) {
-				minUseTime = useTime;
-				targetAgent = agentStatus.getAgentIdentity();
+			int idle = agentStatus.guessMoreRunnableScriptCount();
+			if (maxIdle < idle) {
+				maxIdle = idle;
+				targetAgent = agentStatus.getAgentIdentity().getName();
 			}
 		}
-		return targetAgent != null ? targetAgent.getName() : null;
+		return targetAgent != null ? targetAgent : planBTargetAgent;
 	}
 
 	/**

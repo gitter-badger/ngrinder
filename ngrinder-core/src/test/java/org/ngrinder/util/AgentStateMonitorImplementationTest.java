@@ -53,9 +53,9 @@ public class AgentStateMonitorImplementationTest extends AbstractMultiGrinderTes
 		sut.recordFreeMemory(min);
 		sut.recordUseTime((long) min);
 		
-		assertThat(sut.maxCpuUsePer(), is(max));
-		assertThat(sut.minFreeMemory(), is(min));
-		assertThat(sut.maxUseTimeMilisec(), is((long) max));
+		assertThat(sut.getMaxCpuUsePer(), is(max));
+		assertThat(sut.getMinFreeMemory(), is(min));
+		assertThat(sut.getMaxUseTimeMilisec(), is((long) max));
 	}
 	
 	@Test
@@ -68,22 +68,22 @@ public class AgentStateMonitorImplementationTest extends AbstractMultiGrinderTes
 		
 		sut.clear();
 		
-		assertThat(sut.maxCpuUsePer(), greaterThan(0.0));
-		assertThat(sut.maxCpuUsePer(), lessThan(max));
-		assertThat(sut.minFreeMemory(), greaterThan(0.0));
-		assertThat(sut.minFreeMemory(), lessThan(max));
-		assertThat(sut.maxUseTimeMilisec(), is(0l));
+		assertThat(sut.getMaxCpuUsePer(), greaterThan(0.0));
+		assertThat(sut.getMaxCpuUsePer(), lessThan(max));
+		assertThat(sut.getMinFreeMemory(), greaterThan(0.0));
+		assertThat(sut.getMinFreeMemory(), lessThan(max));
+		assertThat(sut.getMaxUseTimeMilisec(), is(0l));
 	}
 	
 	@Test
 	public void testCollectorThread() throws Exception {
-		assertThat(sut.maxCpuUsePer(), is(0.0));
-		assertThat(sut.minFreeMemory(), is(Double.MAX_VALUE));
+		assertThat(sut.getMaxCpuUsePer(), is(0.0));
+		assertThat(sut.getMinFreeMemory(), is(Double.MAX_VALUE));
 		ThreadUtils.sleep(3000);
 		
 		
-		assertThat(sut.maxCpuUsePer(), greaterThan(0.0));
-		assertThat(sut.minFreeMemory(), lessThan(Double.MAX_VALUE));
+		assertThat(sut.getMaxCpuUsePer(), greaterThan(0.0));
+		assertThat(sut.getMinFreeMemory(), lessThan(Double.MAX_VALUE));
 	}
 	
 }

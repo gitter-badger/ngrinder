@@ -23,11 +23,14 @@ import org.ngrinder.monitor.share.domain.SystemInfo;
  */
 public class AgentStateMonitorImplementation implements AgentStateMonitor {
 	
-	private SystemDataCollector collector = new SystemDataCollector();
+	private static final long serialVersionUID = 321506172724636084L;
+	
+	private transient SystemDataCollector collector = new SystemDataCollector();
 	private double maxCpuUsePer = 0;
 	private double minFreeMemory = Double.MAX_VALUE;
 	private long maxUseTimeMilisec  = 0;
 	private int registScriptCount = 0;
+	private long repeatInterval = 0;
 	
 	public AgentStateMonitorImplementation(AgentConfig config) {
 		collector.setAgentHome(config.getHome().getDirectory());
@@ -38,23 +41,28 @@ public class AgentStateMonitorImplementation implements AgentStateMonitor {
 	}
 
 	@Override
-	public double maxCpuUsePer() {
+	public double getMaxCpuUsePer() {
 		return maxCpuUsePer;
 	}
 
 	@Override
-	public double minFreeMemory() {
+	public double getMinFreeMemory() {
 		return minFreeMemory;
 	}
 
 	@Override
-	public long maxUseTimeMilisec() {
+	public long getMaxUseTimeMilisec() {
 		return maxUseTimeMilisec;
 	}
 
 	@Override
 	public int getRegistScriptCount() {
 		return registScriptCount;
+	}
+
+	@Override
+	public long getRepeatInterval() {
+		return repeatInterval;
 	}
 
 	@Override
@@ -81,6 +89,11 @@ public class AgentStateMonitorImplementation implements AgentStateMonitor {
 	@Override
 	public void setRegistScriptCount(int registScriptCount) {
 		this.registScriptCount = registScriptCount;
+	}
+
+	@Override
+	public void setRepeatInterval(long repeatInterval) {
+		this.repeatInterval = repeatInterval;
 	}
 
 	@Override
