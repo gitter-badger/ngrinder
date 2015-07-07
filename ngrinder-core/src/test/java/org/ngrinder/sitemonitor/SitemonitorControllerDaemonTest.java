@@ -47,7 +47,7 @@ public class SitemonitorControllerDaemonTest {
 		ThreadUtils.sleep(LITTLE_TIME);
 		
 		verify(controller, times(1)).run();
-		for (int retry = 2; retry < 5 ; retry++) {
+		for (int retry = 2; retry < 5; retry++) {
 			ThreadUtils.sleep(SitemonitorControllerDaemon.CONTROLLER_RETRY_INTERVAL);
 			verify(controller, times(retry)).run();
 		}

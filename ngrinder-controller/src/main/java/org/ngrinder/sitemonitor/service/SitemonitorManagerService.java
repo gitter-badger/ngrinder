@@ -228,12 +228,12 @@ public class SitemonitorManagerService implements ControllerConstants {
 		checkTrue(allAgents.size() > 0, "No have available agent.");
 		int maxIdle = 0;
 		String targetAgent = null;
-		String planBTargetAgent = allAgents.iterator().next().getAgentIdentity().getName();
+		String planBTargetAgent = allAgents.iterator().next().getAgentName();
 		for (AgentStatus agentStatus : allAgents) {
 			int idle = agentStatus.guessMoreRunnableScriptCount();
 			if (maxIdle < idle) {
 				maxIdle = idle;
-				targetAgent = agentStatus.getAgentIdentity().getName();
+				targetAgent = agentStatus.getAgentName();
 			}
 		}
 		return targetAgent != null ? targetAgent : planBTargetAgent;

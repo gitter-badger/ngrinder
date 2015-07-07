@@ -348,7 +348,7 @@ public class AgentProcessControlImplementation implements AgentProcessControl {
 			int registCount = agentStateMonitor.getRegistScriptCount();
 			long useTime = agentStateMonitor.getMaxUseTimeMilisec();
 			long idleTime = agentStateMonitor.getRepeatInterval() - useTime;
-			return (int) (idleTime * (1.0 * registCount / useTime));
+			return (int) Math.floor(idleTime * (1.0 * registCount / useTime));
 		}
 	}
 
