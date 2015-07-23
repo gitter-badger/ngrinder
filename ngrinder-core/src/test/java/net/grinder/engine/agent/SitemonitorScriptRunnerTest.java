@@ -22,14 +22,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import net.grinder.communication.CommunicationException;
-import net.grinder.communication.MessageDispatchRegistry;
-import net.grinder.communication.MessageDispatchRegistry.Handler;
-import net.grinder.console.communication.ConsoleCommunicationImplementationEx;
-import net.grinder.messages.console.ReportStatisticsMessage;
-
 public class SitemonitorScriptRunnerTest {
-	private int count;
 	SitemonitorScriptRunner sitemonitorScriptRunner;
 	File scriptDir = new File(getClass().getResource("/").getFile());
 
@@ -49,29 +42,12 @@ public class SitemonitorScriptRunnerTest {
 		// monitorId use to script file path in SitemonitorScriptRunner.
 		// "." mean current folder. (ex, ~/BASE_DIR/./SCRIPT_FILE) 
 		String monitorId = ".";
-		count = 0;
-		countingReportMessage();
+		
+		assertThat(sitemonitorScriptRunner.pollAllResult().size(), is(0));
 		
 		sitemonitorScriptRunner.runWorker(monitorId, "sitemonitor.py", null, null);
 
-		assertThat(count, is(1));
-	}
-
-	private void countingReportMessage() {
-		ConsoleCommunicationImplementationEx console = sitemonitorScriptRunner.scriptProcessConsole
-			.getComponent(ConsoleCommunicationImplementationEx.class);
-		MessageDispatchRegistry messageDispatchRegistry = console.getMessageDispatchRegistry();
-		messageDispatchRegistry.set(ReportStatisticsMessage.class,
-			new Handler<ReportStatisticsMessage>() {
-				@Override
-				public void handle(ReportStatisticsMessage message) throws CommunicationException {
-					count += message.getStatisticsDelta().size();
-				}
-
-				@Override
-				public void shutdown() {
-
-				}
-			});
+		assertThat(sitemonitorScriptRunner.pollAllResult().size(), is(1));
+		assertThat(sitemonitorScriptRunner.pollAllResult().size(), is(0));
 	}
 }

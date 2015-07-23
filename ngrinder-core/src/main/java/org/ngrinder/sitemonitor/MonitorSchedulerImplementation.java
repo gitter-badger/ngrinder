@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 
 import org.ngrinder.common.util.ThreadUtils;
 import org.ngrinder.sitemonitor.messages.RegistScheduleMessage;
+import org.ngrinder.sitemonitor.model.SitemonitoringResult;
 import org.ngrinder.util.AgentStateMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,6 +98,13 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 		sitemonitorMap.remove(sitemonitorId);
 		agentStateMonitor.clear();
 		agentStateMonitor.setRegistScriptCount(sitemonitorMap.size());
+	}
+	
+	/**
+	 * @return
+	 */
+	public List<SitemonitoringResult> pollAllResults() {
+		return scriptRunner.pollAllResult();
 	}
 
 	public void setRepeatTime(long repeatTime) {

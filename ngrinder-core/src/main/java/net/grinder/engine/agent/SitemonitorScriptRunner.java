@@ -15,16 +15,21 @@ package net.grinder.engine.agent;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.lang.StringUtils;
 import org.ngrinder.common.constants.GrinderConstants;
 import org.ngrinder.sitemonitor.SitemonitorControllerServerDaemon;
 import org.ngrinder.sitemonitor.engine.process.SitemonitorProcessEntryPoint;
 import org.ngrinder.sitemonitor.messages.ShutdownSitemonitorProcessMessage;
+import org.ngrinder.sitemonitor.messages.SitemonitoringResultMessage;
+import org.ngrinder.sitemonitor.model.SitemonitoringResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,13 +37,18 @@ import net.grinder.common.GrinderProperties;
 import net.grinder.communication.CommunicationException;
 import net.grinder.communication.FanOutStreamSender;
 import net.grinder.communication.Message;
+import net.grinder.communication.MessageDispatchRegistry;
+import net.grinder.communication.MessageDispatchRegistry.Handler;
 import net.grinder.communication.StreamSender;
+import net.grinder.console.communication.ConsoleCommunication;
 import net.grinder.engine.common.ScriptLocation;
 import net.grinder.lang.AbstractLanguageHandler;
 import net.grinder.lang.Lang;
 import net.grinder.util.AbstractGrinderClassPathProcessor;
 import net.grinder.util.Directory;
 import net.grinder.util.NetworkUtils;
+
+import static org.ngrinder.common.util.NoOp.noOp;
 
 /**
  * @author Gisoo Gwon
@@ -48,13 +58,44 @@ public class SitemonitorScriptRunner implements GrinderConstants {
 	private Logger LOGGER = LoggerFactory.getLogger("site monitor script runner");
 	private Map<String, ProcessWorker> workers = new HashMap<String, ProcessWorker>();
 	private final File baseDirectory;
-	SitemonitorControllerServerDaemon scriptProcessConsole;
+	private ConcurrentLinkedQueue<SitemonitoringResult> monitoringResults = new ConcurrentLinkedQueue<SitemonitoringResult>();
+	private SitemonitorControllerServerDaemon scriptProcessConsole;
 
 	public SitemonitorScriptRunner(File baseDirectory) {
 		this.baseDirectory = baseDirectory;
 		scriptProcessConsole = new SitemonitorControllerServerDaemon(
 			NetworkUtils.getFreePortOfLocal());
 		scriptProcessConsole.start();
+		
+		ConsoleCommunication console = scriptProcessConsole.getComponent(ConsoleCommunication.class);
+		MessageDispatchRegistry messageDispatchRegistry = console.getMessageDispatchRegistry();	
+		messageDispatchRegistry.set(SitemonitoringResultMessage.class, new Handler<SitemonitoringResultMessage>() {
+				@Override
+				public void handle(SitemonitoringResultMessage message) throws CommunicationException {
+					synchronized (monitoringResults) {
+						monitoringResults.addAll(message.getSitemonitoringResults());
+					}
+				}
+
+				@Override
+				public void shutdown() {
+					noOp();
+				}
+
+			});
+	}
+	
+	/**
+	 * Clone and clear to sitemonitoring result list.  
+	 * @return Sitemonitoring result list.
+	 */
+	public List<SitemonitoringResult> pollAllResult() {
+		synchronized (monitoringResults) {
+			LinkedList<SitemonitoringResult> results = new LinkedList<SitemonitoringResult>(
+				monitoringResults);
+			monitoringResults.clear();
+			return results;
+		}
 	}
 
 	public void runWorker(String sitemonitorId, String scriptname, String hosts, String params) {

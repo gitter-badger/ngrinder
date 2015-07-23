@@ -13,6 +13,7 @@
  */
 package org.ngrinder.sitemonitor.service;
 
+import static org.ngrinder.common.util.NoOp.*;
 import static org.ngrinder.common.util.Preconditions.*;
 
 import java.util.List;
@@ -37,9 +38,11 @@ import org.ngrinder.script.service.FileEntryService;
 import org.ngrinder.sitemonitor.SitemonitorControllerServerDaemon;
 import org.ngrinder.sitemonitor.messages.RegistScheduleMessage;
 import org.ngrinder.sitemonitor.messages.SitemonitoringReloadMessage;
+import org.ngrinder.sitemonitor.messages.SitemonitoringResultMessage;
 import org.ngrinder.sitemonitor.messages.UnregistScheduleMessage;
 import org.ngrinder.sitemonitor.model.SitemonitorDistDirectory;
 import org.ngrinder.sitemonitor.repository.SitemonitoringRepository;
+import org.ngrinder.sitemonitor.repository.SitemonitoringResultRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,9 +50,10 @@ import org.springframework.stereotype.Component;
 
 import net.grinder.common.processidentity.AgentIdentity;
 import net.grinder.communication.CommunicationException;
+import net.grinder.communication.MessageDispatchRegistry;
 import net.grinder.communication.MessageDispatchRegistry.Handler;
 import net.grinder.console.communication.AgentProcessControlImplementation.AgentStatus;
-import net.grinder.console.communication.ConsoleCommunicationImplementationEx;
+import net.grinder.console.communication.ConsoleCommunication;
 import net.grinder.console.model.ConsoleProperties;
 import net.grinder.messages.console.AgentAddress;
 import net.grinder.util.Directory;
@@ -77,6 +81,9 @@ public class SitemonitorManagerService implements ControllerConstants {
 	
 	@Autowired
 	private SitemonitoringRepository sitemonitoringRepository;
+	
+	@Autowired
+	private SitemonitoringResultRepository sitemonitoringResultRepository;
 
 	/**
 	 * Initialize sitemonitor manager.
@@ -90,7 +97,9 @@ public class SitemonitorManagerService implements ControllerConstants {
 	}
 
 	private void registMessage() {
-		Handler<SitemonitoringReloadMessage> handler = new Handler<SitemonitoringReloadMessage>() {
+		ConsoleCommunication console = sitemonitorServerDaemon.getComponent(ConsoleCommunication.class);
+		MessageDispatchRegistry register = console.getMessageDispatchRegistry();
+		register.set(SitemonitoringReloadMessage.class, new Handler<SitemonitoringReloadMessage>() {
 			@Override
 			public void handle(final SitemonitoringReloadMessage message) throws CommunicationException {
 				new Thread(new Runnable() {
@@ -104,9 +113,18 @@ public class SitemonitorManagerService implements ControllerConstants {
 			@Override
 			public void shutdown() {
 			}
-		};
-		sitemonitorServerDaemon.getComponent(ConsoleCommunicationImplementationEx.class)
-			.getMessageDispatchRegistry().set(SitemonitoringReloadMessage.class, handler);
+		});
+		register.set(SitemonitoringResultMessage.class, new Handler<SitemonitoringResultMessage>() {
+			@Override
+			public void handle(SitemonitoringResultMessage message) throws CommunicationException {
+				sitemonitoringResultRepository.save(message.getSitemonitoringResults());
+			}
+
+			@Override
+			public void shutdown() {
+				noOp();
+			}
+		});
 	}
 
 	/**

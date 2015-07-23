@@ -11,25 +11,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. 
  */
-package org.ngrinder.sitemonitor;
+package org.ngrinder.sitemonitor.repository;
 
-import java.util.List;
-
-import org.ngrinder.sitemonitor.messages.RegistScheduleMessage;
 import org.ngrinder.sitemonitor.model.SitemonitoringResult;
+import org.ngrinder.sitemonitor.model.SitemonitoringResult.SitemonitoringResultPK;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 /**
- * The site monitoring run manager.
+ * {@link SitemonitoringResult} Repository.
  * 
  * @author Gisoo Gwon
  */
-public interface MonitorScheduler {
+public interface SitemonitoringResultRepository extends
+	JpaRepository<SitemonitoringResult, SitemonitoringResultPK>,
+	JpaSpecificationExecutor<SitemonitoringResult> {
 
-	public void regist(RegistScheduleMessage message);
-
-	public void unregist(String sitemonitorId);
-	
-	public List<SitemonitoringResult> pollAllResults();
-
-	public void shutdown();
 }

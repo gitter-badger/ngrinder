@@ -16,6 +16,7 @@ package org.ngrinder.sitemonitor;
 import static org.ngrinder.common.constants.InternalConstants.*;
 
 import java.io.File;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -24,7 +25,9 @@ import org.ngrinder.monitor.controller.model.SystemDataModel;
 import org.ngrinder.sitemonitor.messages.SitemonitoringReloadMessage;
 import org.ngrinder.sitemonitor.messages.RegistScheduleMessage;
 import org.ngrinder.sitemonitor.messages.ShutdownServerMessage;
+import org.ngrinder.sitemonitor.messages.SitemonitoringResultMessage;
 import org.ngrinder.sitemonitor.messages.UnregistScheduleMessage;
+import org.ngrinder.sitemonitor.model.SitemonitoringResult;
 import org.ngrinder.util.AgentStateMonitor;
 import org.python.google.common.base.Preconditions;
 import org.slf4j.Logger;
@@ -227,6 +230,20 @@ public class SitemonitorController implements Agent {
 				}
 			}
 		}, 3000);
+		sendStatusTimer.schedule(new TimerTask() {
+			public void run() {
+				List<SitemonitoringResult> results = monitorScheduler.pollAllResults();
+				if (results.size() > 0) {
+					SitemonitoringResultMessage message = new SitemonitoringResultMessage(results);
+					try {
+						clientSender.send(message);
+					} catch (Exception e) {
+						LOGGER.error("Failed send sitemonitoring result message., {}",
+							e.getMessage());
+					}
+				}
+			}
+		}, 0, agentStateMonitor.getRepeatInterval());
 		connected = true;
 	}
 }

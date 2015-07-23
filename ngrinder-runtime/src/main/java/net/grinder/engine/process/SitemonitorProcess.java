@@ -14,22 +14,24 @@
 package net.grinder.engine.process;
 
 import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import org.ngrinder.sitemonitor.messages.ShutdownSitemonitorProcessMessage;
+import org.ngrinder.sitemonitor.messages.SitemonitoringResultMessage;
+import org.ngrinder.sitemonitor.model.SitemonitoringResult;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.grinder.common.GrinderBuild;
 import net.grinder.common.GrinderException;
 import net.grinder.common.GrinderProperties;
 import net.grinder.common.SkeletonThreadLifeCycleListener;
+import net.grinder.common.Test;
 import net.grinder.common.processidentity.ProcessReport;
 import net.grinder.common.processidentity.WorkerIdentity;
 import net.grinder.communication.ClientSender;
@@ -47,7 +49,6 @@ import net.grinder.engine.common.EngineException;
 import net.grinder.engine.common.ScriptLocation;
 import net.grinder.engine.messages.InitialiseGrinderMessage;
 import net.grinder.engine.process.dcr.DCRContextImplementation;
-import net.grinder.messages.console.ReportStatisticsMessage;
 import net.grinder.messages.console.WorkerAddress;
 import net.grinder.messages.console.WorkerProcessReportMessage;
 import net.grinder.script.Grinder;
@@ -58,13 +59,14 @@ import net.grinder.scriptengine.Instrumenter;
 import net.grinder.scriptengine.ScriptEngineService.ScriptEngine;
 import net.grinder.scriptengine.ScriptEngineService.WorkerRunnable;
 import net.grinder.scriptengine.ScriptExecutionException;
+import net.grinder.statistics.StatisticsIndexMap;
 import net.grinder.statistics.StatisticsServices;
 import net.grinder.statistics.StatisticsServicesImplementation;
+import net.grinder.statistics.StatisticsSet;
 import net.grinder.statistics.TestStatisticsMap;
 import net.grinder.synchronisation.BarrierGroups;
 import net.grinder.synchronisation.BarrierIdentityGenerator;
 import net.grinder.synchronisation.ClientBarrierGroups;
-import net.grinder.util.JVM;
 import net.grinder.util.ListenerSupport;
 import net.grinder.util.ListenerSupport.Informer;
 import net.grinder.util.Sleeper;
@@ -87,13 +89,12 @@ public class SitemonitorProcess {
 	private final LoggerContext m_logbackLoggerContext;
 	private final Logger m_terminalLogger;
 	private Logger m_logger = null;
-	private Logger m_result = null;
 
 	// value from InitialiseGrinderMessage
 	private final ScriptLocation script;
 	private final GrinderProperties properties;
 	private final boolean m_reportTimesToConsole;
-	private final String sitemonitorId;
+	private final String sitemonitoringId;
 	private final String logDirectory;
 	private final WorkerIdentity workerIdentity;
 
@@ -143,19 +144,14 @@ public class SitemonitorProcess {
 			properties = initialisationMessage.getProperties();
 			workerIdentity = initialisationMessage.getWorkerIdentity();
 
-			sitemonitorId = workerIdentity.getName();
+			sitemonitoringId = workerIdentity.getName();
 			logDirectory = properties.getProperty(GrinderProperties.LOG_DIRECTORY, ".");
 			m_reportTimesToConsole = properties.getBoolean("grinder.reportTimesToConsole", true);
 
 			// init logger
-			m_logbackLoggerContext = configureLogging(sitemonitorId, logDirectory);
-			m_terminalLogger = LoggerFactory.getLogger(sitemonitorId);
+			m_logbackLoggerContext = configureLogging(sitemonitoringId, logDirectory);
+			m_terminalLogger = LoggerFactory.getLogger(sitemonitoringId);
 			m_logger = LoggerFactory.getLogger("worker");
-			m_result = LoggerFactory.getLogger("minitor-result");
-
-			m_logger.info("The Grinder version {}", GrinderBuild.getVersionString());
-			m_logger.info(JVM.getInstance().toString());
-			m_logger.info("time zone is {}", new SimpleDateFormat("z (Z)").format(new Date()));
 
 			// init console connection
 			MessageDispatchSender messageDispatcher = new MessageDispatchSender();
@@ -358,27 +354,45 @@ public class SitemonitorProcess {
 
 	private void sendResult(ThreadSynchronisation threads) {
 		if (!m_communicationShutdown) {
-			try {
-				TestStatisticsMap sample = null;
-				synchronized (m_testRegistryImplementation) {
-					sample = m_testRegistryImplementation.getTestStatisticsMap().reset();
+			TestStatisticsMap sample = null;
+			synchronized (m_testRegistryImplementation) {
+				sample = m_testRegistryImplementation.getTestStatisticsMap().reset();
+			}
+
+			if (sample.size() > 0) {
+				if (!m_reportTimesToConsole) {
+					m_testStatisticsHelper.removeTestTimeFromSample(sample);
 				}
 
-				if (sample.size() > 0) {
-					if (!m_reportTimesToConsole) {
-						m_testStatisticsHelper.removeTestTimeFromSample(sample);
-					}
-
-					m_result.info("result : {}", sample);
-					m_consoleSender.send(new ReportStatisticsMessage(sample));
+				try {
+					SitemonitoringResultMessage message = new SitemonitoringResultMessage();
+					message.addResults(extractResults(sample));
+					m_consoleSender.send(message);
 					m_consoleSender.flush();
+				} catch (CommunicationException e) {
+					m_terminalLogger.info("Report to console failed", e);
+					
+					m_communicationShutdown = true;
 				}
-			} catch (final CommunicationException e) {
-				m_terminalLogger.info("Report to console failed", e);
-
-				m_communicationShutdown = true;
 			}
 		}
+	}
+	
+	private List<SitemonitoringResult> extractResults(TestStatisticsMap sample) {
+		final List<SitemonitoringResult> results = new LinkedList<SitemonitoringResult>();
+		final StatisticsIndexMap indexMap = m_statisticsServices.getStatisticsIndexMap();
+		sample.new ForEach() {
+			@Override
+			protected void next(Test test, StatisticsSet statistics) {
+				SitemonitoringResult result = new SitemonitoringResult(sitemonitoringId, test.getNumber(),
+					statistics.getCount(indexMap.getLongSampleIndex("timedTests")),
+					statistics.getValue(indexMap.getLongIndex("errors")),
+					statistics.getSum(indexMap.getLongSampleIndex("timedTests")),
+					System.currentTimeMillis());
+				results.add(result);
+			}
+		}.iterate();
+		return results;
 	}
 
 	private class ReportToConsoleTimerTask extends TimerTask {
