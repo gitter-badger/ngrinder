@@ -98,7 +98,7 @@ public class PerfTestControllerTest extends AbstractPerfTestTransactionalTest im
 		FileUtils.deleteQuietly(file);
 		CompressionUtils.unzip(new ClassPathResource("TEST_USER.zip").getFile(), file);
 		repo.setUserRepository(new File(file, getTestUser().getUserId()));
-		controller.getResources(getTestUser(), "filefilter.txt", null);
+		controller.getResources(getTestUser(), "filefilter.txt", null, -1L);
 	}
 
 	@Test

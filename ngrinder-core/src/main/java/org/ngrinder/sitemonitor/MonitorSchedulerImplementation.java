@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.ngrinder.common.util.ThreadUtils;
 import org.ngrinder.sitemonitor.messages.RegistScheduleMessage;
 import org.ngrinder.sitemonitor.model.SitemonitoringResult;
@@ -41,7 +42,7 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("monitor scheduler impl");
 	private static final int THREAD_POOL_SIZE = 10;
-	private static final long DEFAULT_REPEAT_TIME = 60 * 1000;
+	private static final long DEFAULT_REPEAT_TIME = DateUtils.MILLIS_PER_MINUTE;
 
 	private final SitemonitorScriptRunner scriptRunner;
 	private final AgentStateMonitor agentStateMonitor;

@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.ngrinder.model.Sitemonitoring;
 import org.ngrinder.sitemonitor.balance.AbstractLoadBalancer;
 import org.ngrinder.sitemonitor.repository.SitemonitoringRepository;
@@ -35,8 +36,8 @@ import net.grinder.console.communication.AgentProcessControlImplementation.Agent
 @Component
 public class LoadBalancer extends AbstractLoadBalancer {
 
-	private static final long PERIOD = 1 * 60 * 1000;	// 1 min
-	private static final long DELAY = 5 * 60 * 1000;	// 5 min
+	private static final long PERIOD = 1 * DateUtils.MILLIS_PER_MINUTE;	// 1 min
+	private static final long DELAY = 5 * DateUtils.MILLIS_PER_MINUTE;	// 5 min
 
 	@Autowired
 	private SitemonitorManagerService sitemonitorManagerService;

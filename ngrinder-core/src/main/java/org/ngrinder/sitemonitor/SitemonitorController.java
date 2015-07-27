@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.ngrinder.infra.AgentConfig;
 import org.ngrinder.monitor.controller.model.SystemDataModel;
 import org.ngrinder.sitemonitor.messages.SitemonitoringReloadMessage;
@@ -243,7 +244,7 @@ public class SitemonitorController implements Agent {
 					}
 				}
 			}
-		}, 0, agentStateMonitor.getRepeatInterval());
+		}, 0, agentStateMonitor == null ? DateUtils.MILLIS_PER_MINUTE : agentStateMonitor.getRepeatInterval());
 		connected = true;
 	}
 }
