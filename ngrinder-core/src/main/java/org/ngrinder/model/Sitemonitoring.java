@@ -73,8 +73,6 @@ public class Sitemonitoring {
 		this.agentName = agentName;
 	}
 
-
-
 	public String getId() {
 		return id;
 	}

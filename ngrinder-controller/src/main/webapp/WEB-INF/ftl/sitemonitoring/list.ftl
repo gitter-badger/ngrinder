@@ -10,7 +10,7 @@
 <#include "../common/navigator.ftl">
 <div class="container">
 	<fieldSet>
-		<legend class="header"> <@spring.message "sitemonitor.list.title"/> </legend>
+		<legend class="header"> <@spring.message "sitemonitoring.list.title"/> </legend>
 	</fieldSet>
 
 	<table class="table table-striped table-bordered ellipsis" id="sitemonitoring_table">
@@ -26,14 +26,14 @@
 		</colgroup>
 		<thead>
 		<tr>
-			<th><@spring.message "sitemonitor.list.sitemonitorState"/></th>
-			<th><@spring.message "sitemonitor.list.id"/></th>
-			<th class="ellipsis"><@spring.message "sitemonitor.list.scriptName"/></th>
-			<th><@spring.message "sitemonitor.list.scriptRevision"/></th>
-			<th class="no-click"><@spring.message "sitemonitor.list.targetHosts"/></th>
-			<th><@spring.message "sitemonitor.list.param"/></th>
-			<th><@spring.message "sitemonitor.list.agentName"/></th>
-			<th><@spring.message "sitemonitor.list.unregist"/></th>
+			<th><@spring.message "sitemonitoring.list.sitemonitorState"/></th>
+			<th><@spring.message "sitemonitoring.list.id"/></th>
+			<th class="ellipsis"><@spring.message "sitemonitoring.list.scriptName"/></th>
+			<th><@spring.message "sitemonitoring.list.scriptRevision"/></th>
+			<th class="no-click"><@spring.message "sitemonitoring.list.targetHosts"/></th>
+			<th><@spring.message "sitemonitoring.list.param"/></th>
+			<th><@spring.message "sitemonitoring.list.agentName"/></th>
+			<th><@spring.message "sitemonitoring.list.unregist"/></th>
 		</tr>
 		</thead>
 		<tbody>
@@ -47,11 +47,11 @@
 					<img class="status" src="${req.getContextPath()}/img/ball/${iconName}"/>
 				</div>
 			</td>
-			<td>${sitemonitoring.id}</td>
+			<td><a href="${req.getContextPath()}/sitemonitoring/get/${sitemonitoring.id}">${sitemonitoring.id}</a></td>
 			<td>
 				<div class="ellipsis" title="${sitemonitoring.scriptName}">${sitemonitoring.scriptName}</div>
 			</td>
-			<td>${sitemonitoring.scriptRevision}</td>
+			<td><#if (sitemonitoring.scriptRevision != -1)>${sitemonitoring.scriptRevision}<#else>HEAD</#if></td>
 			<td class="ellipsis" title="${sitemonitoring.targetHosts}">${sitemonitoring.targetHosts}</td>
 			<td class="ellipsis" title="${sitemonitoring.param}">${sitemonitoring.param}</td>
 			<td class="ellipsis" title="${sitemonitoring.agentName}">${sitemonitoring.agentName}</td>

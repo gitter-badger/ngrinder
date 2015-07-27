@@ -308,6 +308,27 @@
 			<a class="btn btn-primary" id="run_now_btn"><@spring.message "perfTest.running.runNow"/></a> <a class="btn btn-primary" id="add_schedule_btn"><@spring.message "perfTest.running.schedule"/></a>
 		</div>
 	</div>
+	<div class="modal hide fade" id="sitemonitoring_modal">
+		<div class="modal-header">
+			<a class="close" data-dismiss="modal">&times;</a>
+			<h4>
+				<@spring.message "perfTest.sitemonitoring.modalTitle"/>
+			</h4>
+		</div>
+		<div class="modal-body">
+			<div class="form-horizontal">
+				<fieldset>
+					<div class="control-group">
+						<@spring.message "perfTest.sitemonitoring.modalMessage"/>
+					</div>
+				</fieldset>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-primary" id="clone_script_btn"><@spring.message "perfTest.sitemonitoring.clone"/></button>
+			<button class="btn btn-primary" id="no_clone_script_btn"><@spring.message "perfTest.sitemonitoring.no"/></button>
+		</div>
+	</div>
 	<#include "host_modal.ftl">
 </div>
 <#include "../common/copyright.ftl">
@@ -693,6 +714,13 @@ function showScheduleModal() {
 	$('#schedule_modal').modal('show');
 }
 
+function showSitemonitoringModal() {
+	$("#originScriptPath").text("${test.scriptName}");
+	$("#originScriptRevision").text("<#if test.scriptRevision==-1>head<#else>${test.scriptRevision}</#if>");
+	$("#sitemonitoringScriptPath").text("${test.sitemonitoringScriptName}");
+	$('#sitemonitoring_modal').modal('show');
+}
+
 
 function getBrowserTimeApplyingTimezone(time) {
 	var date = new Date();
@@ -809,6 +837,14 @@ function bindEvent() {
 		$scheduleModal.find("small").html("");
 		$("#test_status").val("READY");
 		document.test_config_form.submit();
+	});
+	
+	$("#clone_script_btn").click(function() {
+		moveToAddSitemonitoringPage(true);
+	});
+	
+	$("#no_clone_script_btn").click(function() {
+		moveToAddSitemonitoringPage(false);
 	});
 
 	$("#run_count_radio").click(function() {
@@ -1199,6 +1235,10 @@ function setDurationHour(durationVal) {
 	var durationHour = parseInt(durationVal / 3600000);
 	durationHour = durationVal % 3600000 == 0 ? durationHour : durationHour + 1;
 	$("#duration_hour").val(durationHour);
+}
+
+function moveToAddSitemonitoringPage(bClone) {
+	window.location.href = "${req.getContextPath()}/sitemonitoring/new/${(test.id!0)?c}/" + bClone;
 }
 </script>
 	</body>

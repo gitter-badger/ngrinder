@@ -17,19 +17,15 @@ import static org.ngrinder.common.util.Preconditions.*;
 
 import org.ngrinder.common.controller.BaseController;
 import org.ngrinder.common.controller.RestAPI;
-import org.ngrinder.model.PerfTest;
 import org.ngrinder.model.Sitemonitoring;
 import org.ngrinder.model.User;
-import org.ngrinder.perftest.service.PerfTestService;
 import org.ngrinder.sitemonitor.service.SitemonitorManagerService;
+import org.ngrinder.sitemonitor.service.SitemonitoringService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import net.grinder.util.Directory.DirectoryException;
-import net.grinder.util.FileContents.FileContentsException;
 
 /**
  * @author Gisoo Gwon
@@ -39,47 +35,23 @@ import net.grinder.util.FileContents.FileContentsException;
 public class SitemonitorApiController extends BaseController {
 
 	@Autowired
-	private PerfTestService perfTestService;
-
+	private SitemonitoringService sitemonitoringService;
+	
 	@Autowired
 	private SitemonitorManagerService sitemonitorManagerService;
-
-	/**
-	 * Add sitemonitoring to agent by perftest.
-	 * 
-	 * @param user			user
-	 * @param perfTestId	perftest id
-	 * @throws DirectoryException 
-	 * @throws FileContentsException 
-	 */
-	@RestAPI
-	@RequestMapping("/add/{perfTestId}")
-	public HttpEntity<String> addSitemonitoring(User user,
-			@PathVariable("perfTestId") Long perfTestId) throws FileContentsException,
-			DirectoryException {
-		PerfTest perfTest = perfTestService.getOne(perfTestId);
-		checkTrue(hasGrant(perfTest, user), "invalid grant for " + perfTestId + " perftest");
-		checkNotNull(perfTest, "no perftest for %s exits", perfTestId);
-
-		String sitemonitorId = "Perftest" + perfTestId;
-		Sitemonitoring sitemonitoring = new Sitemonitoring(sitemonitorId, user,
-			perfTest.getScriptName(), perfTest.getScriptRevision(), perfTest.getTargetHosts(),
-			perfTest.getParam(), sitemonitorManagerService.getIdleResouceAgentName());
-		String result = sitemonitorManagerService.addSitemonitoring(sitemonitoring);
-
-		return toJsonHttpEntity(result);
-	}
 	
 	@RestAPI
 	@RequestMapping("/del/{sitemonitoringId}")
 	public HttpEntity<String> delSitemonitoring(User user,
 			@PathVariable("sitemonitoringId") String sitemonitoringId) {
+		checkTrue(hasGrant(sitemonitoringId, user), "invalid grant for " + sitemonitoringId);
 		sitemonitorManagerService.delSitemonitoring(user , sitemonitoringId);
 		return toJsonHttpEntity("success");
 	}
 
-	private boolean hasGrant(PerfTest perfTest, User user) {
-		return user.equals(perfTest.getCreatedUser());
+	private boolean hasGrant(String sitemonitoringId, User user) {
+		Sitemonitoring sitemonitoring = sitemonitoringService.getSitemonitoring(sitemonitoringId);
+		return user.equals(sitemonitoring.getRegistUser());
 	}
 
 }

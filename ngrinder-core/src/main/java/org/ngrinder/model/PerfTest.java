@@ -41,6 +41,8 @@ import static org.ngrinder.common.util.AccessUtils.getSafe;
 @Table(name = "PERF_TEST")
 public class PerfTest extends BaseModel<PerfTest> {
 
+	static final String SITEMONITORING_TOKEN = "_sm";
+
 	private static final int MARGIN_FOR_ABBREVIATION = 8;
 
 	private static final int MAX_LONG_STRING_SIZE = 2048;
@@ -421,6 +423,15 @@ public class PerfTest extends BaseModel<PerfTest> {
 
 	public void setScriptName(String scriptName) {
 		this.scriptName = scriptName;
+	}
+	
+	public String getSitemonitoringScriptName() {
+		if (StringUtils.isEmpty(scriptName)) {
+			return scriptName;
+		}
+		int extension = scriptName.lastIndexOf(".");
+		return scriptName.substring(0, extension) + SITEMONITORING_TOKEN + scriptRevision
+			+ scriptName.substring(extension, scriptName.length());
 	}
 
 	public Integer getIgnoreSampleCount() {

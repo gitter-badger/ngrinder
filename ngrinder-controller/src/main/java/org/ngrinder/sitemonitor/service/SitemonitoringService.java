@@ -15,8 +15,11 @@ package org.ngrinder.sitemonitor.service;
 
 import java.util.List;
 
+import org.ngrinder.model.PerfTest;
 import org.ngrinder.model.Sitemonitoring;
 import org.ngrinder.model.User;
+import org.ngrinder.script.model.FileEntry;
+import org.ngrinder.script.service.FileEntryService;
 import org.ngrinder.sitemonitor.repository.SitemonitoringRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -34,11 +37,40 @@ public class SitemonitoringService {
 
 	@Autowired
 	private SitemonitoringRepository sitemonitoringRepository;
+	
+	@Autowired
+	private FileEntryService fileEntryService;
 
-	public List<Sitemonitoring> getRegistSitemonitorings(User user) {
+	public List<Sitemonitoring> getSitemonitoringsOf(User user) {
 		List<Sitemonitoring> monitors = sitemonitoringRepository.findByRegistUser(user);
 		initAgentRunning(monitors);
 		return monitors;
+	}
+	
+	public Sitemonitoring getSitemonitoring(String sitemonitoringId) {
+		return sitemonitoringRepository.findOne(sitemonitoringId);
+	}
+	
+	/**
+	 * Get Sitemonitoring script from perfTest script.
+	 * @param user
+	 * @param perfTest The perftest for sitemonitoring.
+	 * @param isScriptClone clone perftest script.
+	 * @return
+	 */
+	public FileEntry getSitemonitoringScript(User user, PerfTest perfTest, boolean isScriptClone) {
+		FileEntry perfTestScript = fileEntryService.getOne(user, perfTest.getScriptName(),
+			perfTest.getScriptRevision());
+		if (isScriptClone) {
+			FileEntry sitemonitoringScript = new FileEntry();
+			sitemonitoringScript.setPath(perfTest.getSitemonitoringScriptName());
+			sitemonitoringScript.setContent(perfTestScript.getContent());
+			sitemonitoringScript.setDescription("Clone for sitemonitoring.");
+			fileEntryService.save(user, sitemonitoringScript);
+			return fileEntryService.getOne(user, sitemonitoringScript.getPath());
+		} else {
+			return perfTestScript;
+		}
 	}
 
 	/**

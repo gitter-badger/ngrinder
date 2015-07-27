@@ -172,7 +172,12 @@ public abstract class ScriptHandler implements ControllerConstants {
 	                        FileEntry scriptEntry, File distDir, PropertiesWrapper properties,
 	                        ProcessingResultPrintStream processingResult, boolean useRevision) {
 		prepareDefaultFile(distDir, properties);
-		List<FileEntry> fileEntries = getLibAndResourceEntries(user, scriptEntry, -1);
+		List<FileEntry> fileEntries = null;
+		if (useRevision) {
+			fileEntries = getLibAndResourceEntries(user, scriptEntry, scriptEntry.getRevision());
+		} else {
+			fileEntries = getLibAndResourceEntries(user, scriptEntry, -1);
+		}
 		if (scriptEntry.getRevision() != 0) {
 			fileEntries.add(scriptEntry);
 		}

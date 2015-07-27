@@ -740,7 +740,8 @@ public class PerfTestController extends BaseController {
 	 */
 	@RequestMapping("/api/resource")
 	public HttpEntity<String> getResources(User user, @RequestParam String scriptPath,
-	                                       @RequestParam(required = false) String ownerId) {
+                       @RequestParam(required = false) String ownerId,
+                       @RequestParam(required = false, defaultValue = "-1") long scriptRevision) {
 		if (user.getRole() == Role.ADMIN && StringUtils.isNotBlank(ownerId)) {
 			user = userService.getOne(ownerId);
 		}
@@ -748,7 +749,8 @@ public class PerfTestController extends BaseController {
 		String targetHosts = "";
 		List<String> fileStringList = newArrayList();
 		if (fileEntry != null) {
-			List<FileEntry> fileList = fileEntryService.getScriptHandler(fileEntry).getLibAndResourceEntries(user, fileEntry, -1L);
+			List<FileEntry> fileList = fileEntryService.getScriptHandler(fileEntry).getLibAndResourceEntries(
+				user, fileEntry, scriptRevision);
 			for (FileEntry each : fileList) {
 				fileStringList.add(each.getPath());
 			}

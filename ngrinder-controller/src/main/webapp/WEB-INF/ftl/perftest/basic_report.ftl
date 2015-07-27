@@ -56,14 +56,17 @@
 		<fieldSet>
 			<legend>
 				<@spring.message "perfTest.report.tpsGraph"/>
-			<#if test.status.category == "FINISHED">
-				<a id="add_sitemonitoring_btn" class="btn btn-primary pull-right">
-					<@spring.message "perfTest.report.addSitemonitoring"/>
-				</a>
-			</#if>
-				<a id="detail_report_btn" class="btn btn-primary pull-right">
-					<@spring.message "perfTest.report.detailedReport"/>
-				</a>
+				<div class="pull-right">
+				<#if test.status.category == "FINISHED">
+					<a id="add_sitemonitoring_btn" class="btn btn-primary">
+						<i class="icon-file icon-white"></i>
+						<@spring.message "perfTest.report.addSitemonitoring"/>
+					</a>
+				</#if>
+					<a id="detail_report_btn" class="btn btn-primary">
+						<@spring.message "perfTest.report.detailedReport"/>
+					</a>
+				</div>
 			</legend>
 		</fieldSet>
 		<div id="tps_chart" class="chart" style="width: 610px; height: 300px"></div> 
@@ -118,10 +121,7 @@
 	});
 
 	$("#add_sitemonitoring_btn").click(function () {
-		var ajaxObj = new AjaxObj("/sitemonitor/api/add/${(test.id)?c}"
-				, "<@spring.message "common.message.success"/>"
-				, "<@spring.message "common.error.error"/>");
-		ajaxObj.call();
+		showSitemonitoringModal();
 	});
 
 	$("#detail_report_btn").click(function () {
