@@ -308,25 +308,25 @@
 			<a class="btn btn-primary" id="run_now_btn"><@spring.message "perfTest.running.runNow"/></a> <a class="btn btn-primary" id="add_schedule_btn"><@spring.message "perfTest.running.schedule"/></a>
 		</div>
 	</div>
-	<div class="modal hide fade" id="sitemonitoring_modal">
+	<div class="modal hide fade" id="siteMon_modal">
 		<div class="modal-header">
 			<a class="close" data-dismiss="modal">&times;</a>
 			<h4>
-				<@spring.message "perfTest.sitemonitoring.modalTitle"/>
+				<@spring.message "perfTest.siteMon.createScript.modalTitle"/>
 			</h4>
 		</div>
 		<div class="modal-body">
 			<div class="form-horizontal">
 				<fieldset>
 					<div class="control-group">
-						<@spring.message "perfTest.sitemonitoring.modalMessage"/>
+						<@spring.message "perfTest.siteMon.createScript.modalMessage"/>
 					</div>
 				</fieldset>
 			</div>
 		</div>
 		<div class="modal-footer">
-			<button class="btn btn-primary" id="clone_script_btn"><@spring.message "perfTest.sitemonitoring.clone"/></button>
-			<button class="btn btn-primary" id="no_clone_script_btn"><@spring.message "perfTest.sitemonitoring.no"/></button>
+			<button class="btn btn-primary" id="clone_script_btn"><@spring.message "perfTest.siteMon.createScript.clone"/></button>
+			<button class="btn btn-primary" id="no_clone_script_btn"><@spring.message "perfTest.siteMon.createScript.no"/></button>
 		</div>
 	</div>
 	<#include "host_modal.ftl">
@@ -714,11 +714,11 @@ function showScheduleModal() {
 	$('#schedule_modal').modal('show');
 }
 
-function showSitemonitoringModal() {
+function showSelectScriptModal() {
 	$("#originScriptPath").text("${test.scriptName}");
 	$("#originScriptRevision").text("<#if test.scriptRevision==-1>head<#else>${test.scriptRevision}</#if>");
-	$("#sitemonitoringScriptPath").text("${test.sitemonitoringScriptName}");
-	$('#sitemonitoring_modal').modal('show');
+	$("#siteMonScriptPath").text("${test.siteMonScriptName}");
+	$('#siteMon_modal').modal('show');
 }
 
 
@@ -840,11 +840,11 @@ function bindEvent() {
 	});
 	
 	$("#clone_script_btn").click(function() {
-		moveToAddSitemonitoringPage(true);
+		moveToAddSiteMonPage(true);
 	});
 	
 	$("#no_clone_script_btn").click(function() {
-		moveToAddSitemonitoringPage(false);
+		moveToAddSiteMonPage(false);
 	});
 
 	$("#run_count_radio").click(function() {
@@ -1077,7 +1077,7 @@ function updateScriptResources(first) {
 		if (first == false) {
 			initHosts(res.targetHosts);
 		}
-		for ( var i = 0; i < len; i++) {
+		for (var i = 0; i < len; i++) {
 			var value = res.resources[i];
 			html = html + "<div class='resource ellipsis' title='" + value + "'>" + value + "</div>";
 		}
@@ -1237,8 +1237,8 @@ function setDurationHour(durationVal) {
 	$("#duration_hour").val(durationHour);
 }
 
-function moveToAddSitemonitoringPage(bClone) {
-	window.location.href = "${req.getContextPath()}/sitemonitoring/new/${(test.id!0)?c}/" + bClone;
+function moveToAddSiteMonPage(bClone) {
+	window.location.href = "${req.getContextPath()}/sitemon/new_from_perftest/${(test.id!0)?c}?scriptClone=" + bClone;
 }
 </script>
 	</body>

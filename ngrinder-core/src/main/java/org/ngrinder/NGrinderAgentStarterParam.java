@@ -33,7 +33,7 @@ import static org.ngrinder.common.constants.AgentConstants.*;
 @Parameters(separators = "= ")
 public class NGrinderAgentStarterParam {
 	@Parameter(names = {"-m", "-mode", "--mode"}, required = false,
-			description = "run mode. The agent/monitor/sitemonitor modes are available.", hidden = true)
+			description = "run mode. The agent/monitor/sitemon modes are available.", hidden = true)
 	public String mode = null;
 	@Parameter(names = {"-c", "-command", "--command"}, required = false, description = "execution command. " +
 			"The stop/start command are available.", hidden = true)
@@ -91,7 +91,7 @@ public class NGrinderAgentStarterParam {
 				// Do nothing
 			}
 		},
-		sitemonitor("run_sitemonitor") {
+		sitemon("run_sitemon_agent") {
 			@Override
 			protected void processInternal() {
 				// Do nothing

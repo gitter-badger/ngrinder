@@ -161,15 +161,15 @@ public class Config extends AbstractConfig implements ControllerConstants, Clust
 	}
 	
 	/**
-	 * Return a controller ip address of the site monitor.
+	 * Return a controller ip address of the sitemon agent.
 	 * @return a controller ip address, if doesn't set, it returns a local ip address.
 	 */
-	public String getSitemonitorControllerIp() throws UnknownHostException {
-		String ip = getControllerProperties().getProperty(ControllerConstants.PROP_CONTROLLER_SITEMONITOR_CONTROLLER_IP);
+	public String getSiteMonAgentControllerIp() throws UnknownHostException {
+		String ip = getControllerProperties().getProperty(ControllerConstants.PROP_CONTROLLER_SITEMON_AGENT_CONTROLLER_IP);
 		if (ip == null) {
-			// If there was not defined a controller ip that should be received a response from the site monitor agent,
-			// instead, ngrinder will use the controller ip where generate the site monitor agent package.
-			LOG.warn("Undefined controller ip that should be received a response from the site monitor agent." +
+			// If there was not defined a controller ip that should be received a response from the sitemon agent,
+			// instead, ngrinder will use the controller ip where generate the sitemon agent package.
+			LOG.warn("Undefined controller ip that should be received a response from the sitemon agent." +
 					"use current conroller ip : {}", InetAddress.getLocalHost().getHostAddress());
 			return InetAddress.getLocalHost().getHostAddress();
 		} else {
@@ -177,8 +177,8 @@ public class Config extends AbstractConfig implements ControllerConstants, Clust
 		}
 	}
 	
-	public int getSitemonitorControllerPort() {
-		return getControllerProperties().getPropertyInt(ControllerConstants.PROP_CONTROLLER_SITEMONITOR_CONTROLLER_PORT);
+	public int getSiteMonAgentControllerPort() {
+		return getControllerProperties().getPropertyInt(ControllerConstants.PROP_CONTROLLER_SITEMON_AGENT_CONTROLLER_PORT);
 	}
 
 	/**

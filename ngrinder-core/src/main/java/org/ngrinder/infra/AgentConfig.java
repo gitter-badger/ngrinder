@@ -23,7 +23,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.ngrinder.common.constants.AgentConstants;
 import org.ngrinder.common.constants.CommonConstants;
-import org.ngrinder.common.constants.SitemonitorConstants;
+import org.ngrinder.common.constants.SiteMonAgentConstants;
 import org.ngrinder.common.constants.MonitorConstants;
 import org.ngrinder.common.util.PropertiesKeyMapper;
 import org.ngrinder.common.util.PropertiesWrapper;
@@ -49,7 +49,7 @@ import static org.ngrinder.common.util.Preconditions.checkNotNull;
  * @author JunHo Yoon
  * @since 3.0
  */
-public class AgentConfig implements AgentConstants, MonitorConstants, SitemonitorConstants, CommonConstants {
+public class AgentConfig implements AgentConstants, MonitorConstants, SiteMonAgentConstants, CommonConstants {
 	private static final String NGRINDER_DEFAULT_FOLDER = ".ngrinder_agent";
 	private static final Logger LOGGER = LoggerFactory.getLogger("agent config");
 
@@ -57,14 +57,14 @@ public class AgentConfig implements AgentConstants, MonitorConstants, Sitemonito
 
 	private PropertiesWrapper agentProperties;
 	private PropertiesWrapper monitorProperties;
-	private PropertiesWrapper sitemonitorProperties;
+	private PropertiesWrapper siteMonAgentProperties;
 	private PropertiesWrapper commonProperties;
 	private PropertiesWrapper internalProperties;
 
 	private PropertiesKeyMapper internalPropertyMapper = PropertiesKeyMapper.create("internal-properties.map");
 	private PropertiesKeyMapper agentPropertyMapper = PropertiesKeyMapper.create("agent-properties.map");
 	private PropertiesKeyMapper monitorPropertyMapper = PropertiesKeyMapper.create("monitor-properties.map");
-	private PropertiesKeyMapper sitemonitorPropertyMapper = PropertiesKeyMapper.create("sitemonitor-properties.map");
+	private PropertiesKeyMapper siteMonAgentPropertyMapper = PropertiesKeyMapper.create("sitemon_agent-properties.map");
 	private PropertiesKeyMapper commonPropertyMapper = PropertiesKeyMapper.create("common-properties.map");
 
 	/**
@@ -114,7 +114,7 @@ public class AgentConfig implements AgentConstants, MonitorConstants, Sitemonito
 		properties.putAll(System.getProperties());
 		agentProperties = new PropertiesWrapper(properties, agentPropertyMapper);
 		monitorProperties = new PropertiesWrapper(properties, monitorPropertyMapper);
-		sitemonitorProperties = new PropertiesWrapper(properties, sitemonitorPropertyMapper);
+		siteMonAgentProperties = new PropertiesWrapper(properties, siteMonAgentPropertyMapper);
 		commonProperties = new PropertiesWrapper(properties, commonPropertyMapper);
 	}
 
@@ -182,7 +182,7 @@ public class AgentConfig implements AgentConstants, MonitorConstants, Sitemonito
 		} else if ("monitor".equalsIgnoreCase(startMode)) {
 			properties.put("monitor.pid", agentPid);
 		} else {
-			properties.put("sitemonitor.pid", agentPid);
+			properties.put("sitemon_agent.pid", agentPid);
 		}
 		home.saveProperties("pid", properties);
 	}
@@ -207,7 +207,7 @@ public class AgentConfig implements AgentConstants, MonitorConstants, Sitemonito
 	/**
 	 * Get the agent pid in the form of string.
 	 *
-	 * @param startMode agent or monitor or sitemonitor
+	 * @param startMode agent or monitor or sitemon_agent
 	 * @return pid
 	 */
 	public String getAgentPidProperties(String startMode) {
@@ -218,7 +218,7 @@ public class AgentConfig implements AgentConstants, MonitorConstants, Sitemonito
 		} else if ("monitor".equalsIgnoreCase(startMode)) {
 			return properties.getProperty("monitor.pid");
 		} else {
-			return properties.getProperty("sitemonitor.pid");
+			return properties.getProperty("sitemon_agent.pid");
 		}
 	}
 
@@ -310,12 +310,12 @@ public class AgentConfig implements AgentConstants, MonitorConstants, Sitemonito
 	}
 
 	/**
-	 * Get sitemonitor properties.
+	 * Get sitemon agent properties.
 	 *
-	 * @return sitemonitor properties
+	 * @return sitemon agent properties
 	 */
-	public PropertiesWrapper getSitemonitorProperties() {
-		return checkNotNull(sitemonitorProperties);
+	public PropertiesWrapper getSitemonAgentProperties() {
+		return checkNotNull(siteMonAgentProperties);
 	}
 
 	/**
@@ -368,16 +368,16 @@ public class AgentConfig implements AgentConstants, MonitorConstants, Sitemonito
 		}
 	}
 	
-	public String getSitemonitorControllerIp() {
-		return getSitemonitorProperties().getProperty(PROP_SITEMONITOR_CONTROLLER_IP);
+	public String getSiteMonAgentControllerIp() {
+		return getSitemonAgentProperties().getProperty(PROP_SITEMON_AGENT_CONTROLLER_IP);
 	}
 	
-	public int getSitemonitorControllerPort() {
-		return getSitemonitorProperties().getPropertyInt(PROP_SITEMONITOR_CONTROLLER_PORT);
+	public int getSiteMonAgentControllerPort() {
+		return getSitemonAgentProperties().getPropertyInt(PROP_SITEMON_AGENT_CONTROLLER_PORT);
 	}
 	
-	public String getSitemonitorOwner() {
-		return getSitemonitorProperties().getProperty(PROP_SITEMONITOR_OWNER, "");
+	public String getSiteMonAgentOwner() {
+		return getSitemonAgentProperties().getProperty(PROP_SITEMON_AGENT_OWNER, "");
 	}
 
 	public PropertiesWrapper getCommonProperties() {

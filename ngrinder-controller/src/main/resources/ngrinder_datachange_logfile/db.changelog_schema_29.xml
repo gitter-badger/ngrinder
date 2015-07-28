@@ -5,13 +5,13 @@
 	<changeSet author="ngrinder.3.3.1" id="29" dbms="h2, cubrid" onValidationFail="MARK_RAN">
 		<preConditions onFail="MARK_RAN">
 			<not>
-				<tableExists tableName="SITEMONITORING_RESULT" />
+				<tableExists tableName="SITEMON_RESULT" />
 			</not>
 		</preConditions>
-		<comment>Add table SITEMONITORING_RESULT for sitemonitoring result data.</comment>
+		<comment>Add table SITEMON_RESULT for sitemonitoring result data.</comment>
 
-		<createTable tableName="SITEMONITORING_RESULT">
-			<column name="sitemonitoring_id" type="varchar(50)">
+		<createTable tableName="SITEMON_RESULT">
+			<column name="sitemon_id" type="varchar(50)">
 				<constraints nullable="false" />
 			</column>
 			<column name="test_number" type="INTEGER">
@@ -24,6 +24,6 @@
 				<constraints nullable="false" />
 			</column>
 		</createTable>
-		<addPrimaryKey tableName="SITEMONITORING_RESULT" columnNames="sitemonitoring_id, test_number, time_stamp" />
+		<addPrimaryKey tableName="SITEMON_RESULT" columnNames="sitemon_id, test_number, time_stamp" />
 	</changeSet>
 </databaseChangeLog>

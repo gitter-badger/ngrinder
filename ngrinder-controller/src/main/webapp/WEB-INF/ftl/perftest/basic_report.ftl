@@ -58,9 +58,9 @@
 				<@spring.message "perfTest.report.tpsGraph"/>
 				<div class="pull-right">
 				<#if test.status.category == "FINISHED">
-					<a id="add_sitemonitoring_btn" class="btn btn-primary">
+					<a id="add_siteMon_btn" class="btn btn-primary">
 						<i class="icon-file icon-white"></i>
-						<@spring.message "perfTest.report.addSitemonitoring"/>
+						<@spring.message "perfTest.report.addSiteMon"/>
 					</a>
 				</#if>
 					<a id="detail_report_btn" class="btn btn-primary">
@@ -120,8 +120,8 @@
 		ajaxObj.call();
 	});
 
-	$("#add_sitemonitoring_btn").click(function () {
-		showSitemonitoringModal();
+	$("#add_siteMon_btn").click(function () {
+		showSelectScriptModal();
 	});
 
 	$("#detail_report_btn").click(function () {

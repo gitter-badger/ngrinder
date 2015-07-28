@@ -62,8 +62,8 @@ public class NGrinderAgentStarterTest {
 	}
 
 	@Test
-	public void testStartSitemonitor() {
-		starter.startSitemonitor();
+	public void testStartSiteMonAgent() {
+		starter.startSiteMonAgent();
 	}
 
 }

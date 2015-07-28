@@ -258,15 +258,15 @@ public class AgentPackageService {
 	}
 
 	/**
-	 * Create sitemonitor package
+	 * Create sitemon agent package
 	 *
 	 * @param connectionIP host ip
 	 * @param port         host port
 	 * @param owner        owner
 	 * @return File
 	 */
-	public synchronized File createSitemonitorPackage(final URLClassLoader classLoader, String connectionIP, int port, String owner) {
-		return createPackage(new PackageSetting(classLoader, "ngrinder-sitemonitor", null, connectionIP, port, owner) {
+	public synchronized File createSiteMonAgentPackage(final URLClassLoader classLoader, String connectionIP, int port, String owner) {
+		return createPackage(new PackageSetting(classLoader, "ngrinder-sitemon", null, connectionIP, port, owner) {
 			@Override
 			public boolean isDependentLibs(File file) throws IOException {
 				return isAgentDependentLib(file, getDependentLibs(classLoader));
@@ -274,12 +274,12 @@ public class AgentPackageService {
 			
 			@Override
 			public boolean isDependentExec(String filename) {
-				return filename.contains("sitemonitor") && (filename.endsWith("sh") || filename.endsWith("bat"));
+				return filename.contains("sitemon") && (filename.endsWith("sh") || filename.endsWith("bat"));
 			}
 			
 			@Override
 			public void addConfToTar(TarArchiveOutputStream tarOutputStream, String basePath, String regionName, String connectionIP, int port, String owner) throws IOException {
-				addSitemonitorConfToTar(tarOutputStream, basePath, connectionIP, port, owner);
+				addSiteMonAgentConfToTar(tarOutputStream, basePath, connectionIP, port, owner);
 			}
 		});
 	}
@@ -310,10 +310,10 @@ public class AgentPackageService {
 		}
 	}
 
-	private void addSitemonitorConfToTar(TarArchiveOutputStream tarOutputStream, String basePath,
+	private void addSiteMonAgentConfToTar(TarArchiveOutputStream tarOutputStream, String basePath,
 	                               String connectingIP, int port, String owner) throws IOException {
 		if (isNotEmpty(connectingIP)) {
-			final String config = getAgentConfigContent("agent_sitemonitor.conf", getSitemonitorConfigParam(
+			final String config = getAgentConfigContent("agent_sitemon.conf", getSiteMonAgentConfigParam(
 					connectingIP, port, owner));
 			final byte[] bytes = config.getBytes();
 			addInputStreamToTar(tarOutputStream, new ByteArrayInputStream(bytes), basePath + "__agent.conf",
@@ -376,7 +376,7 @@ public class AgentPackageService {
 		return confMap;
 	}
 
-	private Map<String, Object> getSitemonitorConfigParam(String controllerIP, int port, String owner) {
+	private Map<String, Object> getSiteMonAgentConfigParam(String controllerIP, int port, String owner) {
 		Map<String, Object> confMap = newHashMap();
 		confMap.put("controllerIP", controllerIP);
 		confMap.put("controllerPort", String.valueOf(port));

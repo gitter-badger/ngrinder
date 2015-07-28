@@ -25,7 +25,7 @@
 				</executions>
 				<configuration>
 					<includes>
-						<include>${project.basedir}/target/classes/run_sitemonitor*</include>
+						<include>${project.basedir}/target/classes/run_sitemon*</include>
 					</includes>
 					<replacements>
 						<replacement>

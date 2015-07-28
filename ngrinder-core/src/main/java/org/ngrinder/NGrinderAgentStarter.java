@@ -15,7 +15,7 @@ package org.ngrinder;
 
 import com.beust.jcommander.JCommander;
 import net.grinder.AgentControllerDaemon;
-import net.grinder.engine.agent.SitemonitorScriptRunner;
+import net.grinder.engine.agent.SiteMonScriptRunner;
 import net.grinder.util.VersionNumber;
 import net.grinder.util.thread.Condition;
 
@@ -29,10 +29,10 @@ import org.ngrinder.common.constants.CommonConstants;
 import org.ngrinder.infra.AgentConfig;
 import org.ngrinder.infra.ArchLoaderInit;
 import org.ngrinder.monitor.agent.MonitorServer;
-import org.ngrinder.sitemonitor.MonitorScheduler;
-import org.ngrinder.sitemonitor.MonitorSchedulerImplementation;
-import org.ngrinder.sitemonitor.SitemonitorController;
-import org.ngrinder.sitemonitor.SitemonitorControllerDaemon;
+import org.ngrinder.sitemon.MonitorScheduler;
+import org.ngrinder.sitemon.MonitorSchedulerImplementation;
+import org.ngrinder.sitemon.SiteMonController;
+import org.ngrinder.sitemon.SiteMonControllerDaemon;
 import org.ngrinder.util.AgentStateMonitor;
 import org.ngrinder.util.AgentStateMonitorImplementation;
 import org.slf4j.Logger;
@@ -59,8 +59,8 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 
 	private static final Logger LOG = LoggerFactory.getLogger("starter");
 	
-	// folder for sitemonitorSetting and script file download
-	public static final String SITEMONITOR_ROOT_DIR = "sitemonitor-file";
+	// folder for script file download
+	public static final String SITEMON_ROOT_DIR = "sitemon-file";
 	public static final String FILESTORE_SUB_DIR = "incoming";
 
 	private AgentConfig agentConfig;
@@ -181,41 +181,41 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 	}
 
 	/**
-	 * Start the sitemonitor.
+	 * Start the sitemon agent.
 	 */
-	public void startSitemonitor() {
+	public void startSiteMonAgent() {
 		printLog("***************************************************");
-		printLog("* Start nGrinder sitemonitor... ");
+		printLog("* Start nGrinder sitemon agent... ");
 		printLog("***************************************************");
 		
 		try {
-			String controllerIP = getIP(agentConfig.getSitemonitorControllerIp());
-			int controllerPort = agentConfig.getSitemonitorControllerPort();
-			String owner = agentConfig.getSitemonitorOwner();
+			String controllerIP = getIP(agentConfig.getSiteMonAgentControllerIp());
+			int controllerPort = agentConfig.getSiteMonAgentControllerPort();
+			String owner = agentConfig.getSiteMonAgentOwner();
 			LOG.info("connecting to controller {}, owner-{}", (controllerIP + ":" + controllerPort), owner);
 
 			try {
 				File agentRootDir = agentConfig.getHome().getDirectory();
-				File sitemonitorDir = new File(agentRootDir, SITEMONITOR_ROOT_DIR);
-				File scriptDistDir = new File(sitemonitorDir, FILESTORE_SUB_DIR);
+				File siteMonDir = new File(agentRootDir, SITEMON_ROOT_DIR);
+				File scriptDistDir = new File(siteMonDir, FILESTORE_SUB_DIR);
 				AgentStateMonitor agentStateMonitor = new AgentStateMonitorImplementation(agentConfig);
 				
-				if (!sitemonitorDir.exists()) {
-					sitemonitorDir.mkdir();
+				if (!siteMonDir.exists()) {
+					siteMonDir.mkdir();
 				}
 
 				Condition eventSyncCondition = new Condition();
 				// init for script runner process
-				SitemonitorScriptRunner scriptRunner
-					= new SitemonitorScriptRunner(scriptDistDir);
+				SiteMonScriptRunner scriptRunner
+					= new SiteMonScriptRunner(scriptDistDir);
 				MonitorScheduler monitorScheduler
 					= new MonitorSchedulerImplementation(scriptRunner, agentStateMonitor);
 				// init for agent main process
-				SitemonitorController controller = new SitemonitorController(
-					sitemonitorDir, agentConfig, eventSyncCondition);
+				SiteMonController controller = new SiteMonController(
+					siteMonDir, agentConfig, eventSyncCondition);
 				controller.setMonitorScheduler(monitorScheduler);
 				controller.setAgentStateMonitor(agentStateMonitor);
-				SitemonitorControllerDaemon daemon = new SitemonitorControllerDaemon(controller);
+				SiteMonControllerDaemon daemon = new SiteMonControllerDaemon(controller);
 				// start agent process
 				daemon.run();
 			} catch (Exception e) {
@@ -224,7 +224,7 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 			}
 		} catch (Exception e) {
 			LOG.error("ERROR: {}", e.getMessage());
-			printHelpAndExit("Error while starting sitemonitor", e);
+			printHelpAndExit("Error while starting sitemon agent", e);
 		}
 	}
 
@@ -276,10 +276,10 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 			starter.startAgent();
 		} else if (startMode.equalsIgnoreCase("monitor")) {
 			starter.startMonitor();
-		} else if (startMode.equalsIgnoreCase("sitemonitor")) {
-			starter.startSitemonitor();
+		} else if (startMode.equalsIgnoreCase("sitemon")) {
+			starter.startSiteMonAgent();
 		} else {
-			staticPrintHelpAndExit("Invalid agent.conf, '--mode' must be set as 'monitor' or 'agent' or 'sitemonitor'.");
+			staticPrintHelpAndExit("Invalid agent.conf, '--mode' must be set as 'monitor' or 'agent' or 'sitemon'.");
 		}
 	}
 
@@ -311,7 +311,7 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 	/**
 	 * Stop process.
 	 *
-	 * @param mode agent or monitor or sitemonitor.
+	 * @param mode agent or monitor or sitemon.
 	 */
 	protected void stopProcess(String mode) {
 		String pid = agentConfig.getAgentPidProperties(mode);

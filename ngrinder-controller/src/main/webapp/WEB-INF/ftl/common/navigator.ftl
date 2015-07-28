@@ -18,8 +18,8 @@
 					<li id="nav_script">
 						<a href="${req.getContextPath()}/script/"><@spring.message "navigator.script"/></a>
 					</li>
-					<li id="nav_sitemonitoring">
-						<a href="${req.getContextPath()}/sitemonitoring/list"><@spring.message "navigator.sitemonitoring"/></a>
+					<li id="nav_siteMon">
+						<a href="${req.getContextPath()}/sitemon/list"><@spring.message "navigator.siteMon"/></a>
 					</li>
 				</ul>
 
@@ -101,7 +101,7 @@
 							<a href="${req.getContextPath()}/monitor/download"><@spring.message "navigator.dropDown.downloadMonitor"/></a>
 						</li>
 						<li>
-							<a href="${req.getContextPath()}/sitemonitor/download"><@spring.message "navigator.dropDown.downloadSitemonitor"/></a>
+							<a href="${req.getContextPath()}/sitemon/download"><@spring.message "navigator.dropDown.downloadSiteMonAgent"/></a>
 						</li>
 						<@security.authorize ifAnyGranted="A">
 							<li class="divider"></li>
@@ -112,7 +112,7 @@
 								<a href="${req.getContextPath()}/agent/"><@spring.message "navigator.dropDown.agentManagement"/></a>
 							</li>
 							<li>
-								<a href="${req.getContextPath()}/sitemonitor/"><@spring.message "navigator.dropDown.sitemonitorManagement"/></a>
+								<a href="${req.getContextPath()}/sitemon/agent/list"><@spring.message "navigator.dropDown.siteMonAgentManagement"/></a>
 							</li>
 							<#if clustered == false>
 								<li>

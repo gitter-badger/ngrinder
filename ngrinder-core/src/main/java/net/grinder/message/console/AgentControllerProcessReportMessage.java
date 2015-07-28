@@ -41,7 +41,7 @@ public class AgentControllerProcessReportMessage implements AddressAwareMessage 
 
 	private String version;
 	
-	// For sitemonitoring status
+	// For sitemon status
 	private AgentStateMonitor agentStateMonitor;
 
 	/**

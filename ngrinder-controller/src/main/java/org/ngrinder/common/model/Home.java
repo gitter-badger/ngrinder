@@ -20,7 +20,7 @@ import org.ngrinder.common.util.EncodingUtils;
 import org.ngrinder.common.util.NoOp;
 import org.ngrinder.model.PerfTest;
 import org.ngrinder.model.User;
-import org.ngrinder.sitemonitor.model.SitemonitorDistDirectory;
+import org.ngrinder.sitemon.model.SiteMonDistDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +46,7 @@ public class Home {
 	private static final String PATH_SCRIPT = "script";
 	private static final String PATH_USER_REPO = "repos";
 	private static final String PATH_PERF_TEST = "perftest";
-	private static final String PATH_SITE_MONITOR = "sitemonitor";
+	private static final String PATH_SITE_MON = "sitemon";
 	private static final String PATH_DOWNLOAD = "download";
 	private static final String PATH_GLOBAL_LOG = "logs";
 	private static final String PATH_LOG = "logs";
@@ -371,22 +371,22 @@ public class Home {
 	}
 	
 	/**
-	 * Create temp directory for SitemonitorDist.
+	 * Create temp directory for SiteMonDist.
 	 * Delete the directory after use.
 	 * 
 	 * @return 
 	 */
-	public SitemonitorDistDirectory createTempSitemonitorDistDirectory(String sitemonitorId) {
-		SitemonitorDistDirectory tmpDist = new SitemonitorDistDirectory();
-		File dist = new File(getSitemonitorDirectory(), System.nanoTime() + "");
-		File scriptDist = new File(dist, sitemonitorId);
+	public SiteMonDistDirectory createTempSiteMonDistDirectory(String siteMonId) {
+		SiteMonDistDirectory tmpDist = new SiteMonDistDirectory();
+		File dist = new File(getSiteMonDirectory(), System.nanoTime() + "");
+		File scriptDist = new File(dist, siteMonId);
 		tmpDist.setRootDirectory(mkDir(dist));
 		tmpDist.setScriptDirectory(mkDir(scriptDist));
 		return tmpDist;
 	}
 	
-	private File getSitemonitorDirectory() {
-		return getSubFile(PATH_SITE_MONITOR);
+	private File getSiteMonDirectory() {
+		return getSubFile(PATH_SITE_MON);
 	}
 
 	/**

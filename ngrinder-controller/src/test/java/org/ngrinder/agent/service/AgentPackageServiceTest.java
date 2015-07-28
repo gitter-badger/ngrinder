@@ -57,28 +57,28 @@ public class AgentPackageServiceTest {
 	}
 	
 	@Test
-	public void testCreateSitemonitorPackage() throws Exception {
-		// given
-		String connectionIP = "1.2.3.4";
-		int port = 12345;
-		String version = "3.4";
-		String owner = "me";
-		Home home = mock(Home.class);
-		URLClassLoader ngrinderShClassLoader = loadTargetFolderContainClassLoader();
-		
-		when(config.getHome()).thenReturn(home);
-		when(config.getVersion()).thenReturn(version);
-		when(home.getSubFile("download")).thenReturn(testFolder);
-		
-		
-		// when
-		File sitemonitorPackage = sut.createSitemonitorPackage(ngrinderShClassLoader, connectionIP, port, owner);
-
-		// then
-		assertThat(sitemonitorPackage.exists(), is(true));
-		assertThat(sitemonitorPackage.getName(), is("ngrinder-sitemonitor-" + version + "-" + connectionIP + "-me.tar"));
-		assertTarFiles(sitemonitorPackage);
-	}
+		public void testCreateSiteMonAgentPackage() throws Exception {
+			// given
+			String connectionIP = "1.2.3.4";
+			int port = 12345;
+			String version = "3.4";
+			String owner = "me";
+			Home home = mock(Home.class);
+			URLClassLoader ngrinderShClassLoader = loadTargetFolderContainClassLoader();
+			
+			when(config.getHome()).thenReturn(home);
+			when(config.getVersion()).thenReturn(version);
+			when(home.getSubFile("download")).thenReturn(testFolder);
+			
+			
+			// when
+			File siteMonAgentPackage = sut.createSiteMonAgentPackage(ngrinderShClassLoader, connectionIP, port, owner);
+	
+			// then
+			assertThat(siteMonAgentPackage.exists(), is(true));
+			assertThat(siteMonAgentPackage.getName(), is("ngrinder-sitemon-" + version + "-" + connectionIP + "-me.tar"));
+			assertTarFiles(siteMonAgentPackage);
+		}
 
 	/**
 	 * @return The ClassLoader load the target folder, Contain current ClassLoader urls  
@@ -106,28 +106,28 @@ public class AgentPackageServiceTest {
 		return newUrls;
 	}
 
-	private void assertTarFiles(File sitemonitorPackage) throws Exception {
-		TarArchiveInputStream sitemonitorTar = null;
+	private void assertTarFiles(File siteMonAgentPackage) throws Exception {
+		TarArchiveInputStream siteMonAgentTar = null;
 		Map<String, Boolean> existFileFlag = new HashMap<String, Boolean>();
 		
 		try {
-			sitemonitorTar = new TarArchiveInputStream(new BufferedInputStream(new FileInputStream(sitemonitorPackage)));
+			siteMonAgentTar = new TarArchiveInputStream(new BufferedInputStream(new FileInputStream(siteMonAgentPackage)));
 			ArchiveEntry entry;
 			
-			while ((entry = sitemonitorTar.getNextEntry()) != null) {
+			while ((entry = siteMonAgentTar.getNextEntry()) != null) {
 				existFileFlag.put(entry.getName(), true);
 			}
 		} finally {
-			sitemonitorTar.close();
+			siteMonAgentTar.close();
 		}
 		
-		assertTrue(existFileFlag.get("ngrinder-sitemonitor/"));
-		assertTrue(existFileFlag.get("ngrinder-sitemonitor/lib/"));
-		assertTrue(existFileFlag.get("ngrinder-sitemonitor/__agent.conf"));
-		assertTrue(existFileFlag.get("ngrinder-sitemonitor/run_sitemonitor.bat"));
-		assertTrue(existFileFlag.get("ngrinder-sitemonitor/run_sitemonitor.sh"));
-		assertTrue(existFileFlag.get("ngrinder-sitemonitor/run_sitemonitor_bg.sh"));
-		assertTrue(existFileFlag.get("ngrinder-sitemonitor/stop_sitemonitor.bat"));
-		assertTrue(existFileFlag.get("ngrinder-sitemonitor/stop_sitemonitor.sh"));
+		assertTrue(existFileFlag.get("ngrinder-sitemon/"));
+		assertTrue(existFileFlag.get("ngrinder-sitemon/lib/"));
+		assertTrue(existFileFlag.get("ngrinder-sitemon/__agent.conf"));
+		assertTrue(existFileFlag.get("ngrinder-sitemon/run_sitemon.bat"));
+		assertTrue(existFileFlag.get("ngrinder-sitemon/run_sitemon.sh"));
+		assertTrue(existFileFlag.get("ngrinder-sitemon/run_sitemon_bg.sh"));
+		assertTrue(existFileFlag.get("ngrinder-sitemon/stop_sitemon.bat"));
+		assertTrue(existFileFlag.get("ngrinder-sitemon/stop_sitemon.sh"));
 	}
 }

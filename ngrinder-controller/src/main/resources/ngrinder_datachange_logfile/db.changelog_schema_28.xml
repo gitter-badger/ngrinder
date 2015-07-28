@@ -5,24 +5,24 @@
 	<changeSet author="ngrinder.3.3.1" id="28" dbms="h2, cubrid" onValidationFail="MARK_RAN">
 		<preConditions onFail="MARK_RAN">
 			<not>
-				<tableExists tableName="SITEMONITORING" />
+				<tableExists tableName="SITEMON" />
 			</not>
 		</preConditions>
-		<comment>Add table SITEMONITORING for regiested sitemonitoring.</comment>
+		<comment>Add table SITEMON for regiested sitemonitoring.</comment>
 
-		<createTable tableName="SITEMONITORING">
+		<createTable tableName="SITEMON">
 			<column name="id" type="varchar(50)">
 				<constraints primaryKey="true" nullable="false" />
 			</column>
-			<column name="regist_user" type="BIGINT" />
+			<column name="created_user" type="BIGINT" />
 			<column name="script_name" type="varchar(255)" />
 			<column name="script_revision" type="BIGINT" />
 			<column name="target_hosts" type="varchar(65535)" />
 			<column name="param" type="varchar(256)" defaultValue="" />
 			<column name="agent_name" type="varchar(255)" />
 		</createTable>
-		<createIndex indexName="sitemonitoring_agent_name_index"
-					 tableName="SITEMONITORING"
+		<createIndex indexName="sitemon_agent_name_index"
+					 tableName="SITEMON"
 					 unique="false">
 			<column name="agent_name" type="varchar(255)"/>
 		</createIndex>
