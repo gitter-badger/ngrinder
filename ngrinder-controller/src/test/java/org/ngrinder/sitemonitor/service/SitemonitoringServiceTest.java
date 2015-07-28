@@ -31,32 +31,32 @@ public class SitemonitoringServiceTest {
 	SitemonitoringService sut = new SitemonitoringService();
 
 	@Test
-		public void testGetSitemonitoringsOf() throws Exception {
-			// given
-			String runningAgentName = "run";
-			String stoppedAgentName = "stop";
-			Sitemonitoring runSitemonitoring = new Sitemonitoring();
-			Sitemonitoring stopSitemonitoring = new Sitemonitoring();
-			runSitemonitoring.setAgentName(runningAgentName);
-			stopSitemonitoring.setAgentName(stoppedAgentName);
-			List<Sitemonitoring> monitorings = Arrays.asList(runSitemonitoring, stopSitemonitoring);
-			
-			when(sitemonitoringRepository.findByRegistUser((User) any())).thenReturn(monitorings);
-			when(sitemonitorManagerService.getConnectingAgentIdentity(runningAgentName)).thenReturn(
-				new AgentControllerIdentityImplementation(null, null));
-			when(sitemonitorManagerService.getConnectingAgentIdentity(stoppedAgentName)).thenReturn(null);
-			
-			// when
-			List<Sitemonitoring> actual = sut.getSitemonitoringsOf(new User());
-			
-			// then
-			for (Sitemonitoring sitemonitoring : actual) {
-				if (sitemonitoring.getAgentName().equals(runningAgentName)) {
-					assertTrue(sitemonitoring.isAgentRunning());
-				} else {
-					assertFalse(sitemonitoring.isAgentRunning());
-				}
+	public void testGetSitemonitoringsOf() throws Exception {
+		// given
+		String runningAgentName = "run";
+		String stoppedAgentName = "stop";
+		Sitemonitoring runSitemonitoring = new Sitemonitoring();
+		Sitemonitoring stopSitemonitoring = new Sitemonitoring();
+		runSitemonitoring.setAgentName(runningAgentName);
+		stopSitemonitoring.setAgentName(stoppedAgentName);
+		List<Sitemonitoring> monitorings = Arrays.asList(runSitemonitoring, stopSitemonitoring);
+		
+		when(sitemonitoringRepository.findByRegistUser((User) any())).thenReturn(monitorings);
+		when(sitemonitorManagerService.getConnectingAgentIdentity(runningAgentName)).thenReturn(
+			new AgentControllerIdentityImplementation(null, null));
+		when(sitemonitorManagerService.getConnectingAgentIdentity(stoppedAgentName)).thenReturn(null);
+		
+		// when
+		List<Sitemonitoring> actual = sut.getSitemonitoringsOf(new User());
+		
+		// then
+		for (Sitemonitoring sitemonitoring : actual) {
+			if (sitemonitoring.getAgentName().equals(runningAgentName)) {
+				assertTrue(sitemonitoring.isAgentRunning());
+			} else {
+				assertFalse(sitemonitoring.isAgentRunning());
 			}
 		}
+	}
 	
 }

@@ -62,17 +62,17 @@ public class MonitorSchedulerImplementationTest {
 	public void testRegist() throws Exception {
 		sut.regist(message);
 		
-		assertThat(sut.sitemonitorMap.size(), is(1));
-		assertThat(lastSetScriptCount, is(sut.sitemonitorMap.size()));
-		assertThat(sut.sitemonitorMap, hasEntry(message.getSitemonitorId(), message));
-		assertThat(sut.sitemonitorMap, not(hasEntry(message2.getSitemonitorId(), message2)));
+		assertThat(sut.sitemonitoringMap.size(), is(1));
+		assertThat(lastSetScriptCount, is(sut.sitemonitoringMap.size()));
+		assertThat(sut.sitemonitoringMap, hasEntry(message.getSitemonitoringId(), message));
+		assertThat(sut.sitemonitoringMap, not(hasEntry(message2.getSitemonitoringId(), message2)));
 		
 		sut.regist(message2);
 		
-		assertThat(sut.sitemonitorMap.size(), is(2));
-		assertThat(lastSetScriptCount, is(sut.sitemonitorMap.size()));
-		assertThat(sut.sitemonitorMap, hasEntry(message.getSitemonitorId(), message));
-		assertThat(sut.sitemonitorMap, hasEntry(message2.getSitemonitorId(), message2));
+		assertThat(sut.sitemonitoringMap.size(), is(2));
+		assertThat(lastSetScriptCount, is(sut.sitemonitoringMap.size()));
+		assertThat(sut.sitemonitoringMap, hasEntry(message.getSitemonitoringId(), message));
+		assertThat(sut.sitemonitoringMap, hasEntry(message2.getSitemonitoringId(), message2));
 	}
 	
 	@Test
@@ -81,12 +81,12 @@ public class MonitorSchedulerImplementationTest {
 		sut.regist(message);
 		sut.regist(message2);
 		
-		sut.unregist(message.getSitemonitorId());
+		sut.unregist(message.getSitemonitoringId());
 		
-		assertThat(sut.sitemonitorMap.size(), is(1));
-		assertThat(lastSetScriptCount, is(sut.sitemonitorMap.size()));
-		assertThat(sut.sitemonitorMap, not(hasEntry(message.getSitemonitorId(), message)));
-		assertThat(sut.sitemonitorMap, hasEntry(message2.getSitemonitorId(), message2));
+		assertThat(sut.sitemonitoringMap.size(), is(1));
+		assertThat(lastSetScriptCount, is(sut.sitemonitoringMap.size()));
+		assertThat(sut.sitemonitoringMap, not(hasEntry(message.getSitemonitoringId(), message)));
+		assertThat(sut.sitemonitoringMap, hasEntry(message2.getSitemonitoringId(), message2));
 		verify(agentStateMonitor, times(1)).clear();
 		
 		inOrder.verify(agentStateMonitor).clear();
@@ -111,7 +111,7 @@ public class MonitorSchedulerImplementationTest {
 		sut.regist(message);
 		ThreadUtils.sleep(repeatTime);
 		
-		verify(sitemonitorScriptRunner, times(1)).runWorker(message.getSitemonitorId(),
+		verify(sitemonitorScriptRunner, times(1)).runWorker(message.getSitemonitoringId(),
 			message.getScriptname(), message.getPropHosts(), message.getPropParam());
 		
 		assertThat(lastRecordUseTime, greaterThan(scriptUseTime - littleTime));

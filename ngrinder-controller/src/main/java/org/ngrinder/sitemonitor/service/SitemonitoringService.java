@@ -13,14 +13,19 @@
  */
 package org.ngrinder.sitemonitor.service;
 
+import java.util.Date;
 import java.util.List;
 
+import org.ngrinder.common.util.DateUtils;
 import org.ngrinder.model.PerfTest;
 import org.ngrinder.model.Sitemonitoring;
 import org.ngrinder.model.User;
 import org.ngrinder.script.model.FileEntry;
 import org.ngrinder.script.service.FileEntryService;
+import org.ngrinder.sitemonitor.model.SitemonitoringResult;
 import org.ngrinder.sitemonitor.repository.SitemonitoringRepository;
+import org.ngrinder.sitemonitor.repository.SitemonitoringResultRepository;
+import org.ngrinder.sitemonitor.repository.SitemonitoringResultSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -39,12 +44,21 @@ public class SitemonitoringService {
 	private SitemonitoringRepository sitemonitoringRepository;
 	
 	@Autowired
+	private SitemonitoringResultRepository sitemonitoringResultRepository;
+	
+	@Autowired
 	private FileEntryService fileEntryService;
 
 	public List<Sitemonitoring> getSitemonitoringsOf(User user) {
 		List<Sitemonitoring> monitors = sitemonitoringRepository.findByRegistUser(user);
 		initAgentRunning(monitors);
 		return monitors;
+	}
+	
+	public List<SitemonitoringResult> getResultRecentMonth(final String sitemonitoringId) {
+		Date ThiryDaysAgo = DateUtils.addDay(new Date(), -30);
+		return sitemonitoringResultRepository.findAll(SitemonitoringResultSpecification.idEqualAndAfterTime(
+			sitemonitoringId, ThiryDaysAgo));
 	}
 	
 	public Sitemonitoring getSitemonitoring(String sitemonitoringId) {

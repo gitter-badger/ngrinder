@@ -51,7 +51,7 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 	private long repeatTime = DEFAULT_REPEAT_TIME;
 	private boolean shutdown = false;
 
-	Map<String, RegistScheduleMessage> sitemonitorMap = new HashMap<String, RegistScheduleMessage>();
+	Map<String, RegistScheduleMessage> sitemonitoringMap = new HashMap<String, RegistScheduleMessage>();
 
 	/**
 	 * The constructor.
@@ -82,23 +82,22 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 	}
 
 	/**
-	 * @param sitemonitorId
-	 * @param scriptname
+	 * @param message
 	 */
 	@Override
 	public void regist(final RegistScheduleMessage message) {
-		sitemonitorMap.put(message.getSitemonitorId(), message);
-		agentStateMonitor.setRegistScriptCount(sitemonitorMap.size());
+		sitemonitoringMap.put(message.getSitemonitoringId(), message);
+		agentStateMonitor.setRegistScriptCount(sitemonitoringMap.size());
 	}
 
 	/**
 	 * @param groupName
 	 */
 	@Override
-	public void unregist(String sitemonitorId) {
-		sitemonitorMap.remove(sitemonitorId);
+	public void unregist(String sitemonitoringId) {
+		sitemonitoringMap.remove(sitemonitoringId);
 		agentStateMonitor.clear();
-		agentStateMonitor.setRegistScriptCount(sitemonitorMap.size());
+		agentStateMonitor.setRegistScriptCount(sitemonitoringMap.size());
 	}
 	
 	/**
@@ -130,8 +129,8 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 		@Override
 		public void run() {
 			while (!shutdown) {
-				LOGGER.debug("Sitemonitor runner awake! regist sitemonitor cnt is {}",
-					sitemonitorMap.size());
+				LOGGER.debug("Sitemonitor runner awake! regist sitemonitoring cnt is {}",
+					sitemonitoringMap.size());
 
 				long st = System.nanoTime();
 				List<Future<Object>> futures = runScriptUsingThreadPool();
@@ -161,20 +160,20 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 
 		private List<Future<Object>> runScriptUsingThreadPool() {
 			List<Future<Object>> futures = new LinkedList<Future<Object>>();
-			for (Entry<String, RegistScheduleMessage> entry : sitemonitorMap.entrySet()) {
-				final String sitemonitorId = entry.getKey();
+			for (Entry<String, RegistScheduleMessage> entry : sitemonitoringMap.entrySet()) {
+				final String sitemonitoringId = entry.getKey();
 				final RegistScheduleMessage message = entry.getValue();
 
 				Callable<Object> task = new Callable<Object>() {
 					@Override
 					public Object call() throws Exception {
-						scriptRunner.runWorker(sitemonitorId, message.getScriptname(),
+						scriptRunner.runWorker(sitemonitoringId, message.getScriptname(),
 							message.getPropHosts(), message.getPropParam());
 						return null;
 					}
 				};
 				futures.add(executor.submit(task));
-				LOGGER.debug("submit task for {}", sitemonitorId);
+				LOGGER.debug("submit task for {}", sitemonitoringId);
 			}
 			return futures;
 		}

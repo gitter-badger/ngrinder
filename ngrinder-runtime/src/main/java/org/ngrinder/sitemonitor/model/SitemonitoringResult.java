@@ -14,6 +14,7 @@
 package org.ngrinder.sitemonitor.model;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -48,7 +49,7 @@ public class SitemonitoringResult implements Serializable {
 	}
 
 	public SitemonitoringResult(String sitemonitoringId, int testNumber, long success, long error,
-		long testTime, long timestamp) {
+		long testTime, Date timestamp) {
 		this.sitemonitoringResultPK = new SitemonitoringResultPK(sitemonitoringId, testNumber, timestamp);
 		this.success = success;
 		this.error = error;
@@ -75,7 +76,7 @@ public class SitemonitoringResult implements Serializable {
 		return testTime;
 	}
 
-	public long getTimestamp() {
+	public Date getTimestamp() {
 		return sitemonitoringResultPK.getTimestamp();
 	}
 	
@@ -89,12 +90,12 @@ public class SitemonitoringResult implements Serializable {
 		@Column(name = "test_number")
 		private int testNumber;
 		@Column(name = "time_stamp")
-		private long timestamp;
+		private Date timestamp;
 		
 		public SitemonitoringResultPK() {
 		}
 
-		public SitemonitoringResultPK(String sitemonitoringId, int testNumber, long timestamp) {
+		public SitemonitoringResultPK(String sitemonitoringId, int testNumber, Date timestamp) {
 			this.sitemonitoringId = sitemonitoringId;
 			this.testNumber = testNumber;
 			this.timestamp = timestamp;
@@ -104,6 +105,7 @@ public class SitemonitoringResult implements Serializable {
 		public int hashCode() {
 			int result = sitemonitoringId.hashCode();
 			result = 31 * result + testNumber;
+			result = 31 * result + timestamp.hashCode();
 			return super.hashCode();
 		}
 
@@ -117,7 +119,7 @@ public class SitemonitoringResult implements Serializable {
 			}
 			SitemonitoringResultPK pk = (SitemonitoringResultPK) obj;
 			return pk.getSitemonitoringId().equals(sitemonitoringId)
-				&& pk.getTestNumber() == testNumber;
+				&& pk.getTestNumber() == testNumber && pk.getTimestamp().equals(timestamp);
 		}
 
 		public String getSitemonitoringId() {
@@ -136,11 +138,11 @@ public class SitemonitoringResult implements Serializable {
 			this.testNumber = testNumber;
 		}
 
-		public long getTimestamp() {
+		public Date getTimestamp() {
 			return timestamp;
 		}
 
-		public void setTimestamp(long timestamp) {
+		public void setTimestamp(Date timestamp) {
 			this.timestamp = timestamp;
 		}
 		

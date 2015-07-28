@@ -20,7 +20,7 @@
 			<column name="success" type="BIGINT" />
 			<column name="error" type="BIGINT" />
 			<column name="test_time" type="BIGINT" />
-			<column name="time_stamp" type="BIGINT">
+			<column name="time_stamp" type="TIMESTAMP">
 				<constraints nullable="false" />
 			</column>
 		</createTable>

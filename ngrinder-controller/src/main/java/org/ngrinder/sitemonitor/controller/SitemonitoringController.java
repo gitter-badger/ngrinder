@@ -22,6 +22,7 @@ import org.ngrinder.model.Sitemonitoring;
 import org.ngrinder.model.User;
 import org.ngrinder.perftest.service.PerfTestService;
 import org.ngrinder.script.model.FileEntry;
+import org.ngrinder.sitemonitor.model.SitemonitoringResult;
 import org.ngrinder.sitemonitor.service.SitemonitorManagerService;
 import org.ngrinder.sitemonitor.service.SitemonitoringService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +89,8 @@ public class SitemonitoringController extends BaseController {
 		checkNotNull(sitemonitoring, "no sitemonitoring for %s exists", sitemonitoringId);
 		checkTrue(hasGrant(sitemonitoring, user), "invalid grant for " + sitemonitoringId + " sitemonitoring");
 		modelMap.addAttribute("sitemonitoring", sitemonitoring);
+		modelMap.addAttribute("sitemonitoringResult",
+			sitemonitoringService.getResultRecentMonth(sitemonitoringId));
 		return "sitemonitoring/new";
 	}
 

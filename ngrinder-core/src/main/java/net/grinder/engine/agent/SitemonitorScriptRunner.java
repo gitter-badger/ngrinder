@@ -98,13 +98,13 @@ public class SitemonitorScriptRunner implements GrinderConstants {
 		}
 	}
 
-	public void runWorker(String sitemonitorId, String scriptname, String hosts, String params) {
+	public void runWorker(String sitemonitoringId, String scriptname, String hosts, String params) {
 		FanOutStreamSender fanOutStreamSender = null;
 		ProcessWorker worker = null;
 
 		try {
 			// create
-			File scriptDir = new File(baseDirectory, sitemonitorId);
+			File scriptDir = new File(baseDirectory, sitemonitoringId);
 			File scriptFile = new File(scriptDir, scriptname);
 			fanOutStreamSender = new FanOutStreamSender(1);
 			Directory workingDirectory = new Directory(baseDirectory);
@@ -113,9 +113,10 @@ public class SitemonitorScriptRunner implements GrinderConstants {
 			GrinderProperties properties = new GrinderProperties();
 			PropertyBuilder builder = new PropertyBuilder(properties, new Directory(scriptDir), false,
 				hosts, NetworkUtils.getLocalHostName());
-			AgentIdentityImplementation agentIdentity = new AgentIdentityImplementation(sitemonitorId);
+			AgentIdentityImplementation agentIdentity = new AgentIdentityImplementation(sitemonitoringId);
 			
 			// init
+			properties.setProperty("sitemonitoring.id", sitemonitoringId);
 			AbstractGrinderClassPathProcessor classPathProcessor = handler.getClassPathProcessor();
 			String grinderJVMClassPath = classPathProcessor.buildForemostClasspathBasedOnCurrentClassLoader(LOGGER)
 				+ File.pathSeparator
@@ -149,10 +150,10 @@ public class SitemonitorScriptRunner implements GrinderConstants {
 				agentIdentity, fanOutStreamSender, true, new ScriptLocation(scriptFile), properties);
 			worker = (ProcessWorker) workerFactory.create(System.out, System.err);
 
-			saveWorker(sitemonitorId, worker);
+			saveWorker(sitemonitoringId, worker);
 			worker.waitFor();
 		} catch (Exception e) {
-			LOGGER.error("Error while executing {} because {}", sitemonitorId, e.getMessage());
+			LOGGER.error("Error while executing {} because {}", sitemonitoringId, e.getMessage());
 			LOGGER.info("The error detail is ", e);
 			// TODO : send error message to console
 		} finally {

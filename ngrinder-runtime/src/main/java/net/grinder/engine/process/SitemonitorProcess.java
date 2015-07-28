@@ -14,6 +14,7 @@
 package net.grinder.engine.process;
 
 import java.net.UnknownHostException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -144,13 +145,13 @@ public class SitemonitorProcess {
 			properties = initialisationMessage.getProperties();
 			workerIdentity = initialisationMessage.getWorkerIdentity();
 
-			sitemonitoringId = workerIdentity.getName();
+			sitemonitoringId = properties.getProperty("sitemonitoring.id");
 			logDirectory = properties.getProperty(GrinderProperties.LOG_DIRECTORY, ".");
 			m_reportTimesToConsole = properties.getBoolean("grinder.reportTimesToConsole", true);
 
 			// init logger
-			m_logbackLoggerContext = configureLogging(sitemonitoringId, logDirectory);
-			m_terminalLogger = LoggerFactory.getLogger(sitemonitoringId);
+			m_logbackLoggerContext = configureLogging(workerIdentity.getName(), logDirectory);
+			m_terminalLogger = LoggerFactory.getLogger(workerIdentity.getName());
 			m_logger = LoggerFactory.getLogger("worker");
 
 			// init console connection
@@ -388,7 +389,7 @@ public class SitemonitorProcess {
 					statistics.getCount(indexMap.getLongSampleIndex("timedTests")),
 					statistics.getValue(indexMap.getLongIndex("errors")),
 					statistics.getSum(indexMap.getLongSampleIndex("timedTests")),
-					System.currentTimeMillis());
+					new Date());
 				results.add(result);
 			}
 		}.iterate();
