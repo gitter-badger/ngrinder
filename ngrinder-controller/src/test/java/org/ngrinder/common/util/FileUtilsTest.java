@@ -10,6 +10,9 @@ import java.util.List;
 
 import org.junit.Test;
 
+/**
+ * @author Gisoo Gwon
+ */
 public class FileUtilsTest {
 	private static final int FILE_COUNT = 3;
 

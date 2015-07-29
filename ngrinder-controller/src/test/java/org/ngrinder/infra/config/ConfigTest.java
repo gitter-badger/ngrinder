@@ -121,9 +121,9 @@ public class ConfigTest implements ControllerConstants, ClusterConstants {
 	}
 	
 	@Test
-			public void testGetSiteMonAgentControllerIpForDefaultValue() throws Exception {
-				String ip = config.getSiteMonAgentControllerIp();
-				
-				assertThat(ip, is(InetAddress.getLocalHost().getHostAddress()));
-			}
+	public void testGetSiteMonAgentControllerIpForDefaultValue() throws Exception {
+		String ip = config.getSiteMonAgentControllerIp();
+		
+		assertThat(ip, is(InetAddress.getLocalHost().getHostAddress()));
+	}
 }

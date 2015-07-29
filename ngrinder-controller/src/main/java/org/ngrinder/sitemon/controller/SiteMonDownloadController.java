@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RequestParam;
  * SiteMonAgent Download Controller.
  *
  * @author Gisoo-Gwon
- * @since 3.4
  */
 @Controller
 @RequestMapping("/sitemon")

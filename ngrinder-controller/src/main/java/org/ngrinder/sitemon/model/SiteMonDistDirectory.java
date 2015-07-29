@@ -16,6 +16,7 @@ package org.ngrinder.sitemon.model;
 import java.io.File;
 
 /**
+ * Directory tree of sitemon agent.
  * @author Gisoo Gwon
  */
 public class SiteMonDistDirectory {

@@ -41,6 +41,9 @@ import org.ngrinder.common.model.Home;
 import org.ngrinder.common.util.FileUtils;
 import org.ngrinder.infra.config.Config;
 
+/**
+ * @author Gisoo Gwon
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class AgentPackageServiceTest {
 	@Mock

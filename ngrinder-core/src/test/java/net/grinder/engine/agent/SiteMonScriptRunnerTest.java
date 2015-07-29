@@ -22,6 +22,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * @author Gisoo Gwon
+ */
 public class SiteMonScriptRunnerTest {
 	SiteMonScriptRunner siteMonScriptRunner;
 	File scriptDir = new File(getClass().getResource("/").getFile());

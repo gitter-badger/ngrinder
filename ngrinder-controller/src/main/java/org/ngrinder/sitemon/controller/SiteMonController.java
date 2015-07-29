@@ -117,6 +117,9 @@ public class SiteMonController extends BaseController {
 	
 	private boolean hasPermission(User createdUser) {
 		User user = currentUser();
+		if (user == null || user.getRole() == null) {
+			return false;
+		}
 		return user.getRole().equals(Role.ADMIN)
 			|| user.getRole().equals(Role.SUPER_USER)
 			|| user.equals(createdUser);

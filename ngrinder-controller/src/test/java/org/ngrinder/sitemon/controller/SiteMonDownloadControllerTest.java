@@ -28,7 +28,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * @author Gisoo Gwon
- * @since 3.4
  */
 @RunWith(MockitoJUnitRunner.class)
 public class SiteMonDownloadControllerTest {

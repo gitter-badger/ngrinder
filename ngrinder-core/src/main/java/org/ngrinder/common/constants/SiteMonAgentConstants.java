@@ -17,7 +17,6 @@ package org.ngrinder.common.constants;
  * Sitemon agent related constants.
  *
  * @author Gisoo Gwon
- * @since 3.3.1
  */
 public interface SiteMonAgentConstants {
 	public static final String PROP_SITEMON_AGENT_CONTROLLER_IP = "sitemon_agent.controller_host";

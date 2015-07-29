@@ -57,7 +57,6 @@ import net.grinder.util.thread.Condition;
 
 /**
  * @author Gisoo Gwon
- * @since 3.4
  */
 public class SiteMonController implements Agent {
 

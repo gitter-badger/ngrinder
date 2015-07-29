@@ -53,6 +53,7 @@ import static org.ngrinder.common.util.NoOp.noOp;
  *
  * @author Mavlarn
  * @author JunHo Yoon
+ * @author Gisoo Gwon
  * @since 3.0
  */
 public class NGrinderAgentStarter implements AgentConstants, CommonConstants {

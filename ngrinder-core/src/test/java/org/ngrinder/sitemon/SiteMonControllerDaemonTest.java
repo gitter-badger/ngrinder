@@ -22,6 +22,9 @@ import org.ngrinder.common.util.ThreadUtils;
 import org.ngrinder.sitemon.SiteMonController;
 import org.ngrinder.sitemon.SiteMonControllerDaemon;
 
+/**
+ * @author Gisoo Gwon
+ */
 public class SiteMonControllerDaemonTest {
 	private static final int LITTLE_TIME = 100;
 	

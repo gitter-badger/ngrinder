@@ -45,6 +45,7 @@ import static org.ngrinder.common.util.ExceptionUtils.processException;
  * language.
  *
  * @author JunHo Yoon
+ * @author Gisoo Gwon
  * @since 3.2
  */
 public abstract class ScriptHandler implements ControllerConstants {

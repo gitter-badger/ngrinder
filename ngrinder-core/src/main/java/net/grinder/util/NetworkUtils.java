@@ -46,6 +46,7 @@ import static org.ngrinder.common.util.NoOp.noOp;
  *
  * @author JunHo Yoon
  * @author Mavlarn
+ * @author Gisoo Gwon
  * @since 3.0
  */
 public abstract class NetworkUtils {

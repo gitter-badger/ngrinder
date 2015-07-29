@@ -24,7 +24,6 @@ import net.grinder.engine.agent.Agent;
  * Run {@link SiteMonController}.
  * If the connection fails, retry before shutdown
  * @author Gisoo Gwon
- * @since 3.4
  */
 public class SiteMonControllerDaemon implements Agent {
 	private static final int LOG_FREQUENCY = 5;

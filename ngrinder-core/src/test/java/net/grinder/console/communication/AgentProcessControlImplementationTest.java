@@ -25,9 +25,7 @@ import net.grinder.console.communication.AgentProcessControlImplementation.Agent
 import net.grinder.engine.controller.AgentControllerIdentityImplementation;
 import net.grinder.message.console.AgentControllerProcessReportMessage;
 
-
 /**
- * 
  * @author Gisoo Gwon
  */
 public class AgentProcessControlImplementationTest {
