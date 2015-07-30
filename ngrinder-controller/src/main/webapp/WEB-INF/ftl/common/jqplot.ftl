@@ -5,6 +5,7 @@
 <script src="${req.getContextPath()}/plugins/jqplot/plugins/jqplot.cursor.min.js?${nGrinderVersion}"></script>
 <script src="${req.getContextPath()}/plugins/jqplot/plugins/jqplot.highlighter.min.js?${nGrinderVersion}"></script>
 <script src="${req.getContextPath()}/plugins/jqplot/plugins/jqplot.enhancedLegendRenderer.min.js"></script>
+<script src="${req.getContextPath()}/plugins/jqplot/plugins/jqplot.dateAxisRenderer.min.js?${nGrinderVersion}"></script>
 <script src="${req.getContextPath()}/plugins/jqplot/plugins/jqplot.canvasTextRenderer.min.js?${nGrinderVersion}"></script>
 <script src="${req.getContextPath()}/plugins/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js?${nGrinderVersion}"></script>
 <script src="${req.getContextPath()}/plugins/jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js?${nGrinderVersion}"></script>

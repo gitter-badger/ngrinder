@@ -13,10 +13,14 @@
  */
 package org.ngrinder.sitemon.repository;
 
+import java.util.Date;
+import java.util.List;
+
 import org.ngrinder.sitemon.model.SiteMonResult;
 import org.ngrinder.sitemon.model.SiteMonResult.SiteMonResultPK;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 
 /**
  * {@link SiteMonResult} Repository.
@@ -27,4 +31,14 @@ public interface SiteMonResultRepository extends
 	JpaRepository<SiteMonResult, SiteMonResultPK>,
 	JpaSpecificationExecutor<SiteMonResult> {
 
+	/**
+	 * Find all testNumber after the given start date with distinct.
+	 *
+	 * @param siteMonId sitemon id
+	 * @param start time
+	 * @return {@link String} test number list
+	 */
+	@Query("select distinct(s.siteMonResultPK.testNumber) from SiteMonResult s where s.siteMonResultPK.siteMonId = ?1 and s.siteMonResultPK.timestamp > ?2")
+	public List<Integer> findTestNumber(String siteMonId, Date start);
+	
 }

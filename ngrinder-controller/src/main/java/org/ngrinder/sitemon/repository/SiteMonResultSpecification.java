@@ -30,8 +30,14 @@ import org.springframework.data.jpa.domain.Specification;
  */
 public abstract class SiteMonResultSpecification {
 
-	public static Specification<SiteMonResult> idEqualAndAfterTime(
-		final String siteMonId, final Date stTimestamp) {
+	/**
+	 * Find all {@link SiteMonResult}s where equal siteMonId AND greater than startTime ORDER BY timestamp.
+	 * @param siteMonId
+	 * @param startTime
+	 * @return
+	 */
+	public static Specification<SiteMonResult> idEqualAndAfterTimeOrderByTime(
+		final String siteMonId, final Date startTime) {
 		return new Specification<SiteMonResult>() {
 			@Override
 			public Predicate toPredicate(Root<SiteMonResult> root, CriteriaQuery<?> query,
@@ -39,7 +45,8 @@ public abstract class SiteMonResultSpecification {
 				Path<Object> id = root.get("siteMonResultPK").get("siteMonId");
 				Expression<Date> timestamp = root.get("siteMonResultPK").get("timestamp").as(
 					Date.class);
-				return cb.and(cb.equal(id, siteMonId), cb.greaterThan(timestamp, stTimestamp));
+				query.orderBy(cb.asc(timestamp));
+				return cb.and(cb.equal(id, siteMonId), cb.greaterThan(timestamp, startTime));
 			}
 		};
 	}

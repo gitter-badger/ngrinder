@@ -382,6 +382,7 @@ public class SiteMonProcess {
 	private List<SiteMonResult> extractResults(TestStatisticsMap sample) {
 		final List<SiteMonResult> results = new LinkedList<SiteMonResult>();
 		final StatisticsIndexMap indexMap = m_statisticsServices.getStatisticsIndexMap();
+		final Date timestamp = new Date();
 		sample.new ForEach() {
 			@Override
 			protected void next(Test test, StatisticsSet statistics) {
@@ -389,7 +390,7 @@ public class SiteMonProcess {
 					statistics.getCount(indexMap.getLongSampleIndex("timedTests")),
 					statistics.getValue(indexMap.getLongIndex("errors")),
 					statistics.getSum(indexMap.getLongSampleIndex("timedTests")),
-					new Date());
+					timestamp);
 				results.add(result);
 			}
 		}.iterate();

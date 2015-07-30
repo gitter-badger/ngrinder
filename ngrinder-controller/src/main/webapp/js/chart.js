@@ -35,6 +35,10 @@ function Chart(containerId, data, interval, opts) {
 	this.opts = opts || {};
 	this.containerId = containerId;
 	this.values = prepare(data);
+	this.xAxisMin = this.opts.xAxisMin || 1;
+	this.xAxisMax = this.opts.xAxisMax || this.values[0].length;
+	this.xAxisRenderer = this.opts.xAxisRenderer || undefined;
+	this.xAxisFormatString = this.opts.xAxisFormatString || undefined;
 	this.yAxisFormatter = this.opts.yAxisFormatter || function (format, value) {
 		value = value || 0;
 		return value.toFixed(0);
@@ -75,6 +79,9 @@ Chart.prototype.calcYmax = function () {
 		var series = this.values[i];
 		for (var j = 0; j < series.length; j++) {
 			var each = series[j];
+			if (each instanceof Array) {
+				each = each[each.length - 1];
+			}
 			if (each !== null && each > ymax) {
 				ymax = each;
 			}
@@ -126,13 +133,15 @@ Chart.prototype.plot = function () {
 			},
 			axes: {
 				xaxis: {
-					min: 1,
-					max: this.values[0].length,
+					renderer: this.xAxisRenderer,
+					min: this.xAxisMin,
+					max: this.xAxisMax,
 					pad: 2,
 					numberTicks: this.numXTicks,
 					tickOptions: {
 						show: true,
-						formatter: this.xAxisFormatter
+						formatter: this.xAxisFormatter,
+						formatString: this.xAxisFormatString
 					}
 				},
 				yaxis: {
@@ -168,13 +177,15 @@ Chart.prototype.plot = function () {
 		if (ymaxChanged) {
 			axes = {
 				xaxis: {
-					min: 1,
-					max: this.values[0].length,
+					renderer: this.xAxisRenderer,
+					min: this.xAxisMin,
+					max: this.xAxisMax,
 					pad: 2,
 					numberTicks: 10,
 					tickOptions: {
 						show: true,
-						formatter: this.xAxisFormatter
+						formatter: this.xAxisFormatter,
+						formatString: this.xAxisFormatString
 					}
 				},
 				yaxis: {

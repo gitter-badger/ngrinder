@@ -13,8 +13,11 @@
  */
 package org.ngrinder.sitemon.service;
 
+import java.text.ParseException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.ngrinder.common.util.DateUtils;
 import org.ngrinder.model.PerfTest;
@@ -23,10 +26,12 @@ import org.ngrinder.model.User;
 import org.ngrinder.script.model.FileEntry;
 import org.ngrinder.script.service.FileEntryService;
 import org.ngrinder.sitemon.model.SiteMonResult;
+import org.ngrinder.sitemon.model.SiteMonResultJson;
 import org.ngrinder.sitemon.repository.SiteMonRepository;
 import org.ngrinder.sitemon.repository.SiteMonResultRepository;
 import org.ngrinder.sitemon.repository.SiteMonResultSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import net.grinder.common.processidentity.AgentIdentity;
@@ -55,10 +60,31 @@ public class SiteMonService {
 		return monitors;
 	}
 	
-	public List<SiteMonResult> getResultRecentMonth(final String siteMonId) {
-		Date ThiryDaysAgo = DateUtils.addDay(new Date(), -30);
-		return siteMonResultRepository.findAll(SiteMonResultSpecification.idEqualAndAfterTime(
-			siteMonId, ThiryDaysAgo));
+	public List<SiteMonResult> getResultRecentDay(final String siteMonId) {
+		Date daysAgo = DateUtils.addDay(new Date(), -1);
+		return siteMonResultRepository.findAll(SiteMonResultSpecification.idEqualAndAfterTimeOrderByTime(
+			siteMonId, daysAgo));
+	}
+	
+	public Map<String, Object> getGraphDataRecentDay(String siteMonId) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		Date daysAgo = null;
+		try {
+			daysAgo = DateUtils.toDate("2015-07-30 21:35:00");
+		} catch (ParseException e) {
+		}/*DateUtils.addDay(new Date(), -1);*/
+		Specification<SiteMonResult> spec = SiteMonResultSpecification.idEqualAndAfterTimeOrderByTime(
+			siteMonId, daysAgo);
+		List<SiteMonResult> resultData = siteMonResultRepository.findAll(spec);
+		SiteMonResultJson json = new SiteMonResultJson(resultData);
+		resultMap.put("labels", json.getLabelsList());
+		resultMap.put("minTimestamp", json.getMinTimestamp());
+		resultMap.put("maxTimestamp", json.getMaxTimestamp());
+		resultMap.put("successData", json.getSuccessList());
+		resultMap.put("errorData", json.getErrorList());
+		resultMap.put("testTimeData", json.getTestTimeList());
+		
+		return resultMap;
 	}
 	
 	public SiteMon getOne(String siteMonId) {

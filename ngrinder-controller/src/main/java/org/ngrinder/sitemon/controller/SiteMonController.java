@@ -70,7 +70,7 @@ public class SiteMonController extends BaseController {
 	}
 	
 	@RequestMapping(value = "/new_from_perftest/{perfTestId}", method = RequestMethod.GET)
-	public String openForm(User user, @PathVariable("perfTestId") Long perfTestId,
+	public String openForm(User user, @PathVariable Long perfTestId,
 			@RequestParam boolean scriptClone, ModelMap modelMap) {
 		PerfTest perfTest = perfTestService.getOne(perfTestId);
 		checkNotNull(perfTest, "no perftest for %s exits", perfTestId);
@@ -80,7 +80,7 @@ public class SiteMonController extends BaseController {
 		modelMap.addAttribute("siteMon", new SiteMon("Perftest" + perfTestId, user,
 			siteMonScript.getPath(), siteMonScript.getRevision(), perfTest.getTargetHosts(),
 			perfTest.getParam(), null));
-		return "sitemon/new";
+		return "sitemon/detail";
 	}
 	
 	@RequestMapping("/save")
@@ -89,13 +89,12 @@ public class SiteMonController extends BaseController {
 		siteMon.setCreatedUser(user);
 		siteMon.setAgentName(siteMonAgentManagerService.getIdleResouceAgentName());
 		modelMap.addAttribute("msg", siteMonAgentManagerService.sendRegist(siteMon));
-		return "sitemon/new";
+		return "sitemon/detail";
 	}
 	
 	@RestAPI
 	@RequestMapping("/api/del/{siteMonId}")
-	public HttpEntity<String> delete(User user,
-			@PathVariable("siteMonId") String siteMonId) {
+	public HttpEntity<String> delete(User user, @PathVariable String siteMonId) {
 		SiteMon siteMon = siteMonService.getOne(siteMonId);
 		checkNotNull(siteMon, "No exists {} sitemon.", siteMonId);
 		checkTrue(hasPermission(siteMon.getCreatedUser()), "invalid permission for " + siteMonId);
@@ -104,15 +103,18 @@ public class SiteMonController extends BaseController {
 	}
 	
 	@RequestMapping("/get/{siteMonId}")
-	public String getOne(User user,
-		@PathVariable("siteMonId") String siteMonId, ModelMap modelMap) {
+	public String getOne(User user, @PathVariable String siteMonId, ModelMap modelMap) {
 		SiteMon siteMon = siteMonService.getOne(siteMonId);
 		checkNotNull(siteMon, "no siteMon for %s exists", siteMonId);
 		checkTrue(hasPermission(siteMon.getCreatedUser()), "invalid permission for " + siteMonId + " sitemon");
 		modelMap.addAttribute("siteMon", siteMon);
-		modelMap.addAttribute("siteMonResult",
-			siteMonService.getResultRecentMonth(siteMonId));
-		return "sitemon/new";
+		return "sitemon/detail";
+	}
+	
+	@RestAPI
+	@RequestMapping("/api/{siteMonId}/result")
+	public HttpEntity<String> getResult(@PathVariable String siteMonId, ModelMap modelMap) {
+		return toJsonHttpEntity(siteMonService.getGraphDataRecentDay(siteMonId));
 	}
 	
 	private boolean hasPermission(User createdUser) {
