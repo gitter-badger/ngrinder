@@ -68,11 +68,7 @@ public class SiteMonService {
 	
 	public Map<String, Object> getGraphDataRecentDay(String siteMonId) {
 		Map<String, Object> resultMap = new HashMap<String, Object>();
-		Date daysAgo = null;
-		try {
-			daysAgo = DateUtils.toDate("2015-07-30 21:35:00");
-		} catch (ParseException e) {
-		}/*DateUtils.addDay(new Date(), -1);*/
+		Date daysAgo = DateUtils.addDay(new Date(), -1);
 		Specification<SiteMonResult> spec = SiteMonResultSpecification.idEqualAndAfterTimeOrderByTime(
 			siteMonId, daysAgo);
 		List<SiteMonResult> resultData = siteMonResultRepository.findAll(spec);
