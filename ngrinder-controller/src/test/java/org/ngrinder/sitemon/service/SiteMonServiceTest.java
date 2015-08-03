@@ -82,11 +82,11 @@ public class SiteMonServiceTest {
 		Date timestamp = DateUtils.toDate("2015-07-30 12:10:50");
 		List<Integer> testNumbers = Arrays.asList(1, 2, 3);	// 3 is nohave data.
 		List<SiteMonResult> resultData = Arrays.asList(
-			new SiteMonResult(siteMonId, testNum1, 1, 5, 9, timestamp),
-			new SiteMonResult(siteMonId, testNum1, 2, 4, 8, timestamp),
-			new SiteMonResult(siteMonId, testNum1, 3, 3, 7, timestamp),
-			new SiteMonResult(siteMonId, testNum2, 4, 2, 6, timestamp),
-			new SiteMonResult(siteMonId, testNum2, 5, 1, 5, timestamp));
+			new SiteMonResult(siteMonId, testNum1, 1, 5, 9, timestamp, null),
+			new SiteMonResult(siteMonId, testNum1, 2, 4, 8, timestamp, null),
+			new SiteMonResult(siteMonId, testNum1, 3, 3, 7, timestamp, null),
+			new SiteMonResult(siteMonId, testNum2, 4, 2, 6, timestamp, null),
+			new SiteMonResult(siteMonId, testNum2, 5, 1, 5, timestamp, null));
 		when(siteMonResultRepository.findTestNumber(eq(siteMonId), (Date) anyObject())).thenReturn(testNumbers);
 		when(siteMonResultRepository.findAll((Specification<SiteMonResult>) anyObject())).thenReturn(resultData);
 		
@@ -94,20 +94,20 @@ public class SiteMonServiceTest {
 		Map<String, Object> resultMap = sut.getGraphDataRecentDay(siteMonId);
 		
 		// then
-		String label = (String) resultMap.get("labels");
-		String successData = (String) resultMap.get("successData");
-		String errorData = (String) resultMap.get("errorData");
-		String testTimeData = (String) resultMap.get("testTimeData");
-		assertThat(label, is("[1,2]"));
+		List<Integer> labels = (List<Integer>) resultMap.get("labels");
+		List<Integer> successData = (List<Integer>) resultMap.get("successData");
+		List<Integer> errorData = (List<Integer>) resultMap.get("errorData");
+		List<Integer> testTimeData = (List<Integer>) resultMap.get("testTimeData");
+		assertThat(labels.toString(), is("[1, 2]"));
 		assertThat(
-			successData,
-			is("[[['2015-07-30 12:10:50',1],['2015-07-30 12:10:50',2],['2015-07-30 12:10:50',3]],[['2015-07-30 12:10:50',4],['2015-07-30 12:10:50',5]]]"));
+			successData.toString(),
+			is("[[[2015-07-30 12:10:50, 1], [2015-07-30 12:10:50, 2], [2015-07-30 12:10:50, 3]], [[2015-07-30 12:10:50, 4], [2015-07-30 12:10:50, 5]]]"));
 		assertThat(
-			errorData,
-			is("[[['2015-07-30 12:10:50',5],['2015-07-30 12:10:50',4],['2015-07-30 12:10:50',3]],[['2015-07-30 12:10:50',2],['2015-07-30 12:10:50',1]]]"));
+			errorData.toString(),
+			is("[[[2015-07-30 12:10:50, 5], [2015-07-30 12:10:50, 4], [2015-07-30 12:10:50, 3]], [[2015-07-30 12:10:50, 2], [2015-07-30 12:10:50, 1]]]"));
 		assertThat(
-			testTimeData,
-			is("[[['2015-07-30 12:10:50',9],['2015-07-30 12:10:50',8],['2015-07-30 12:10:50',7]],[['2015-07-30 12:10:50',6],['2015-07-30 12:10:50',5]]]"));
+			testTimeData.toString(),
+			is("[[[2015-07-30 12:10:50, 9], [2015-07-30 12:10:50, 8], [2015-07-30 12:10:50, 7]], [[2015-07-30 12:10:50, 6], [2015-07-30 12:10:50, 5]]]"));
 	}
 	
 }

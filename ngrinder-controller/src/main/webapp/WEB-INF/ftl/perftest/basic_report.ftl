@@ -58,10 +58,14 @@
 				<@spring.message "perfTest.report.tpsGraph"/>
 				<div class="pull-right">
 				<#if test.status.category == "FINISHED">
-					<a id="add_siteMon_btn" class="btn btn-primary">
+					<#--  Save/Clone is available only when the test owner is current user.   -->
+					<#if !(test.createdUser??) || test.createdUser.userId != currentUser.factualUser.userId>
+						<#assign disabled = "disabled">
+					</#if>
+					<button type="button" id="add_siteMon_btn" class="btn btn-primary" ${disabled!}>
 						<i class="icon-file icon-white"></i>
 						<@spring.message "perfTest.report.addSiteMon"/>
-					</a>
+					</button>
 				</#if>
 					<a id="detail_report_btn" class="btn btn-primary">
 						<@spring.message "perfTest.report.detailedReport"/>

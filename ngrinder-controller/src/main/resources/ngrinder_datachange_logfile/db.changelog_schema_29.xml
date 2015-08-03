@@ -12,18 +12,20 @@
 
 		<createTable tableName="SITEMON_RESULT">
 			<column name="sitemon_id" type="varchar(50)">
-				<constraints nullable="false" />
+				<constraints primaryKey="true" nullable="false" />
 			</column>
 			<column name="test_number" type="INTEGER">
-				<constraints nullable="false" />
+				<constraints primaryKey="true" nullable="false" />
 			</column>
 			<column name="success" type="BIGINT" />
 			<column name="error" type="BIGINT" />
 			<column name="test_time" type="BIGINT" />
 			<column name="time_stamp" type="TIMESTAMP">
-				<constraints nullable="false" />
+				<constraints primaryKey="true" nullable="false" />
 			</column>
 		</createTable>
-		<addPrimaryKey tableName="SITEMON_RESULT" columnNames="sitemon_id, test_number, time_stamp" />
+		<modifySql dbms="cubrid">
+			<append value=" REUSE_OID"/>
+		</modifySql>
 	</changeSet>
 </databaseChangeLog>

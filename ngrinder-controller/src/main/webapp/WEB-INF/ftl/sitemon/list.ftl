@@ -66,6 +66,7 @@
 <#include "../common/copyright.ftl">
 <script>
 	$(document).ready(function () {
+		$("#nav_siteMon").addClass("active");
 		var $siteMonTable = $("#siteMon_table");
 	<#if siteMons?has_content>
 		$siteMonTable.dataTable({

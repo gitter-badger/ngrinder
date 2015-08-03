@@ -137,9 +137,9 @@ public class SiteMonScriptRunner implements GrinderConstants {
 			properties.setProperty("grinder.jvm.classpath", grinderJVMClassPath);
 
 			// logging
-			LOGGER.info("grinder.jvm.classpath  : {} ", grinderJVMClassPath);
+			LOGGER.debug("grinder.jvm.classpath  : {} ", grinderJVMClassPath);
 			LOGGER.debug("sitemon class path " + classPathProcessor.buildClasspathBasedOnCurrentClassLoader(LOGGER));
-			LOGGER.info("jvm args : {} ", buildJVMArgumentWithoutMemory);
+			LOGGER.debug("jvm args : {} ", buildJVMArgumentWithoutMemory);
 
 			// worker init
 			

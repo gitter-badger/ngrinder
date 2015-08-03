@@ -14,6 +14,7 @@
 package net.grinder.engine.process;
 
 import java.net.UnknownHostException;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.ngrinder.sitemon.logger.ErrorCollectLogger;
 import org.ngrinder.sitemon.messages.ShutdownSiteMonProcessMessage;
 import org.ngrinder.sitemon.messages.SiteMonResultMessage;
 import org.ngrinder.sitemon.model.SiteMonResult;
@@ -89,7 +91,7 @@ public class SiteMonProcess {
 	// logger
 	private final LoggerContext m_logbackLoggerContext;
 	private final Logger m_terminalLogger;
-	private Logger m_logger = null;
+	private ErrorCollectLogger m_logger;
 
 	// value from InitialiseGrinderMessage
 	private final ScriptLocation script;
@@ -152,7 +154,7 @@ public class SiteMonProcess {
 			// init logger
 			m_logbackLoggerContext = configureLogging(workerIdentity.getName(), logDirectory);
 			m_terminalLogger = LoggerFactory.getLogger(workerIdentity.getName());
-			m_logger = LoggerFactory.getLogger("worker");
+			m_logger = new ErrorCollectLogger(LoggerFactory.getLogger("worker"));
 
 			// init console connection
 			MessageDispatchSender messageDispatcher = new MessageDispatchSender();
@@ -367,7 +369,8 @@ public class SiteMonProcess {
 
 				try {
 					SiteMonResultMessage message = new SiteMonResultMessage();
-					message.addAll(extractResults(sample));
+					String errorLog = getErrorLog();
+					message.addAll(extractResults(sample, errorLog));
 					m_consoleSender.send(message);
 					m_consoleSender.flush();
 				} catch (CommunicationException e) {
@@ -379,10 +382,21 @@ public class SiteMonProcess {
 		}
 	}
 	
-	private List<SiteMonResult> extractResults(TestStatisticsMap sample) {
+	private String getErrorLog() {
+		StringBuilder errorLog = new StringBuilder();
+		for (Throwable t : m_logger.getErrorList()) {
+			errorLog.append(t.getClass().getSimpleName());
+			errorLog.append("-");
+			errorLog.append(t.getMessage());
+			errorLog.append(",");
+		}
+		return errorLog.toString();
+	}
+	
+	private List<SiteMonResult> extractResults(TestStatisticsMap sample, final String errorLog) {
 		final List<SiteMonResult> results = new LinkedList<SiteMonResult>();
 		final StatisticsIndexMap indexMap = m_statisticsServices.getStatisticsIndexMap();
-		final Date timestamp = new Date();
+		final Date timestamp = getTimestamp();
 		sample.new ForEach() {
 			@Override
 			protected void next(Test test, StatisticsSet statistics) {
@@ -390,11 +404,20 @@ public class SiteMonProcess {
 					statistics.getCount(indexMap.getLongSampleIndex("timedTests")),
 					statistics.getValue(indexMap.getLongIndex("errors")),
 					statistics.getSum(indexMap.getLongSampleIndex("timedTests")),
-					timestamp);
+					timestamp, errorLog);
 				results.add(result);
 			}
 		}.iterate();
 		return results;
+	}
+
+	/**
+	 * @return Date that millisec value is zero
+	 */
+	private Date getTimestamp() {
+		Calendar c = Calendar.getInstance();
+		c.set(Calendar.MILLISECOND, 0);
+		return c.getTime();
 	}
 
 	private class ReportToConsoleTimerTask extends TimerTask {

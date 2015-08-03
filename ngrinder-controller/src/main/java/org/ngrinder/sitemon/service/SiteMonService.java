@@ -13,7 +13,6 @@
  */
 package org.ngrinder.sitemon.service;
 
-import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +25,7 @@ import org.ngrinder.model.User;
 import org.ngrinder.script.model.FileEntry;
 import org.ngrinder.script.service.FileEntryService;
 import org.ngrinder.sitemon.model.SiteMonResult;
+import org.ngrinder.sitemon.model.SiteMonResult.SiteMonResultPK;
 import org.ngrinder.sitemon.model.SiteMonResultJson;
 import org.ngrinder.sitemon.repository.SiteMonRepository;
 import org.ngrinder.sitemon.repository.SiteMonResultRepository;
@@ -106,6 +106,19 @@ public class SiteMonService {
 		siteMonScript.setDescription("Clone for sitemon.");
 		fileEntryService.save(user, siteMonScript);
 		return fileEntryService.getOne(user, siteMonScript.getPath());
+	}
+
+	/**
+	 * Get error log.
+	 * @param siteMonId
+	 * @param testNumber
+	 * @param date
+	 * @return
+	 */
+	public String getLog(String siteMonId, int testNumber, Date timestamp) {
+		SiteMonResultPK pk = new SiteMonResultPK(siteMonId, testNumber, timestamp);
+		SiteMonResult siteMonResult = siteMonResultRepository.findOne(pk);
+		return siteMonResult.getErrorLog();
 	}
 
 	/**

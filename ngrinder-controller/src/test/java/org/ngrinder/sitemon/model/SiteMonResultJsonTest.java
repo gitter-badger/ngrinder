@@ -1,7 +1,7 @@
 package org.ngrinder.sitemon.model;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.*;
 
 import java.text.ParseException;
@@ -28,9 +28,9 @@ public class SiteMonResultJsonTest {
 	@Before
 	public void before() throws ParseException {
 		siteMonResults = Arrays.asList(
-			new SiteMonResult(null, testNumber1, 1, 4, 7, DateUtils.toDate(minTimestampStr)),
-			new SiteMonResult(null, testNumber2, 2, 5, 8, DateUtils.toDate(midtimestampStr)),
-			new SiteMonResult(null, testNumber2, 3, 6, 9, DateUtils.toDate(maxTimestampStr)));
+			new SiteMonResult(null, testNumber1, 1, 4, 7, DateUtils.toDate(minTimestampStr), null),
+			new SiteMonResult(null, testNumber2, 2, 5, 8, DateUtils.toDate(midtimestampStr), null),
+			new SiteMonResult(null, testNumber2, 3, 6, 9, DateUtils.toDate(maxTimestampStr), null));
 		sut = new SiteMonResultJson(siteMonResults);
 	}
 

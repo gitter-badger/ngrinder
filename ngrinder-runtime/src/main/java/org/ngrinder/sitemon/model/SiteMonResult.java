@@ -45,15 +45,19 @@ public class SiteMonResult implements Serializable {
 	@Column(name = "test_time")
 	private long testTime;
 	
+	@Column(name = "error_log")
+	private String errorLog;
+	
 	public SiteMonResult() {
 	}
 
 	public SiteMonResult(String siteMonId, int testNumber, long success, long error,
-		long testTime, Date timestamp) {
+		long testTime, Date timestamp, String errorLog) {
 		this.siteMonResultPK = new SiteMonResultPK(siteMonId, testNumber, timestamp);
 		this.success = success;
 		this.error = error;
 		this.testTime = testTime;
+		this.errorLog = errorLog;
 	}
 
 	public String getSiteMonId() {
@@ -80,6 +84,10 @@ public class SiteMonResult implements Serializable {
 		return siteMonResultPK.getTimestamp();
 	}
 	
+	public String getErrorLog() {
+		return errorLog;
+	}
+
 	@Embeddable
 	public static class SiteMonResultPK implements Serializable {
 

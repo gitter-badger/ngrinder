@@ -85,6 +85,23 @@
 		margin-right: 5px;
 		margin-top: 5px;
 	}
+	
+	div.div-logs {
+        border: 1px solid #D6D6D6;
+        min-width: 340px;
+        height: 110px;
+        margin-bottom: 8px;
+        overflow-y: scroll;
+        border-radius: 3px 3px 3px 3px;
+    }
+
+    div.div-logs .log {
+        color: #666666;
+        display: block;
+        margin-left: 7px;
+        margin-top: 2px;
+        margin-bottom: 2px;
+    }
 	</style>
 </head>
 <body>
@@ -133,9 +150,11 @@
 </div>
 <#include "../common/copyright.ftl">
 <script type="text/javascript">
+var labels = [];
 var bUpdatedReport = false;
 var bUpdatedResources = false;
 $(document).ready(function() {
+	$("#nav_siteMon").addClass("active");
 	showProgressBar('<@spring.message "siteMon.message.updateReport"/> & <@spring.message "perfTest.message.updateResource"/>');
 	$("#sitemon_config_section_tab").find("a").tab('show');
 	bindEvent();
@@ -163,12 +182,31 @@ function bindEvent() {
 		$("#use_revision_btn").hide();
 		updateScriptResources(true);
 	});
+	$("#error_chart").bind("jqplotDataClick", function (evt, seriesIndex, pointIndex, data) {
+		var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/${siteMon.id}/log", null, "<@spring.message "common.error.error"/>");
+		ajaxObj.params = {
+			'testNumber' : labels[seriesIndex],
+			'timestamp' : data[0]
+		};
+		ajaxObj.success = function(res) {
+			var html = "";
+			logs = res.split(",");			
+			for (var i = 0; i < logs.length; i++) {
+				var value = logs[i];
+				if (value.length > 0) {
+					html = html + "<div class='log ellipsis' title='" + value + "'>" + value + "</div>";
+				}
+			}
+			$("#error_log").html(html);
+		};
+		ajaxObj.call();
+    });
 }
 
 function updateScriptResources(bInitHosts) {
 	var scriptName = $("#script_name").val();
 
-	var ajaxObj = new AjaxObj("/perftest/api/resource", null, "<@spring.message "common.error.error"/>");
+	var ajaxObj = new AjaxObj("${req.getContextPath()}/perftest/api/resource", null, "<@spring.message "common.error.error"/>");
 	ajaxObj.params = {
 		'scriptPath' : scriptName,
 		'scriptRevision' : $("#script_revision").val()
@@ -197,20 +235,20 @@ function updateScriptResources(bInitHosts) {
 }
 
 function drawReportChart() {
-	var ajaxObj = new AjaxObj("/sitemon/api/${siteMon.id}/result", null, "<@spring.message "common.error.error"/>");
+	var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/${siteMon.id}/result", null, "<@spring.message "common.error.error"/>");
 	ajaxObj.success = function(res) {
 		if (res.successData && res.successData.length > 0) {
+			labels = res.labels;
 			$("#sitemon_report_section_tab").show();
 			$("#sitemon_report_section_tab").find("a").tab('show');
 			new Chart("success_chart", res.successData, 1, {labels : res.labels, xAxisMin : res.minTimestamp, xAxisMax : res.maxTimestamp, xAxisRenderer : $.jqplot.DateAxisRenderer, xAxisFormatString : '%H:%M'}).plot();
 			new Chart("error_chart", res.errorData, 1, {labels : res.labels, xAxisMin : res.minTimestamp, xAxisMax : res.maxTimestamp, xAxisRenderer : $.jqplot.DateAxisRenderer, xAxisFormatString : '%H:%M'}).plot();
 			new Chart("test_time_chart", res.testTimeData, 1, {labels : res.labels, xAxisMin : res.minTimestamp, xAxisMax : res.maxTimestamp, xAxisRenderer : $.jqplot.DateAxisRenderer, xAxisFormatString : '%H:%M'}).plot();
 			$("#sitemon_config_section_tab").find("a").tab('show');
-			
-			bUpdatedReport = true;
-			if (bUpdatedResources) {
-				hideProgressBar();
-			}
+		}
+		bUpdatedReport = true;
+		if (bUpdatedResources) {
+			hideProgressBar();
 		}
 	};
 	ajaxObj.call();

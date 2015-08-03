@@ -15,6 +15,8 @@ package org.ngrinder.sitemon.controller;
 
 import static org.ngrinder.common.util.Preconditions.*;
 
+import java.util.Date;
+
 import org.ngrinder.common.controller.BaseController;
 import org.ngrinder.common.controller.RestAPI;
 import org.ngrinder.model.PerfTest;
@@ -34,9 +36,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import net.grinder.util.Directory.DirectoryException;
-import net.grinder.util.FileContents.FileContentsException;
 
 /**
  * SiteMon regist/unregist Controller.
@@ -74,7 +73,8 @@ public class SiteMonController extends BaseController {
 			@RequestParam boolean scriptClone, ModelMap modelMap) {
 		PerfTest perfTest = perfTestService.getOne(perfTestId);
 		checkNotNull(perfTest, "no perftest for %s exits", perfTestId);
-		checkTrue(hasPermission(perfTest.getCreatedUser()), "invalid permission for " + perfTestId + " perftest");
+		checkTrue(hasPermission(perfTest.getCreatedUser()), 
+			"invalid permission for " + perfTestId + " perftest");
 
 		FileEntry siteMonScript = siteMonService.getSiteMonScript(user, perfTest, scriptClone);
 		modelMap.addAttribute("siteMon", new SiteMon("Perftest" + perfTestId, user,
@@ -84,11 +84,14 @@ public class SiteMonController extends BaseController {
 	}
 	
 	@RequestMapping("/save")
-	public String saveOne(User user, SiteMon siteMon, ModelMap modelMap)
-			throws FileContentsException, DirectoryException {
-		siteMon.setCreatedUser(user);
-		siteMon.setAgentName(siteMonAgentManagerService.getIdleResouceAgentName());
-		modelMap.addAttribute("msg", siteMonAgentManagerService.sendRegist(siteMon));
+	public String saveOne(User user, SiteMon siteMon, ModelMap modelMap) {
+		try {
+			siteMon.setCreatedUser(user);
+			siteMon.setAgentName(siteMonAgentManagerService.getIdleResouceAgentName());
+			modelMap.addAttribute("msg", siteMonAgentManagerService.sendRegist(siteMon));
+		} catch (Exception e) {
+			modelMap.addAttribute("msg", e.getMessage());
+		}
 		return "sitemon/detail";
 	}
 	
@@ -106,15 +109,24 @@ public class SiteMonController extends BaseController {
 	public String getOne(User user, @PathVariable String siteMonId, ModelMap modelMap) {
 		SiteMon siteMon = siteMonService.getOne(siteMonId);
 		checkNotNull(siteMon, "no siteMon for %s exists", siteMonId);
-		checkTrue(hasPermission(siteMon.getCreatedUser()), "invalid permission for " + siteMonId + " sitemon");
+		checkTrue(hasPermission(siteMon.getCreatedUser()), 
+			"invalid permission for " + siteMonId + " sitemon");
 		modelMap.addAttribute("siteMon", siteMon);
 		return "sitemon/detail";
 	}
 	
 	@RestAPI
 	@RequestMapping("/api/{siteMonId}/result")
-	public HttpEntity<String> getResult(@PathVariable String siteMonId, ModelMap modelMap) {
+	public HttpEntity<String> getResult(@PathVariable String siteMonId) {
 		return toJsonHttpEntity(siteMonService.getGraphDataRecentDay(siteMonId));
+	}
+	
+	@RestAPI
+	@RequestMapping("/api/{siteMonId}/log")
+	public HttpEntity<String> getLog(@PathVariable String siteMonId, @RequestParam int testNumber,
+		@RequestParam long timestamp) {
+		String log = siteMonService.getLog(siteMonId, testNumber, new Date(timestamp));
+		return toJsonHttpEntity(log);
 	}
 	
 	private boolean hasPermission(User createdUser) {

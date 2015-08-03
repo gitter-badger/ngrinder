@@ -175,10 +175,9 @@ public class SiteMonAgentManagerService implements ControllerConstants {
 	 * @throws DirectoryException
 	 */
 	public String sendRegist(SiteMon siteMon) throws FileContentsException, DirectoryException {
-		Set<AgentIdentity> allAgents = siteMonServerDaemon.getAllAvailableAgents();
-		if (allAgents.size() == 0) {
-			return "no have agent";
-		}
+		String agentName = siteMon.getAgentName();
+		checkNotNull(agentName, "No setted sitemon agent name.");
+		checkNotNull(getConnectingAgentIdentity(agentName), "Not found '{}' agent.", agentName);
 		
 		FileEntry script = fileEntryService.getOne(siteMon.getCreatedUser(), siteMon.getScriptName(),
 			siteMon.getScriptRevision());
