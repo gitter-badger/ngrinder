@@ -11,7 +11,7 @@ import org.mockito.InOrder;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.ngrinder.common.util.ThreadUtils;
-import org.ngrinder.sitemon.MonitorSchedulerImplementation;
+import org.ngrinder.sitemon.SiteMonSchedulerImplementation;
 import org.ngrinder.sitemon.messages.RegistScheduleMessage;
 import org.ngrinder.util.AgentStateMonitor;
 
@@ -23,9 +23,9 @@ import net.grinder.engine.agent.SiteMonScriptRunner;
  * 
  * @author Gisoo Gwon
  */
-public class MonitorSchedulerImplementationTest {
+public class SiteMonSchedulerImplementationTest {
 	
-	private MonitorSchedulerImplementation sut;
+	private SiteMonSchedulerImplementation sut;
 	private SiteMonScriptRunner siteMonScriptRunner;
 	private AgentStateMonitor agentStateMonitor;
 	
@@ -39,7 +39,7 @@ public class MonitorSchedulerImplementationTest {
 		siteMonScriptRunner = mock(SiteMonScriptRunner.class);
 		agentStateMonitor = mock(AgentStateMonitor.class);
 		initStub();
-		sut = new MonitorSchedulerImplementation(siteMonScriptRunner, agentStateMonitor);
+		sut = new SiteMonSchedulerImplementation(siteMonScriptRunner, agentStateMonitor);
 	}
 
 	private void initStub() {

@@ -38,7 +38,7 @@ import net.grinder.engine.agent.SiteMonScriptRunner;
  * 
  * @author Gisoo Gwon
  */
-public class MonitorSchedulerImplementation implements MonitorScheduler {
+public class SiteMonSchedulerImplementation implements SiteMonScheduler {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("monitor scheduler impl");
 	private static final int THREAD_POOL_SIZE = 10;
@@ -59,7 +59,7 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 	 * @param scriptRunner 
 	 * @param agentStateMonitor
 	 */
-	public MonitorSchedulerImplementation(SiteMonScriptRunner scriptRunner,
+	public SiteMonSchedulerImplementation(SiteMonScriptRunner scriptRunner,
 		AgentStateMonitor agentStateMonitor) {
 		this(scriptRunner, agentStateMonitor, DEFAULT_REPEAT_TIME);
 	}
@@ -71,7 +71,7 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 	 * @param agentStateMonitor
 	 * @param repeatTime
 	 */
-	public MonitorSchedulerImplementation(SiteMonScriptRunner scriptRunner,
+	public SiteMonSchedulerImplementation(SiteMonScriptRunner scriptRunner,
 		AgentStateMonitor agentStateMonitor, long repeatTime) {
 		this.agentStateMonitor = agentStateMonitor;
 		this.scriptRunner = scriptRunner;

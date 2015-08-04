@@ -23,7 +23,7 @@ import org.ngrinder.sitemon.model.SiteMonResult;
  * 
  * @author Gisoo Gwon
  */
-public interface MonitorScheduler {
+public interface SiteMonScheduler {
 
 	public void regist(RegistScheduleMessage message);
 

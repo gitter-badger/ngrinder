@@ -29,8 +29,8 @@ import org.ngrinder.common.constants.CommonConstants;
 import org.ngrinder.infra.AgentConfig;
 import org.ngrinder.infra.ArchLoaderInit;
 import org.ngrinder.monitor.agent.MonitorServer;
-import org.ngrinder.sitemon.MonitorScheduler;
-import org.ngrinder.sitemon.MonitorSchedulerImplementation;
+import org.ngrinder.sitemon.SiteMonScheduler;
+import org.ngrinder.sitemon.SiteMonSchedulerImplementation;
 import org.ngrinder.sitemon.SiteMonController;
 import org.ngrinder.sitemon.SiteMonControllerDaemon;
 import org.ngrinder.util.AgentStateMonitor;
@@ -209,12 +209,12 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 				// init for script runner process
 				SiteMonScriptRunner scriptRunner
 					= new SiteMonScriptRunner(scriptDistDir);
-				MonitorScheduler monitorScheduler
-					= new MonitorSchedulerImplementation(scriptRunner, agentStateMonitor);
+				SiteMonScheduler siteMonScheduler
+					= new SiteMonSchedulerImplementation(scriptRunner, agentStateMonitor);
 				// init for agent main process
 				SiteMonController controller = new SiteMonController(
 					siteMonDir, agentConfig, eventSyncCondition);
-				controller.setMonitorScheduler(monitorScheduler);
+				controller.setSiteMonScheduler(siteMonScheduler);
 				controller.setAgentStateMonitor(agentStateMonitor);
 				SiteMonControllerDaemon daemon = new SiteMonControllerDaemon(controller);
 				// start agent process

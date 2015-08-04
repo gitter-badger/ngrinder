@@ -14,7 +14,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.ngrinder.infra.AgentConfig;
-import org.ngrinder.sitemon.MonitorScheduler;
+import org.ngrinder.sitemon.SiteMonScheduler;
 import org.ngrinder.sitemon.SiteMonController;
 import org.ngrinder.sitemon.SiteMonControllerDaemon;
 import org.ngrinder.sitemon.SiteMonControllerServerDaemon;
@@ -52,7 +52,7 @@ public class SiteMonAgentCommunicationTest {
 		int controllerCount = 2;
 		MyAgentConfig myAgentConfig = new MyAgentConfig();
 		myAgentConfig.init();
-		MonitorScheduler scheduler = mock(MonitorScheduler.class);
+		SiteMonScheduler scheduler = mock(SiteMonScheduler.class);
 
 		// run server daemon
 		SiteMonControllerServerDaemon serverDaemon = new SiteMonControllerServerDaemon(
@@ -65,7 +65,7 @@ public class SiteMonAgentCommunicationTest {
 				myAgentConfig, new Condition());
 			SiteMonControllerDaemon controllerDaemon = new SiteMonControllerDaemon(
 				controller);
-			controller.setMonitorScheduler(scheduler);
+			controller.setSiteMonScheduler(scheduler);
 			controllerDaemon.run();
 		}
 

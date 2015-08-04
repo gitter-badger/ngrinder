@@ -70,7 +70,7 @@ public class SiteMonController implements Agent {
 	private boolean connected = false;
 	private boolean shutdownServer = false;
 	private String version;
-	private MonitorScheduler monitorScheduler;
+	private SiteMonScheduler siteMonScheduler;
 	private AgentStateMonitor agentStateMonitor;
 	private SiteMonControllerServerListener siteMonControllerServerListener;
 	private final AgentControllerConnectorFactory connectorFactory = new AgentControllerConnectorFactory(
@@ -156,17 +156,17 @@ public class SiteMonController implements Agent {
 			setShutdownServer(true);
 		} else if (message instanceof RegistScheduleMessage) {
 			RegistScheduleMessage registSchedule = (RegistScheduleMessage) message;
-			monitorScheduler.regist(registSchedule);
+			siteMonScheduler.regist(registSchedule);
 		} else if (message instanceof UnregistScheduleMessage) {
 			UnregistScheduleMessage unregistSchedule = (UnregistScheduleMessage) message;
-			monitorScheduler.unregist(unregistSchedule.getSiteMonId());
+			siteMonScheduler.unregist(unregistSchedule.getSiteMonId());
 		} else {
 			LOGGER.warn("received invalid message");
 		}
 	}
 
-	public void setMonitorScheduler(MonitorScheduler monitorScheduler) {
-		this.monitorScheduler = monitorScheduler;
+	public void setSiteMonScheduler(SiteMonScheduler siteMonScheduler) {
+		this.siteMonScheduler = siteMonScheduler;
 	}
 
 	public void setAgentStateMonitor(AgentStateMonitor agentStateMonitor) {
@@ -232,7 +232,7 @@ public class SiteMonController implements Agent {
 		}, 3000);
 		sendStatusTimer.schedule(new TimerTask() {
 			public void run() {
-				List<SiteMonResult> results = monitorScheduler.pollAllResults();
+				List<SiteMonResult> results = siteMonScheduler.pollAllResults();
 				if (results.size() > 0) {
 					SiteMonResultMessage message = new SiteMonResultMessage(results);
 					try {
