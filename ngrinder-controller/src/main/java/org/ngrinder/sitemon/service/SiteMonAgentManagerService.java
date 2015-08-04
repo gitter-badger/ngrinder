@@ -29,7 +29,6 @@ import org.ngrinder.common.constant.ControllerConstants;
 import org.ngrinder.common.model.Home;
 import org.ngrinder.infra.config.Config;
 import org.ngrinder.model.SiteMon;
-import org.ngrinder.model.User;
 import org.ngrinder.script.handler.ProcessingResultPrintStream;
 import org.ngrinder.script.handler.ScriptHandler;
 import org.ngrinder.script.handler.ScriptHandlerFactory;
@@ -142,9 +141,9 @@ public class SiteMonAgentManagerService implements ControllerConstants {
 	/**
 	 * Check running agent by Connecting Agent list
 	 * @param agentName
-	 * @return
+	 * @return If not exists connection, return null.
 	 */
-	public AgentIdentity getConnectingAgentIdentity(String agentName) {
+	public AgentIdentity findAgentIdentity(String agentName) {
 		for (AgentIdentity identity : getAllAgents()) {
 			if (identity.getName().equals(agentName)) {
 				return identity;
@@ -161,72 +160,42 @@ public class SiteMonAgentManagerService implements ControllerConstants {
 	}
 
 	/**
-	 * If exist siteMonId, remove old siteMon.
 	 * Distribute script file and resource to agent.
 	 * Send run command to agent.
 	 * 
-	 * @param user regist user
-	 * @param siteMonId	sitemon id
-	 * @param script		script entity
-	 * @param targetHosts	host setting
-	 * @param param			system param
-	 * @return 
+	 * @param siteMon SiteMon Info.
+	 * @param agentName Regist target agent name.
 	 * @throws FileContentsException
 	 * @throws DirectoryException
 	 */
-	public String sendRegist(SiteMon siteMon) throws FileContentsException, DirectoryException {
-		String agentName = siteMon.getAgentName();
+	public void sendRegist(SiteMon siteMon, String agentName) throws FileContentsException, DirectoryException {
 		checkNotNull(agentName, "No setted sitemon agent name.");
-		checkNotNull(getConnectingAgentIdentity(agentName), "Not found '{}' agent.", agentName);
+		checkNotNull(findAgentIdentity(agentName), "Not found '{}' agent.", agentName);
 		
 		FileEntry script = fileEntryService.getOne(siteMon.getCreatedUser(), siteMon.getScriptName(),
 			siteMon.getScriptRevision());
 		checkNotNull(script, "Script file '%s' does not exist", script.getFileName());
 		
-		unregistSiteMon(siteMon.getId());
 		SiteMonDistDirectory tmpDistDir = prepareDistributeFile(siteMon, script);
-		registSiteMonToAgent(siteMon, script, tmpDistDir);
-		siteMonRepository.save(siteMon);
+		registSiteMonToAgent(siteMon, script, tmpDistDir, agentName);
 		FileUtils.deleteQuietly(tmpDistDir.getRootDirectory());
-		return "success";
 	}
 
 	/**
-	 * Delete SiteMon info in DB.
-	 * Send unregist command to target agent. 
-	 * 
-	 * @param user	request user
-	 * @param siteMonId	sitemon id
+	 * Send unregist message to agentName of siteMon.
+	 * @param siteMon
 	 */
-	public void delSiteMon(User user, String siteMonId) {
-		SiteMon siteMon = siteMonRepository.findOne(siteMonId);
-		checkNotNull(siteMon);
-		checkTrue(siteMon.getCreatedUser().getId().equals(user.getId()), 
-			"No have grant user {}" + user.getUserName());
-		
-		unregistSiteMon(siteMonId);
-	}
-
-	private void unregistSiteMon(String siteMonId) {
-		SiteMon siteMon = siteMonRepository.findOne(siteMonId);
-		if (siteMon != null) {
-			AgentIdentity agentIdentity = getConnectingAgentIdentity(siteMon.getAgentName());
-			if (agentIdentity != null) {
-				AgentAddress agentAddress = new AgentAddress(agentIdentity);
-				siteMonServerDaemon.sendToAddressedAgents(agentAddress,
-					new UnregistScheduleMessage(siteMon.getId(), siteMon.getScriptName()));
-			}
-			siteMonRepository.delete(siteMonId);
-		}
+	public void sendUnregist(String siteMonId) {
+		siteMonServerDaemon.sendToAgents(new UnregistScheduleMessage(siteMonId));
 	}
 
 	private void registSiteMonToAgent(SiteMon siteMon, FileEntry script,
-			SiteMonDistDirectory tmpDistDirectory)
+			SiteMonDistDirectory disDirectory, String agentName)
 				throws FileContentsException, DirectoryException {
 		AgentAddress agentAddress = new AgentAddress(
-			getConnectingAgentIdentity(siteMon.getAgentName()));
+			findAgentIdentity(agentName));
 		siteMonServerDaemon.sendFile(agentAddress,
-			new Directory(tmpDistDirectory.getRootDirectory()),
+			new Directory(disDirectory.getRootDirectory()),
 			Pattern.compile(ConsoleProperties.DEFAULT_DISTRIBUTION_FILE_FILTER_EXPRESSION),
 			null);
 		siteMonServerDaemon.sendToAddressedAgents(agentAddress, new RegistScheduleMessage(
@@ -235,7 +204,8 @@ public class SiteMonAgentManagerService implements ControllerConstants {
 	}
 
 	/**
-	 * find agent that minimum use time for script run.
+	 * Find agent that minimum use time for script run.
+	 * If all agent is busy, return first index agent.
 	 * @param agentName 
 	 * 
 	 * @return
@@ -277,10 +247,11 @@ public class SiteMonAgentManagerService implements ControllerConstants {
 	}
 	
 	private void initSiteMon(AgentIdentity identity)  {
-		List<SiteMon> monitors = siteMonRepository.findByAgentName(identity.getName());
-		for (SiteMon monitor : monitors) {
+		List<SiteMon> siteMons = siteMonRepository.findByAgentNameAndRun(identity.getName(), true);
+		for (SiteMon siteMon : siteMons) {
 			try {
-				sendRegist(monitor);
+				sendUnregist(siteMon.getId());
+				sendRegist(siteMon, identity.getName());
 			} catch (Exception e) {
 				LOGGER.error("Failed reload sitemon setting. from agent {}",
 					identity.getName());

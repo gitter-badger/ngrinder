@@ -21,6 +21,8 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.hibernate.annotations.Type;
+
 
 /**
  * SiteMon Entity
@@ -55,6 +57,10 @@ public class SiteMon {
 	@Column(name = "agent_name")
 	private String agentName;
 	
+	@Column(name = "run")
+	@Type(type = "true_false")
+	private boolean run;
+	
 	@Transient
 	private boolean agentRunning;
 
@@ -63,7 +69,7 @@ public class SiteMon {
 	}
 	
 	public SiteMon(String id, User createdUser, String scriptName, long scriptRevision,
-		String targetHosts, String param, String agentName) {
+		String targetHosts, String param, String agentName, boolean run) {
 		this.id = id;
 		this.createdUser = createdUser;
 		this.scriptName = scriptName;
@@ -71,6 +77,7 @@ public class SiteMon {
 		this.targetHosts = targetHosts;
 		this.param = param;
 		this.agentName = agentName;
+		this.run = run;
 	}
 
 	public String getId() {
@@ -129,6 +136,19 @@ public class SiteMon {
 		this.agentName = agentName;
 	}
 
+	public boolean isRun() {
+		return run;
+	}
+
+	public void setRun(boolean run) {
+		this.run = run;
+	}
+
+	/**
+	 * AgentRunning is not repository property.
+	 * {@link Transient} value.
+	 * @return
+	 */
 	public boolean isAgentRunning() {
 		return agentRunning;
 	}

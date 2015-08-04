@@ -56,15 +56,15 @@ public class SiteMonAgentManagerServiceTest {
 	}
 
 	@Test
-	public void testGetConnectingAgentIdentity() throws Exception {
+	public void testFindAgentIdentity() throws Exception {
 		allAgents = Sets.newHashSet();
 		allAgents.add(agent1);
 		allAgents.add(agent2);
 		when(sut.siteMonServerDaemon.getAllAvailableAgents()).thenReturn(allAgents);
 
-		assertNotNull(sut.getConnectingAgentIdentity(agentName1));
-		assertNotNull(sut.getConnectingAgentIdentity(agentName2));
-		assertNull(sut.getConnectingAgentIdentity("Unknown"));
+		assertNotNull(sut.findAgentIdentity(agentName1));
+		assertNotNull(sut.findAgentIdentity(agentName2));
+		assertNull(sut.findAgentIdentity("Unknown"));
 	}
 
 	@Test

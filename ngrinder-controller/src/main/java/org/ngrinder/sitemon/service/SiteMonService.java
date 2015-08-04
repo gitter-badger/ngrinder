@@ -87,6 +87,25 @@ public class SiteMonService {
 		return siteMonRepository.findOne(siteMonId);
 	}
 	
+	public SiteMon save(SiteMon siteMon) {
+		return siteMonRepository.save(siteMon);
+	}
+
+	public void delete(String siteMonId) {
+		if (siteMonRepository.findOne(siteMonId) != null) {
+			siteMonRepository.delete(siteMonId);
+		}
+	}
+
+	public void updateRunAndAgentName(String siteMonId, boolean run, String agentName) {
+		SiteMon siteMon = siteMonRepository.findOne(siteMonId);
+		if (siteMon == null) {
+			return;
+		}
+		siteMon.setRun(run);
+		siteMonRepository.saveAndFlush(siteMon);
+	}
+	
 	/**
 	 * Get SiteMon script from perfTest script.
 	 * @param user
@@ -128,7 +147,7 @@ public class SiteMonService {
 	private void initAgentRunning(List<SiteMon> siteMons) {
 		for (SiteMon siteMon : siteMons) {
 			String name = siteMon.getAgentName();
-			AgentIdentity identity = siteMonAgentManagerService.getConnectingAgentIdentity(name);
+			AgentIdentity identity = siteMonAgentManagerService.findAgentIdentity(name);
 			siteMon.setAgentRunning(identity != null);
 		}
 	}

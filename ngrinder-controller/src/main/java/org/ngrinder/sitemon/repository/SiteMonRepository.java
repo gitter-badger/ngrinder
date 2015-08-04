@@ -29,7 +29,9 @@ public interface SiteMonRepository extends JpaRepository<SiteMon, String>,
 	JpaSpecificationExecutor<SiteMon> {
 	
 	List<SiteMon> findByCreatedUser(User createdUser);
+	
+	List<SiteMon> findByRun(boolean run);
 
-	List<SiteMon> findByAgentName(String agentName);
+	List<SiteMon> findByAgentNameAndRun(String agentName, boolean run);
 
 }

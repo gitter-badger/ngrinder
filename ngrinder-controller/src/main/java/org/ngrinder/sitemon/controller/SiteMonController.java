@@ -50,7 +50,7 @@ public class SiteMonController extends BaseController {
 	private SiteMonService siteMonService;
 
 	@Autowired
-	private SiteMonAgentManagerService siteMonAgentManagerService;
+	private SiteMonAgentManagerService agentManager;
 	
 	@Autowired
 	private PerfTestService perfTestService;
@@ -58,7 +58,7 @@ public class SiteMonController extends BaseController {
 	@PreAuthorize("hasAnyRole('A')")
 	@RequestMapping({"/agent", "/agent/list"})
 	public String getAllAgent(ModelMap model) {
-		model.addAttribute("allAgentStatus", siteMonAgentManagerService.getAllAgentStatus());
+		model.addAttribute("allAgentStatus", agentManager.getAllAgentStatus());
 		return "sitemon/agent/list";
 	}
 	
@@ -79,16 +79,25 @@ public class SiteMonController extends BaseController {
 		FileEntry siteMonScript = siteMonService.getSiteMonScript(user, perfTest, scriptClone);
 		modelMap.addAttribute("siteMon", new SiteMon("Perftest" + perfTestId, user,
 			siteMonScript.getPath(), siteMonScript.getRevision(), perfTest.getTargetHosts(),
-			perfTest.getParam(), null));
+			perfTest.getParam(), null, true));
+		modelMap.addAttribute("formMode", true);
 		return "sitemon/detail";
 	}
 	
 	@RequestMapping("/save")
 	public String saveOne(User user, SiteMon siteMon, ModelMap modelMap) {
 		try {
+			String siteMonId = siteMon.getId();
+			siteMonService.delete(siteMonId);
+			agentManager.sendUnregist(siteMonId);
+			
+			String agentName = agentManager.getIdleResouceAgentName();
 			siteMon.setCreatedUser(user);
-			siteMon.setAgentName(siteMonAgentManagerService.getIdleResouceAgentName());
-			modelMap.addAttribute("msg", siteMonAgentManagerService.sendRegist(siteMon));
+			siteMon.setAgentName(agentName);
+			siteMon.setRun(true);
+			agentManager.sendRegist(siteMon, agentName);
+			siteMonService.save(siteMon);
+			modelMap.addAttribute("msg", "success");
 		} catch (Exception e) {
 			modelMap.addAttribute("msg", e.getMessage());
 		}
@@ -96,12 +105,39 @@ public class SiteMonController extends BaseController {
 	}
 	
 	@RestAPI
-	@RequestMapping("/api/del/{siteMonId}")
+	@RequestMapping("/api/run/{siteMonId}")
+	public HttpEntity<String> run(User user, @PathVariable String siteMonId) throws Exception {
+		SiteMon siteMon = siteMonService.getOne(siteMonId);
+		checkNotNull(siteMon, "No exists {} sitemon.", siteMonId);
+		checkTrue(hasPermission(siteMon.getCreatedUser()), "invalid permission for " + siteMonId);
+		
+		if (agentManager.findAgentIdentity(siteMon.getAgentName()) == null) {
+			siteMon.setAgentName(agentManager.getIdleResouceAgentName());
+		}
+		agentManager.sendRegist(siteMon, siteMon.getAgentName());
+		siteMonService.updateRunAndAgentName(siteMonId, true, siteMon.getAgentName());
+		return toJsonHttpEntity("success");
+	}
+	
+	@RestAPI
+	@RequestMapping("/api/pause/{siteMonId}")
+	public HttpEntity<String> pause(User user, @PathVariable String siteMonId) {
+		SiteMon siteMon = siteMonService.getOne(siteMonId);
+		checkNotNull(siteMon, "No exists {} sitemon.", siteMonId);
+		checkTrue(hasPermission(siteMon.getCreatedUser()), "invalid permission for " + siteMonId);
+		agentManager.sendUnregist(siteMonId);
+		siteMonService.updateRunAndAgentName(siteMonId, false, siteMon.getAgentName());
+		return toJsonHttpEntity("success");
+	}
+	
+	@RestAPI
+	@RequestMapping("/api/delete/{siteMonId}")
 	public HttpEntity<String> delete(User user, @PathVariable String siteMonId) {
 		SiteMon siteMon = siteMonService.getOne(siteMonId);
 		checkNotNull(siteMon, "No exists {} sitemon.", siteMonId);
 		checkTrue(hasPermission(siteMon.getCreatedUser()), "invalid permission for " + siteMonId);
-		siteMonAgentManagerService.delSiteMon(user , siteMonId);
+		agentManager.sendUnregist(siteMonId);
+		siteMonService.delete(siteMonId);
 		return toJsonHttpEntity("success");
 	}
 	

@@ -34,15 +34,15 @@ public class SiteMonRepositoryTest extends AbstractNGrinderTransactionalTest {
 		userRepository.save(user1);
 		userRepository.save(user2);
 		
-		siteMon1 = new SiteMon("id1", user1, "script1", 1, "hosts1", "param1", "agent1");
-		siteMon2 = new SiteMon("id2", user2, "script2", 2, "hosts2", "param2", "agent2");
+		siteMon1 = new SiteMon("id1", user1, "script1", 1, "hosts1", "param1", "agent1", true);
+		siteMon2 = new SiteMon("id2", user2, "script2", 2, "hosts2", "param2", "agent2", false);
 		sut.save(siteMon1);
 		sut.save(siteMon2);
 	}
 
 	@Test
 	public void testSave() throws Exception {
-		SiteMon siteMon = new SiteMon("id", new User(), "script", 0, "hosts", "param", "agent");
+		SiteMon siteMon = new SiteMon("id", new User(), "script", 0, "hosts", "param", "agent", true);
 		SiteMon save = sut.save(siteMon);
 		assertEqual(siteMon, save);
 	}
@@ -63,11 +63,24 @@ public class SiteMonRepositoryTest extends AbstractNGrinderTransactionalTest {
 	}
 	
 	@Test
-	public void testFindByAgentName() throws Exception {
-		List<SiteMon> siteMons = sut.findByAgentName(siteMon1.getAgentName());
+	public void testFindByRun() throws Exception {
+		List<SiteMon> runList = sut.findByRun(true);
+		List<SiteMon> pauseList = sut.findByRun(false);
 		
-		assertThat(siteMons.size(), is(1));
-		assertEqual(siteMon1, siteMons.get(0));
+		assertThat(runList.size(), is(1));
+		assertThat(pauseList.size(), is(1));
+		assertEqual(siteMon1, runList.get(0));
+		assertEqual(siteMon2, pauseList.get(0));
+	}
+	
+	@Test
+	public void testFindByAgentNameAndRun() throws Exception {
+		List<SiteMon> runSiteMons = sut.findByAgentNameAndRun(siteMon1.getAgentName(), true);
+		List<SiteMon> pauseSiteMons = sut.findByAgentNameAndRun(siteMon1.getAgentName(), false);
+		
+		assertThat(runSiteMons.size(), is(1));
+		assertThat(pauseSiteMons.size(), is(0));
+		assertEqual(siteMon1, runSiteMons.get(0));
 	}
 	
 	@Test
@@ -80,6 +93,16 @@ public class SiteMonRepositoryTest extends AbstractNGrinderTransactionalTest {
 		assertThat(deleted, is(nullValue()));
 		assertThat(siteMons.size(), is(1));
 		assertEqual(siteMon2, siteMons.get(0));
+	}
+	
+	@Test
+	public void testUpdate() throws Exception {
+		SiteMon siteMon = sut.findOne(siteMon1.getId());
+		siteMon.setAgentName("new");
+		SiteMon updated = sut.saveAndFlush(siteMon);
+		
+		assertThat(updated, is(notNullValue()));
+		assertEqual(siteMon, updated);
 	}
 
 	private void assertEqual(SiteMon mon1, SiteMon mon2) {

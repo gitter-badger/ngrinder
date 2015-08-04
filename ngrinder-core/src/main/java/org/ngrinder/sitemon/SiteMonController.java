@@ -238,7 +238,7 @@ public class SiteMonController implements Agent {
 					try {
 						clientSender.send(message);
 					} catch (Exception e) {
-						LOGGER.error("Failed send sitemon result message., {}",
+						LOGGER.error("Failed send sitemon result message. {}",
 							e.getMessage());
 					}
 				}

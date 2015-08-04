@@ -55,9 +55,9 @@ public class SiteMonServiceTest {
 		List<SiteMon> monitorings = Arrays.asList(runSiteMon, stopSiteMon);
 		
 		when(siteMonRepository.findByCreatedUser((User) any())).thenReturn(monitorings);
-		when(siteMonManagerService.getConnectingAgentIdentity(runningAgentName)).thenReturn(
+		when(siteMonManagerService.findAgentIdentity(runningAgentName)).thenReturn(
 			new AgentControllerIdentityImplementation(null, null));
-		when(siteMonManagerService.getConnectingAgentIdentity(stoppedAgentName)).thenReturn(null);
+		when(siteMonManagerService.findAgentIdentity(stoppedAgentName)).thenReturn(null);
 		
 		// when
 		List<SiteMon> actual = sut.getAll(new User());

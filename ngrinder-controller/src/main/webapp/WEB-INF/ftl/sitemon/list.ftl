@@ -33,7 +33,7 @@
 			<th class="no-click"><@spring.message "siteMon.list.targetHosts"/></th>
 			<th><@spring.message "siteMon.list.param"/></th>
 			<th><@spring.message "siteMon.list.agentName"/></th>
-			<th><@spring.message "siteMon.list.unregist"/></th>
+			<th><@spring.message "siteMon.list.runState"/></th>
 		</tr>
 		</thead>
 		<tbody>
@@ -55,7 +55,10 @@
 			<td class="ellipsis" title="${siteMon.targetHosts}">${siteMon.targetHosts}</td>
 			<td class="ellipsis" title="${siteMon.param}">${siteMon.param}</td>
 			<td class="ellipsis" title="${siteMon.agentName}">${siteMon.agentName}</td>
-			<td><i id="unregist_${siteMon.id}" style="" class="icon-remove test-remove pointer-cursor" sid="${siteMon.id}"></i></td>
+			<td>
+				<i id="play_${siteMon.id}" style="<#if siteMon.run>display: none;</#if>" class="icon-play test-remove pointer-cursor" sid="${siteMon.id}"></i>
+				<i id="pause_${siteMon.id}" style="<#if !siteMon.run>display: none;</#if>" class="icon-pause test-remove pointer-cursor" sid="${siteMon.id}"></i>
+			</td>
 		</tr>
 		</@list>
 		</tbody>
@@ -90,9 +93,19 @@
 
 		removeClick();
 	</#if>
-		$("i").click(function () {
+		$("i.icon-play").click(function () {
+			showProgressBar("");
 			var id = $(this).attr("sid");
-			var ajaxObj = new AjaxObj("/sitemon/api/del/" + id);
+			var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/run/" + id);
+			ajaxObj.success = function() {
+				location.reload();
+			}
+			ajaxObj.call();
+		});
+		$("i.icon-pause").click(function () {
+			showProgressBar("");
+			var id = $(this).attr("sid");
+			var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/pause/" + id);
 			ajaxObj.success = function() {
 				location.reload();
 			}

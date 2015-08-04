@@ -10,16 +10,31 @@
 								<input class="required span3 left-float" maxlength="50" size="30" type="text" id="siteMon_id" name="siteMonId" value="${siteMon.id}" disabled/>
 							</@control_group>
 						</div>
-						<div class="span5-6"></div>
-						<div class="span1" style="margin-left:0">
+						<div class="span3"></div>
+						<div class="span3-4 pull-right" style="margin-left:0">
 							<div class="control-group">
 								<#if !(siteMon.createdUser??) || siteMon.createdUser.userId != currentUser.factualUser.userId>
 									<#assign disabled = "disabled">
 								</#if>
-								<button type="submit" class="btn btn-success" id="save_siteMon_btn" style="width:55px" ${disabled!}>
-									<@spring.message "common.button.save"/>
+								<button type="submit" class="btn btn-success" id="save_siteMon_btn" style="width:110px" ${disabled!}>
+									<@spring.message "siteMon.config.saveAndStart"/>
 								</button>
+							<#if !(formMode??) || formMode == false>
+								<button type="button" class="btn btn-warning" id="pause_siteMon_btn" style="width:55px; <#if !(siteMon.run)>display: none;</#if>" ${disabled!}>
+									<@spring.message "siteMon.config.pause"/>
+								</button>
+								<button type="button" class="btn btn-danger" id="delete_siteMon_btn" style="width:55px" ${disabled!}>
+									<@spring.message "siteMon.config.delete"/>
+								</button>
+							</#if>
 							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="span">
+							<@control_group controls_style = "margin-left: 140px;" label_style = "width: 120px;" label_message_key="siteMon.list.runState">
+								<input class="span3 left-float" type="text" value="<#if siteMon.run>run<#else>pause</#if>" disabled/>
+							</@control_group>
 						</div>
 					</div>
 					<div class="row">

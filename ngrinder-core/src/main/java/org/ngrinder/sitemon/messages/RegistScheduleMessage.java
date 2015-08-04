@@ -43,7 +43,7 @@ public class RegistScheduleMessage implements Message {
 		this.propParam = propParam;
 	}
 
-	public String getSIteMonId() {
+	public String getSiteMonId() {
 		return siteMonId;
 	}
 

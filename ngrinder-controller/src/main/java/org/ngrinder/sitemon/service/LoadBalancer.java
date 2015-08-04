@@ -51,7 +51,7 @@ public class LoadBalancer extends AbstractLoadBalancer {
 			@Override
 			public void run() {
 				Set<AgentStatus> statusList = siteMonAgentManagerService.getAllAgentStatus();
-				List<SiteMon> siteMonList = siteMonRepository.findAll();
+				List<SiteMon> siteMonList = siteMonRepository.findByRun(true);
 				executeRebalance(statusList, siteMonList);
 			}
 		}, DELAY, PERIOD);
@@ -74,9 +74,12 @@ public class LoadBalancer extends AbstractLoadBalancer {
 	}
 
 	@Override
-	protected void rebalanceSiteMon(SiteMon siteMon) {
+	protected void rebalanceSiteMon(SiteMon siteMon, String newAgentName) {
 		try {
-			siteMonAgentManagerService.sendRegist(siteMon);
+			siteMonAgentManagerService.sendUnregist(siteMon.getId());
+			siteMonAgentManagerService.sendRegist(siteMon, newAgentName);
+			siteMon.setAgentName(newAgentName);
+			siteMonRepository.saveAndFlush(siteMon);
 		} catch (Exception e) {
 			LOGGER.error("Fail rebalance sitemon {} : {}", siteMon.getId(), e.getMessage());
 			e.printStackTrace();

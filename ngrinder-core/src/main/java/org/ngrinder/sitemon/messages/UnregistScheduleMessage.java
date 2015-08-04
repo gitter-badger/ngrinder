@@ -24,19 +24,13 @@ public class UnregistScheduleMessage implements Message {
 	private static final long serialVersionUID = -7272801198614843623L;
 	
 	private final String siteMonId;
-	private final String scriptname;
 
-	public UnregistScheduleMessage(String siteMonId, String scriptname) {
+	public UnregistScheduleMessage(String siteMonId) {
 		this.siteMonId = siteMonId;
-		this.scriptname = scriptname;
 	}
 
 	public String getSiteMonId() {
 		return siteMonId;
-	}
-
-	public String getScriptname() {
-		return scriptname;
 	}
 
 }

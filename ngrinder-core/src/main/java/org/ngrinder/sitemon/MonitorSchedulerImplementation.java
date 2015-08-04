@@ -86,7 +86,7 @@ public class MonitorSchedulerImplementation implements MonitorScheduler {
 	 */
 	@Override
 	public void regist(final RegistScheduleMessage message) {
-		siteMonMap.put(message.getSIteMonId(), message);
+		siteMonMap.put(message.getSiteMonId(), message);
 		agentStateMonitor.setRegistScriptCount(siteMonMap.size());
 	}
 

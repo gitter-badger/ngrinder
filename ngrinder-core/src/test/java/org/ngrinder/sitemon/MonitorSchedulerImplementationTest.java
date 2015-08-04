@@ -65,15 +65,15 @@ public class MonitorSchedulerImplementationTest {
 		
 		assertThat(sut.siteMonMap.size(), is(1));
 		assertThat(lastSetScriptCount, is(sut.siteMonMap.size()));
-		assertThat(sut.siteMonMap, hasEntry(message.getSIteMonId(), message));
-		assertThat(sut.siteMonMap, not(hasEntry(message2.getSIteMonId(), message2)));
+		assertThat(sut.siteMonMap, hasEntry(message.getSiteMonId(), message));
+		assertThat(sut.siteMonMap, not(hasEntry(message2.getSiteMonId(), message2)));
 		
 		sut.regist(message2);
 		
 		assertThat(sut.siteMonMap.size(), is(2));
 		assertThat(lastSetScriptCount, is(sut.siteMonMap.size()));
-		assertThat(sut.siteMonMap, hasEntry(message.getSIteMonId(), message));
-		assertThat(sut.siteMonMap, hasEntry(message2.getSIteMonId(), message2));
+		assertThat(sut.siteMonMap, hasEntry(message.getSiteMonId(), message));
+		assertThat(sut.siteMonMap, hasEntry(message2.getSiteMonId(), message2));
 	}
 	
 	@Test
@@ -82,12 +82,12 @@ public class MonitorSchedulerImplementationTest {
 		sut.regist(message);
 		sut.regist(message2);
 		
-		sut.unregist(message.getSIteMonId());
+		sut.unregist(message.getSiteMonId());
 		
 		assertThat(sut.siteMonMap.size(), is(1));
 		assertThat(lastSetScriptCount, is(sut.siteMonMap.size()));
-		assertThat(sut.siteMonMap, not(hasEntry(message.getSIteMonId(), message)));
-		assertThat(sut.siteMonMap, hasEntry(message2.getSIteMonId(), message2));
+		assertThat(sut.siteMonMap, not(hasEntry(message.getSiteMonId(), message)));
+		assertThat(sut.siteMonMap, hasEntry(message2.getSiteMonId(), message2));
 		verify(agentStateMonitor, times(1)).clear();
 		
 		inOrder.verify(agentStateMonitor).clear();
@@ -112,7 +112,7 @@ public class MonitorSchedulerImplementationTest {
 		sut.regist(message);
 		ThreadUtils.sleep(repeatTime);
 		
-		verify(siteMonScriptRunner, times(1)).runWorker(message.getSIteMonId(),
+		verify(siteMonScriptRunner, times(1)).runWorker(message.getSiteMonId(),
 			message.getScriptname(), message.getPropHosts(), message.getPropParam());
 		
 		assertThat(lastRecordUseTime, greaterThan(scriptUseTime - littleTime));

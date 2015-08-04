@@ -136,7 +136,7 @@ public class SiteMonAgentCommunicationTest {
 	}
 
 	private void sendUnregistScheduleMessage(SiteMonControllerServerDaemon serverDaemon) {
-		UnregistScheduleMessage unregist = new UnregistScheduleMessage(siteMonId, scriptname);
+		UnregistScheduleMessage unregist = new UnregistScheduleMessage(siteMonId);
 		serverDaemon.sendToAgents(unregist);
 	}
 

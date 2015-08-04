@@ -54,12 +54,16 @@ public abstract class AbstractLoadBalancer {
 				break;
 			}
 			SiteMon target = rebalanceTarget.remove(0);
-			target.setAgentName(idleAgentName);
-			rebalanceSiteMon(target);
+			rebalanceSiteMon(target, idleAgentName);
 		}
 	}
 
-	protected abstract void rebalanceSiteMon(SiteMon siteMon);
+	/**
+	 * 
+	 * @param siteMon Old agent meta info.
+	 * @param newAgentName New agent name.
+	 */
+	protected abstract void rebalanceSiteMon(SiteMon siteMon, String newAgentName);
 
 	private List<String> getIdleAgentList(Collection<AgentStatus> statusList,
 		Collection<SiteMon> rebalanceTarget) {
@@ -89,7 +93,7 @@ public abstract class AbstractLoadBalancer {
 	/**
 	 * @param statusList
 	 * @param monitorList
-	 * @return Map<AgentName, SIteMonInfo>
+	 * @return Map<AgentName, SiteMonInfo>
 	 */
 	private Map<String, SiteMonInfo> createSiteMonInfoList(
 		Collection<AgentStatus> statusList, Collection<SiteMon> monitorList) {

@@ -166,6 +166,22 @@ $(document).ready(function() {
 });
 
 function bindEvent() {
+	$("#pause_siteMon_btn").click(function() {
+		showProgressBar("");
+		var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/pause/${siteMon.id}");
+		ajaxObj.success = function() {
+			location.reload();
+		}
+		ajaxObj.call();
+	});
+	$("#delete_siteMon_btn").click(function() {
+		showProgressBar("");
+		var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/delete/${siteMon.id}");
+		ajaxObj.success = function() {
+			location.href = "${req.getContextPath()}/sitemon/list";
+		}
+		ajaxObj.call();
+	});
 	$("#show_script_btn").click(function() {
 		var currentScript = $("#script_name").val();
         var ownerId = "";
