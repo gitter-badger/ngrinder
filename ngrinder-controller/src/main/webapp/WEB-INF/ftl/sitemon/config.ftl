@@ -84,7 +84,7 @@
 	<div class="row">
 		<div class="span6">
 			<fieldset>
-				<legend><span>Hosts Configuration</span></legend>
+				<legend><span><@spring.message "siteMon.config.hosts.title"/></span></legend>
 			</fieldset>
 			<div class="form-horizontal form-horizontal-2">
 				<#assign targetHosts = siteMon.targetHosts>
@@ -97,13 +97,24 @@
 	
 		<div class="span6">
 			<fieldset>
-				<legend><span>param Configuration</span></legend>
+				<legend><span><@spring.message "siteMon.config.param.title"/></span></legend>
 			</fieldset>
 			<div class="form-horizontal form-horizontal-2">
 				<@control_group name="param" label_message_key="perfTest.config.param" err_style="margin-left:-90px">
 					<@input_popover name="param"
 						value="${(siteMon.param?html)}"
 						message="perfTest.config.param"/>
+				</@control_group>
+			</div>
+			
+			<fieldset>
+				<legend><span><@spring.message "siteMon.config.errorCallback"/></span></legend>
+			</fieldset>
+			<div class="form-horizontal form-horizontal-2">
+				<@control_group name="errorCallback" label_message_key="siteMon.config.errorCallback" err_style="margin-left:-90px">
+					<@input_popover name="errorCallback"
+						value="${(siteMon.errorCallback)}"
+						message="siteMon.config.errorCallback"/>
 				</@control_group>
 			</div>
 		</div>

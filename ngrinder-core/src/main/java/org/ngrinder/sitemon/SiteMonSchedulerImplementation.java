@@ -168,7 +168,7 @@ public class SiteMonSchedulerImplementation implements SiteMonScheduler {
 					@Override
 					public Object call() throws Exception {
 						scriptRunner.runWorker(siteMonId, message.getScriptname(),
-							message.getPropHosts(), message.getPropParam());
+							message.getPropHosts(), message.getPropParam(), message.getErrorCallback());
 						return null;
 					}
 				};

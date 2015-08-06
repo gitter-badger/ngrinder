@@ -13,6 +13,9 @@
  */
 package net.grinder.engine.process;
 
+import java.io.DataOutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Calendar;
 import java.util.Date;
@@ -23,6 +26,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.apache.commons.lang.StringUtils;
 import org.ngrinder.sitemon.logger.ErrorCollectLogger;
 import org.ngrinder.sitemon.messages.ShutdownSiteMonProcessMessage;
 import org.ngrinder.sitemon.messages.SiteMonResultMessage;
@@ -98,6 +102,7 @@ public class SiteMonProcess {
 	private final GrinderProperties properties;
 	private final boolean m_reportTimesToConsole;
 	private final String siteMonId;
+	private final String errorCallback;
 	private final String logDirectory;
 	private final WorkerIdentity workerIdentity;
 
@@ -148,6 +153,7 @@ public class SiteMonProcess {
 			workerIdentity = initialisationMessage.getWorkerIdentity();
 
 			siteMonId = properties.getProperty("sitemon.id");
+			errorCallback = properties.getProperty("sitemon.errorCallback");
 			logDirectory = properties.getProperty(GrinderProperties.LOG_DIRECTORY, ".");
 			m_reportTimesToConsole = properties.getBoolean("grinder.reportTimesToConsole", true);
 
@@ -368,8 +374,11 @@ public class SiteMonProcess {
 				}
 
 				try {
-					SiteMonResultMessage message = new SiteMonResultMessage();
 					String errorLog = getErrorLog();
+					if (StringUtils.isNotEmpty(errorLog)) {
+						callErrorCallback();
+					}
+					SiteMonResultMessage message = new SiteMonResultMessage();					
 					message.addAll(extractResults(sample, errorLog));
 					m_consoleSender.send(message);
 					m_consoleSender.flush();
@@ -380,6 +389,54 @@ public class SiteMonProcess {
 				}
 			}
 		}
+	}
+	
+	private void callErrorCallback() {
+		if (StringUtils.isBlank(errorCallback)) {
+			return;
+		}
+		String stackTrace = getErrorStackTrace();
+		requestErrorCallback(stackTrace);
+	}
+
+	private void requestErrorCallback(final String stackTrace) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+			try {
+				URL url = new URL(errorCallback);
+				HttpURLConnection con = (HttpURLConnection) url.openConnection();
+				con.setRequestMethod("POST");
+				con.setDoOutput(true);
+				DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+				wr.writeBytes("siteMonId=" + siteMonId + "&stackTrace=" + stackTrace);
+				wr.flush();
+				wr.close();
+				if (con.getResponseCode() != 200) {
+					throw new Exception("Response code is " + con.getResponseCode());
+				}
+			} catch (Exception e) {
+				m_terminalLogger.info("Error request error callback api. {}", e.getMessage());
+			}
+			}
+		}).start();
+	}
+
+	private String getErrorStackTrace() {
+		StringBuilder stackTrace = new StringBuilder();
+		for (Throwable t : m_logger.getErrorList()) {
+			stackTrace.append(t.getClass().getSimpleName());
+			stackTrace.append("-");
+			stackTrace.append(t.getMessage());
+			stackTrace.append(System.getProperty("line.separator"));
+			for (StackTraceElement ste : t.getStackTrace()) {
+				stackTrace.append("at ");
+				stackTrace.append(ste);
+				stackTrace.append(System.getProperty("line.separator"));
+			}
+			stackTrace.append(System.getProperty("line.separator"));
+		}
+		return stackTrace.toString();
 	}
 	
 	private String getErrorLog() {

@@ -61,6 +61,9 @@ public class SiteMon {
 	@Type(type = "true_false")
 	private boolean run;
 	
+	@Column(name = "error_callback")
+	private String errorCallback;
+	
 	@Transient
 	private boolean agentRunning;
 
@@ -69,7 +72,7 @@ public class SiteMon {
 	}
 	
 	public SiteMon(String id, User createdUser, String scriptName, long scriptRevision,
-		String targetHosts, String param, String agentName, boolean run) {
+		String targetHosts, String param, String agentName, boolean run, String errorCallback) {
 		this.id = id;
 		this.createdUser = createdUser;
 		this.scriptName = scriptName;
@@ -78,6 +81,7 @@ public class SiteMon {
 		this.param = param;
 		this.agentName = agentName;
 		this.run = run;
+		this.errorCallback = errorCallback;
 	}
 
 	public String getId() {
@@ -142,6 +146,14 @@ public class SiteMon {
 
 	public void setRun(boolean run) {
 		this.run = run;
+	}
+
+	public String getErrorCallback() {
+		return errorCallback;
+	}
+
+	public void setErrorCallback(String errorCallback) {
+		this.errorCallback = errorCallback;
 	}
 
 	/**

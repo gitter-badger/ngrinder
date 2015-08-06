@@ -34,15 +34,15 @@ public class SiteMonRepositoryTest extends AbstractNGrinderTransactionalTest {
 		userRepository.save(user1);
 		userRepository.save(user2);
 		
-		siteMon1 = new SiteMon("id1", user1, "script1", 1, "hosts1", "param1", "agent1", true);
-		siteMon2 = new SiteMon("id2", user2, "script2", 2, "hosts2", "param2", "agent2", false);
+		siteMon1 = new SiteMon("id1", user1, "script1", 1, "hosts1", "param1", "agent1", true, "back1");
+		siteMon2 = new SiteMon("id2", user2, "script2", 2, "hosts2", "param2", "agent2", false, "back2");
 		sut.save(siteMon1);
 		sut.save(siteMon2);
 	}
 
 	@Test
 	public void testSave() throws Exception {
-		SiteMon siteMon = new SiteMon("id", new User(), "script", 0, "hosts", "param", "agent", true);
+		SiteMon siteMon = new SiteMon("id", new User(), "script", 0, "hosts", "param", "agent", true, "back");
 		SiteMon save = sut.save(siteMon);
 		assertEqual(siteMon, save);
 	}
@@ -112,6 +112,8 @@ public class SiteMonRepositoryTest extends AbstractNGrinderTransactionalTest {
 		assertThat(mon2.getTargetHosts(), is(mon1.getTargetHosts()));
 		assertThat(mon2.getParam(), is(mon1.getParam()));
 		assertThat(mon2.getAgentName(), is(mon1.getAgentName()));
+		assertThat(mon2.isRun(), is(mon1.isRun()));
+		assertThat(mon2.getErrorCallback(), is(mon1.getErrorCallback()));
 	}
 	
 }

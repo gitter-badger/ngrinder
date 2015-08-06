@@ -39,6 +39,7 @@ public class SiteMonAgentCommunicationTest {
 	private String scriptname = "scriptname";
 	private String hosts = "www.naver.com:123.123.123.123,localhost:127.0.0.1";
 	private String param = "param|value.1";
+	private String errorCallback = "http://ngrinder.com";
 	private File baseDirectory = new File(getClass().getResource("/").getFile());
 
 	@Before
@@ -131,7 +132,7 @@ public class SiteMonAgentCommunicationTest {
 	}
 
 	private void sendRegistScheduleMessage(SiteMonControllerServerDaemon serverDaemon) {
-		RegistScheduleMessage regist = new RegistScheduleMessage(siteMonId, scriptname, hosts, param);
+		RegistScheduleMessage regist = new RegistScheduleMessage(siteMonId, scriptname, hosts, param, errorCallback);
 		serverDaemon.sendToAgents(regist);
 	}
 

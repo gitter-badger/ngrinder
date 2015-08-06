@@ -98,7 +98,8 @@ public class SiteMonScriptRunner implements GrinderConstants {
 		}
 	}
 
-	public void runWorker(String siteMonId, String scriptname, String hosts, String params) {
+	public void runWorker(String siteMonId, String scriptname, String hosts, String params,
+		String errorCallback) {
 		FanOutStreamSender fanOutStreamSender = null;
 		ProcessWorker worker = null;
 
@@ -117,6 +118,7 @@ public class SiteMonScriptRunner implements GrinderConstants {
 			
 			// init
 			properties.setProperty("sitemon.id", siteMonId);
+			properties.setProperty("sitemon.errorCallback", errorCallback);
 			AbstractGrinderClassPathProcessor classPathProcessor = handler.getClassPathProcessor();
 			String grinderJVMClassPath = classPathProcessor.buildForemostClasspathBasedOnCurrentClassLoader(LOGGER)
 				+ File.pathSeparator

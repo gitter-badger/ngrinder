@@ -26,6 +26,7 @@ public class RegistScheduleMessage implements Message {
 	private final String scriptname;
 	private final String propHosts;
 	private final String propParam;
+	private final String errorCallback;
 	
 	/**
 	 * The Constructor.
@@ -36,11 +37,12 @@ public class RegistScheduleMessage implements Message {
 	 * @param propParam
 	 */
 	public RegistScheduleMessage(String siteMonId, String scriptname, String propHosts,
-		String propParam) {
+		String propParam, String errorCallback) {
 		this.siteMonId = siteMonId;
 		this.scriptname = scriptname;
 		this.propHosts = propHosts;
 		this.propParam = propParam;
+		this.errorCallback = errorCallback;
 	}
 
 	public String getSiteMonId() {
@@ -57,6 +59,10 @@ public class RegistScheduleMessage implements Message {
 
 	public String getPropParam() {
 		return propParam;
+	}
+
+	public String getErrorCallback() {
+		return errorCallback;
 	}
 
 }

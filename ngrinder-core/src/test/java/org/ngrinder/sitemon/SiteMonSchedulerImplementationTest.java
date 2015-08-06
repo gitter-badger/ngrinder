@@ -31,8 +31,8 @@ public class SiteMonSchedulerImplementationTest {
 	
 	int lastSetScriptCount;
 	long lastRecordUseTime;
-	RegistScheduleMessage message = new RegistScheduleMessage("id", "scriptfile", "host:123", "param,null");
-	RegistScheduleMessage message2 = new RegistScheduleMessage("id2", "scriptfile", "host:123", "param,null");
+	RegistScheduleMessage message = new RegistScheduleMessage("id", "scriptfile", "host:123", "param", null);
+	RegistScheduleMessage message2 = new RegistScheduleMessage("id2", "scriptfile", "host:123", "param", null);
 	
 	@Before
 	public void before() {
@@ -106,14 +106,16 @@ public class SiteMonSchedulerImplementationTest {
 				ThreadUtils.sleep(scriptUseTime);
 				return null;
 			}
-		}).when(siteMonScriptRunner).runWorker(anyString(), anyString(), anyString(), anyString());
+		}).when(siteMonScriptRunner).runWorker(anyString(), anyString(), anyString(), anyString(),
+			anyString());
 		ThreadUtils.sleep(repeatTime / 2);
 		
 		sut.regist(message);
 		ThreadUtils.sleep(repeatTime);
 		
 		verify(siteMonScriptRunner, times(1)).runWorker(message.getSiteMonId(),
-			message.getScriptname(), message.getPropHosts(), message.getPropParam());
+			message.getScriptname(), message.getPropHosts(), message.getPropParam(),
+			message.getErrorCallback());
 		
 		assertThat(lastRecordUseTime, greaterThan(scriptUseTime - littleTime));
 		assertThat(lastRecordUseTime, lessThan(scriptUseTime + littleTime));

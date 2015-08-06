@@ -200,7 +200,7 @@ public class SiteMonAgentManagerService implements ControllerConstants {
 			null);
 		siteMonServerDaemon.sendToAddressedAgents(agentAddress, new RegistScheduleMessage(
 			siteMon.getId(), script.getFileName(), siteMon.getTargetHosts(),
-			siteMon.getParam()));
+			siteMon.getParam(), siteMon.getErrorCallback()));
 	}
 
 	/**

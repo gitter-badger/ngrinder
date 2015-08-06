@@ -79,7 +79,7 @@ public class SiteMonController extends BaseController {
 		FileEntry siteMonScript = siteMonService.getSiteMonScript(user, perfTest, scriptClone);
 		modelMap.addAttribute("siteMon", new SiteMon("Perftest" + perfTestId, user,
 			siteMonScript.getPath(), siteMonScript.getRevision(), perfTest.getTargetHosts(),
-			perfTest.getParam(), null, true));
+			perfTest.getParam(), null, true, ""));
 		modelMap.addAttribute("formMode", true);
 		return "sitemon/detail";
 	}
