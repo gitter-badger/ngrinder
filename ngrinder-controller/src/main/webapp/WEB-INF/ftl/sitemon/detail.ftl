@@ -170,7 +170,15 @@ function bindEvent() {
 		showProgressBar("");
 		var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/pause/${siteMon.id}");
 		ajaxObj.success = function() {
-			location.reload();
+			location.href = "${req.getContextPath()}/sitemon/get/${siteMon.id}";
+		}
+		ajaxObj.call();
+	});
+	$("#start_siteMon_btn").click(function() {
+		showProgressBar("");
+		var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/run/${siteMon.id}");
+		ajaxObj.success = function() {
+			location.href = "${req.getContextPath()}/sitemon/get/${siteMon.id}";
 		}
 		ajaxObj.call();
 	});

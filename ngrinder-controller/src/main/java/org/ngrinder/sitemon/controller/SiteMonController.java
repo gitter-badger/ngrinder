@@ -94,8 +94,9 @@ public class SiteMonController extends BaseController {
 			String agentName = agentManager.getIdleResouceAgentName();
 			siteMon.setCreatedUser(user);
 			siteMon.setAgentName(agentName);
-			siteMon.setRun(true);
-			agentManager.sendRegist(siteMon, agentName);
+			if (siteMon.isRun()) {
+				agentManager.sendRegist(siteMon, agentName);
+			}
 			siteMonService.save(siteMon);
 			modelMap.addAttribute("msg", "success");
 		} catch (Exception e) {

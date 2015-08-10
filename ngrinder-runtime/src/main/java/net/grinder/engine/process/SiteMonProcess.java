@@ -409,7 +409,7 @@ public class SiteMonProcess {
 				con.setRequestMethod("POST");
 				con.setDoOutput(true);
 				DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-				wr.writeBytes("siteMonId=" + siteMonId + "&stackTrace=" + stackTrace);
+				wr.writeBytes("id=" + siteMonId + "&error=" + stackTrace);
 				wr.flush();
 				wr.close();
 				if (con.getResponseCode() != 200) {

@@ -19,10 +19,8 @@
 			<col width="100">
 			<col width="*">
 			<col width="100">
-			<col width="100">
-			<col width="100">
-			<col width="100">
 			<col width="80">
+			<col width="60">
 		</colgroup>
 		<thead>
 		<tr>
@@ -30,16 +28,22 @@
 			<th><@spring.message "siteMon.list.id"/></th>
 			<th class="ellipsis"><@spring.message "siteMon.list.scriptName"/></th>
 			<th><@spring.message "siteMon.list.scriptRevision"/></th>
-			<th class="no-click"><@spring.message "siteMon.list.targetHosts"/></th>
-			<th><@spring.message "siteMon.list.param"/></th>
-			<th><@spring.message "siteMon.list.agentName"/></th>
 			<th><@spring.message "siteMon.list.runState"/></th>
+			<th><@spring.message "common.label.actions"/></th>
 		</tr>
 		</thead>
 		<tbody>
 		<@list list_items=siteMons others="table_list" colspan="8"; siteMon>
 		<tr>
-			<#if siteMon.agentRunning><#assign iconName="green.png"/><#else><#assign iconName="red.png"/></#if>
+			<#if siteMon.agentRunning>
+				<#if siteMon.run>
+					<#assign iconName="green_anime.gif"/>
+				<#else>
+					<#assign iconName="green.png"/>
+				</#if>
+			<#else>
+				<#assign iconName="red.png"/>
+			</#if>
 			<td class="center">
 				<div class="ball"
 					 data-html="true"
@@ -52,12 +56,19 @@
 				<div class="ellipsis" title="${siteMon.scriptName}">${siteMon.scriptName}</div>
 			</td>
 			<td><#if (siteMon.scriptRevision != -1)>${siteMon.scriptRevision}<#else>HEAD</#if></td>
-			<td class="ellipsis" title="${siteMon.targetHosts}">${siteMon.targetHosts}</td>
-			<td class="ellipsis" title="${siteMon.param}">${siteMon.param}</td>
-			<td class="ellipsis" title="${siteMon.agentName}">${siteMon.agentName}</td>
 			<td>
-				<i id="play_${siteMon.id}" style="<#if siteMon.run>display: none;</#if>" class="icon-play test-remove pointer-cursor" sid="${siteMon.id}"></i>
-				<i id="pause_${siteMon.id}" style="<#if !siteMon.run>display: none;</#if>" class="icon-pause test-remove pointer-cursor" sid="${siteMon.id}"></i>
+				<#if siteMon.run>
+					<@spring.message 'siteMon.state.start'/>
+				<#else>
+					<@spring.message 'siteMon.state.pause'/>
+				</#if>
+			</td>
+			<td>
+				<#if siteMon.run>
+					<i id="pause_${siteMon.id}" class="icon-pause pointer-cursor" sid="${siteMon.id}"></i>
+				<#else>
+					<i id="play_${siteMon.id}" class="icon-play pointer-cursor" sid="${siteMon.id}"></i>
+				</#if>
 			</td>
 		</tr>
 		</@list>
@@ -81,7 +92,7 @@
 			"aaSorting": [
 				[1, "asc"]
 			],
-			"aoColumns": [null, {"asSorting": []}, {"asSorting": []}, null, null, null, null, null],
+			"aoColumns": [null, {"asSorting": []}, {"asSorting": []}, null, null, null],
 			"sPaginationType": "bootstrap",
 			"oLanguage": {
 				"oPaginate": {

@@ -1,6 +1,15 @@
+<#if !(siteMon.createdUser??) || siteMon.createdUser.userId != currentUser.factualUser.userId>
+	<#assign disabled = "disabled">
+</#if>
+<#if formMode?? && formMode == true>
+	<#assign saved = false>
+<#else>
+	<#assign saved = true>
+</#if>
 <form id="siteMon_config_form" name="siteMon_config_form" action="${req.getContextPath()}/sitemon/save"  method="POST" style="margin-bottom: 0px;">
 	<div class="well" style="margin-top:0">
 		<input type="hidden" id="siteMon_id" name="id" value="${(siteMon.id)!}">
+		<input type="hidden" name="run" value="${(siteMon.run)?string('true', 'false')}">
 		<div class="form-horizontal" id="query_div">
 			<fieldset>
 				<div class="control-group" style="margin-bottom:0px;">
@@ -16,27 +25,46 @@
 								<#if !(siteMon.createdUser??) || siteMon.createdUser.userId != currentUser.factualUser.userId>
 									<#assign disabled = "disabled">
 								</#if>
-								<button type="submit" class="btn btn-success" id="save_siteMon_btn" style="width:110px" ${disabled!}>
-									<@spring.message "siteMon.config.saveAndStart"/>
+								<button type="submit" class="btn btn-success" id="save_siteMon_btn" ${disabled!}>
+									<@spring.message "siteMon.config.save"/>
+								<#if !saved>
+									&nbsp;<@spring.message "siteMon.config.andStart"/>
+								</#if>
 								</button>
-							<#if !(formMode??) || formMode == false>
-								<button type="button" class="btn btn-warning" id="pause_siteMon_btn" style="width:55px; <#if !(siteMon.run)>display: none;</#if>" ${disabled!}>
-									<@spring.message "siteMon.config.pause"/>
-								</button>
-								<button type="button" class="btn btn-danger" id="delete_siteMon_btn" style="width:55px" ${disabled!}>
+							<#if saved>
+								<button type="button" class="btn btn-danger" id="delete_siteMon_btn" ${disabled!}>
 									<@spring.message "siteMon.config.delete"/>
 								</button>
 							</#if>
 							</div>
 						</div>
 					</div>
+				<#if saved>
 					<div class="row">
 						<div class="span">
-							<@control_group controls_style = "margin-left: 140px;" label_style = "width: 120px;" label_message_key="siteMon.list.runState">
-								<input class="span3 left-float" type="text" value="<#if siteMon.run>run<#else>pause</#if>" disabled/>
+							<@control_group controls_style = "margin-left: 140px;" label_style = "width: 120px;" label_message_key="siteMon.config.agentName">
+								<input class="span3 left-float" maxlength="50" size="30" type="text" value="${siteMon.agentName!}" disabled/>
 							</@control_group>
 						</div>
 					</div>
+					<div class="row">
+						<div class="span">
+							<@control_group controls_style = "margin-left: 140px;" label_style = "width: 120px;" label_message_key="siteMon.list.runState">
+							<#if siteMon.run>
+								<input class="span3 left-float" maxlength="50" size="30" type="text" value="<@spring.message 'siteMon.state.start'/>" disabled/>
+								<button type="button" class="btn btn-warning" id="pause_siteMon_btn" ${disabled!}>
+									<@spring.message "siteMon.config.pause"/>
+								</button>
+							<#else>
+								<input class="span3 left-float" maxlength="50" size="30" type="text" value="<@spring.message 'siteMon.state.pause'/>" disabled/>
+								<button type="button" class="btn btn-warning" id="start_siteMon_btn" ${disabled!}>
+									<@spring.message "siteMon.config.start"/>
+								</button>
+							</#if>
+							</@control_group>
+						</div>
+					</div>
+				</#if>
 					<div class="row">
 						<div class="span">
 							<#if (siteMon.scriptRevision > 0)>
@@ -53,7 +81,7 @@
 									value="${scriptRevision}"/>
 								<button class="btn btn-mini btn-info" type="button"
 									id="show_script_btn"
-									style="margin-top: 3px;">R
+									style="margin-top: 3px;"><@spring.message "siteMon.config.editScript"/>
 								<#if scriptRevision != -1>
 									${siteMon.scriptRevision}
 								<#else>
@@ -61,9 +89,12 @@
 								</#if>
 								</button>
 								<#if scriptRevision != -1>
-									<button class="btn btn-mini btn-info" type="button"
-										id="use_revision_btn"
-										style="margin-top: 3px;">use HEAD</button>
+									<button class="btn btn-mini btn-info"
+										id="use_revision_btn" rel="popover"
+										type="button" title="<@spring.message "siteMon.config.useHead"/>"
+										data-content="<@spring.message "siteMon.config.useHead.help"/>"
+										data-html="true" data-placement="bottom"
+										style="margin-top: 3px;"><@spring.message "siteMon.config.useHead"/></button>
 								</#if>
 							</@control_group>
 						</div>

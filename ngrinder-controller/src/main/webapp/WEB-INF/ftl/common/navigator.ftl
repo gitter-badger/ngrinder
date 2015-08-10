@@ -15,11 +15,11 @@
 					<li id="nav_test">
 						<a href="${req.getContextPath()}/perftest/"><@spring.message "navigator.perfTest"/></a>
 					</li>
-					<li id="nav_script">
-						<a href="${req.getContextPath()}/script/"><@spring.message "navigator.script"/></a>
-					</li>
 					<li id="nav_siteMon">
 						<a href="${req.getContextPath()}/sitemon/list"><@spring.message "navigator.siteMon"/></a>
+					</li>
+					<li id="nav_script">
+						<a href="${req.getContextPath()}/script/"><@spring.message "navigator.script"/></a>
 					</li>
 				</ul>
 
