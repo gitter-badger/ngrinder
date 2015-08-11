@@ -17,6 +17,7 @@ import java.io.DataOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -442,6 +443,8 @@ public class SiteMonProcess {
 	private String getErrorLog() {
 		StringBuilder errorLog = new StringBuilder();
 		for (Throwable t : m_logger.getErrorList()) {
+			errorLog.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+			errorLog.append(" : ");
 			errorLog.append(t.getClass().getSimpleName());
 			errorLog.append("-");
 			errorLog.append(t.getMessage());

@@ -206,19 +206,22 @@ function bindEvent() {
 		$("#use_revision_btn").hide();
 		updateScriptResources(true);
 	});
-	$("#error_chart").bind("jqplotDataClick", function (evt, seriesIndex, pointIndex, data) {
+	$("#test_result_chart").bind("jqplotDataClick", function (evt, seriesIndex, pointIndex, data) {
+		if (seriesIndex == 0) {	// success result value
+			return;
+		}
 		var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/${siteMon.id}/log", null, "<@spring.message "common.error.error"/>");
 		ajaxObj.params = {
-			'testNumber' : labels[seriesIndex],
-			'timestamp' : data[0]
+			'testNumber' : labels[0],
+			'minTimestamp' : new Date(errorData[pointIndex][TIMESTAMP_INDEX]).getTime(),
+			'maxTimestamp' : new Date(errorData[pointIndex][LAST_TIMESTAMP_INDEX]).getTime()
 		};
 		ajaxObj.success = function(res) {
 			var html = "";
-			logs = res.split(",");			
-			for (var i = 0; i < logs.length; i++) {
-				var value = logs[i];
-				if (value.length > 0) {
-					html = html + "<div class='log ellipsis' title='" + value + "'>" + value + "</div>";
+			for (var i = 0; i < res.length; i++) {
+				var log = res[i];
+				if (log.length > 0) {
+					html = html + "<div class='log ellipsis' title='" + log + "'>" + log + "</div>";
 				}
 			}
 			$("#error_log").html(html);
@@ -258,6 +261,10 @@ function updateScriptResources(bInitHosts) {
 	ajaxObj.call();
 }
 
+var TIMESTAMP_INDEX = 0;
+var VALUE_INDEX = 1;
+var LAST_TIMESTAMP_INDEX = 2;
+var errorData;
 function drawReportChart() {
 	var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/${siteMon.id}/result", null, "<@spring.message "common.error.error"/>");
 	ajaxObj.success = function(res) {
@@ -265,8 +272,10 @@ function drawReportChart() {
 			labels = res.labels;
 			$("#sitemon_report_section_tab").show();
 			$("#sitemon_report_section_tab").find("a").tab('show');
-			new Chart("success_chart", res.successData, 1, {labels : res.labels, xAxisMin : res.minTimestamp, xAxisMax : res.maxTimestamp, xAxisRenderer : $.jqplot.DateAxisRenderer, xAxisFormatString : '%H:%M'}).plot();
-			new Chart("error_chart", res.errorData, 1, {labels : res.labels, xAxisMin : res.minTimestamp, xAxisMax : res.maxTimestamp, xAxisRenderer : $.jqplot.DateAxisRenderer, xAxisFormatString : '%H:%M'}).plot();
+			var sumResult = sumResultGroupByTimestamp(res.successData, res.errorData);
+			var resultData = getSamplingData(sumResult[0], sumResult[1], 10);
+			errorData = resultData[1];
+			new Chart("test_result_chart", resultData, 1, {labels : ["success", "error"], xAxisMin : res.minTimestamp, xAxisMax : res.maxTimestamp, xAxisRenderer : $.jqplot.DateAxisRenderer, xAxisFormatString : '%H:%M'}).plot();
 			new Chart("test_time_chart", res.testTimeData, 1, {labels : res.labels, xAxisMin : res.minTimestamp, xAxisMax : res.maxTimestamp, xAxisRenderer : $.jqplot.DateAxisRenderer, xAxisFormatString : '%H:%M'}).plot();
 			$("#sitemon_config_section_tab").find("a").tab('show');
 		}
@@ -276,6 +285,45 @@ function drawReportChart() {
 		}
 	};
 	ajaxObj.call();
+}
+
+function sumResultGroupByTimestamp(successData, errorData) {
+	var testCount = successData.length;
+	var timestampCount = successData[0].length;
+	var successRes = [];
+	var errorRes = [];
+	for (var i = 0; i < timestampCount; i++) {
+		var timestamp = successData[0][i][TIMESTAMP_INDEX];
+		var success = 0;
+		var error = 0;
+		for (var j = 0; j < testCount; j++) {
+			success += successData[j][i][VALUE_INDEX];
+			error += errorData[j][i][VALUE_INDEX];
+		}
+		successRes[i] = [timestamp, success];
+		errorRes[i] = [timestamp, error];
+	}
+	return [successRes, errorRes];
+}
+
+function getSamplingData(successData, errorData, samplingInterval) {
+	var successRes = [];
+	var errorRes = []
+	var len = successData.length;
+	for (var i = 0; i < len; i += samplingInterval) {
+		var timestamp = successData[i][TIMESTAMP_INDEX];
+		var lastTimestamp = successData[i][TIMESTAMP_INDEX];
+		var min = successData[i][VALUE_INDEX];
+		var max = errorData[i][VALUE_INDEX];
+		for (var j = i; j < i + samplingInterval && j < len; j++) {
+			if (successData[j][VALUE_INDEX] < min) min = successData[j][VALUE_INDEX];
+			if (errorData[j][VALUE_INDEX] > max) max = errorData[j][VALUE_INDEX];
+			lastTimestamp = successData[j][TIMESTAMP_INDEX];
+		}
+		successRes.push([timestamp, min]);
+		errorRes.push([timestamp, max, lastTimestamp]);
+	}
+	return [successRes, errorRes];
 }
 </script>
 </body>

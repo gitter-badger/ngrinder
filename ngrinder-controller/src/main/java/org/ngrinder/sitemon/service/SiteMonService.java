@@ -25,7 +25,6 @@ import org.ngrinder.model.User;
 import org.ngrinder.script.model.FileEntry;
 import org.ngrinder.script.service.FileEntryService;
 import org.ngrinder.sitemon.model.SiteMonResult;
-import org.ngrinder.sitemon.model.SiteMonResult.SiteMonResultPK;
 import org.ngrinder.sitemon.model.SiteMonResultJson;
 import org.ngrinder.sitemon.repository.SiteMonRepository;
 import org.ngrinder.sitemon.repository.SiteMonResultRepository;
@@ -134,10 +133,8 @@ public class SiteMonService {
 	 * @param date
 	 * @return
 	 */
-	public String getLog(String siteMonId, int testNumber, Date timestamp) {
-		SiteMonResultPK pk = new SiteMonResultPK(siteMonId, testNumber, timestamp);
-		SiteMonResult siteMonResult = siteMonResultRepository.findOne(pk);
-		return siteMonResult.getErrorLog();
+	public List<String> getLog(String siteMonId, int testNumber, Date minTimestamp, Date maxTimestamp) {
+		return siteMonResultRepository.findErrorLog(siteMonId, testNumber, minTimestamp, maxTimestamp);
 	}
 
 	/**

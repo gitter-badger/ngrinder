@@ -41,4 +41,9 @@ public interface SiteMonResultRepository extends
 	@Query("select distinct(s.siteMonResultPK.testNumber) from SiteMonResult s where s.siteMonResultPK.siteMonId = ?1 and s.siteMonResultPK.timestamp > ?2")
 	public List<Integer> findTestNumber(String siteMonId, Date start);
 	
+	@Query("select s.errorLog from SiteMonResult s"
+		+ " where s.siteMonResultPK.siteMonId = ?1 and s.siteMonResultPK.testNumber > ?2"
+		+ " and s.siteMonResultPK.timestamp >= ?3 and s.siteMonResultPK.timestamp <= ?4")
+	public List<String> findErrorLog(String siteMonId, int testNumber, Date minTimestamp, Date maxTimestamp);
+	
 }

@@ -16,6 +16,7 @@ package org.ngrinder.sitemon.controller;
 import static org.ngrinder.common.util.Preconditions.*;
 
 import java.util.Date;
+import java.util.List;
 
 import org.ngrinder.common.controller.BaseController;
 import org.ngrinder.common.controller.RestAPI;
@@ -161,8 +162,8 @@ public class SiteMonController extends BaseController {
 	@RestAPI
 	@RequestMapping("/api/{siteMonId}/log")
 	public HttpEntity<String> getLog(@PathVariable String siteMonId, @RequestParam int testNumber,
-		@RequestParam long timestamp) {
-		String log = siteMonService.getLog(siteMonId, testNumber, new Date(timestamp));
+		@RequestParam long minTimestamp, @RequestParam long maxTimestamp) {
+		List<String> log = siteMonService.getLog(siteMonId, testNumber, new Date(minTimestamp), new Date(maxTimestamp));
 		return toJsonHttpEntity(log);
 	}
 	
