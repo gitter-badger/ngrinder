@@ -105,18 +105,16 @@
 		removeClick();
 	</#if>
 		$("i.icon-play").click(function () {
-			showProgressBar("");
 			var id = $(this).attr("sid");
-			var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/run/" + id);
+			var ajaxObj = new AjaxProgressBarObj("${req.getContextPath()}/sitemon/api/run/" + id);
 			ajaxObj.success = function() {
 				location.reload();
 			}
 			ajaxObj.call();
 		});
 		$("i.icon-pause").click(function () {
-			showProgressBar("");
 			var id = $(this).attr("sid");
-			var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/pause/" + id);
+			var ajaxObj = new AjaxProgressBarObj("${req.getContextPath()}/sitemon/api/pause/" + id);
 			ajaxObj.success = function() {
 				location.reload();
 			}

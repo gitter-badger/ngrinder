@@ -155,11 +155,11 @@ function enableCheckboxSelectAll(containerId) {
 	$(idStr + "th > input").click(function (event) {
 		if ($(this)[0].checked) {
 			$(idStr + "td > input[disabled!='disabled',type='checkbox']").each(function () {
-				this.checked = true
+				this.checked = true;
 			});
 		} else {
 			$("td > input[type='checkbox']").each(function () {
-                this.checked = false
+                this.checked = false;
 			});
 		}
 
@@ -263,6 +263,22 @@ function AjaxPutObj(url, params, successMessage, errorMessage) {
     return ajaxObj;
 }
 
+function AjaxProgressBarObj(url, successMessage, errorMessage) {
+	this.ajaxObj = new AjaxObj(url, successMessage, errorMessage);
+	this.ajaxObj.complete = function() {
+		hideProgressBar();
+	};
+	this.ajaxObj.error = function(xhr, res) {
+		alert(xhr.responseJSON.message);
+	};
+}
+
+AjaxProgressBarObj.prototype.call = function () {
+	showProgressBar("");
+	this.ajaxObj.success = this.success;
+	this.ajaxObj.call();
+};
+
 function AjaxObj(url, successMessage, errorMessage) {
     if (url.indexOf("/") == 0) {
         this.url = url.substring(1);
@@ -350,7 +366,7 @@ AjaxObj.prototype.call = function () {
 				that.error(xhr, res);
 			},
 			complete: function () {
-				that.complete()
+				that.complete();
 			}
 
 		});
@@ -384,4 +400,25 @@ function getShortenString(str, start, end) {
     	str +="...";
 	}
 	return str;
+}
+
+function dateFormatHelper(val) {
+	if (val >= 10) {
+		return val;
+	}
+	return "0" + val;
+}
+
+function dateToString(date, format) {
+	return format.replace(/(yyyy|MM|dd|HH|mm|ss)/gi, function($1) {
+		switch ($1) {
+			case "yyyy": return date.getFullYear();
+			case "MM": return dateFormatHelper(date.getMonth() + 1);
+			case "dd": return dateFormatHelper(date.getDate());
+			case "HH": return dateFormatHelper(date.getHours());
+			case "mm": return dateFormatHelper(date.getMinutes());
+			case "ss": return dateFormatHelper(date.getSeconds());
+			default: return $1;
+	    }
+	});
 }

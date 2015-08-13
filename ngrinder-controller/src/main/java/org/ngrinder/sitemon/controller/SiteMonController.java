@@ -161,9 +161,9 @@ public class SiteMonController extends BaseController {
 	
 	@RestAPI
 	@RequestMapping("/api/{siteMonId}/log")
-	public HttpEntity<String> getLog(@PathVariable String siteMonId, @RequestParam int testNumber,
+	public HttpEntity<String> getLog(@PathVariable String siteMonId,
 		@RequestParam long minTimestamp, @RequestParam long maxTimestamp) {
-		List<String> log = siteMonService.getLog(siteMonId, testNumber, new Date(minTimestamp), new Date(maxTimestamp));
+		List<String> log = siteMonService.getLog(siteMonId, new Date(minTimestamp), new Date(maxTimestamp));
 		return toJsonHttpEntity(log);
 	}
 	

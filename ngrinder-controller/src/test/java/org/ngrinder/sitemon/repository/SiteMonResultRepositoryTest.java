@@ -85,6 +85,15 @@ public class SiteMonResultRepositoryTest extends AbstractNGrinderTransactionalTe
 		
 		assertThat(findAll.size(), is(1));
 	}
+	
+	@Test
+	public void testFindErrorLog() throws Exception {
+		List<String> errorLog = sut.findErrorLog(siteMonResult1.getSiteMonId(),
+			siteMonResult1.getTimestamp(), siteMonResult1.getTimestamp());
+		
+		assertThat(errorLog.size(), is(1));
+		assertThat(errorLog.get(0), is(siteMonResult1.getErrorLog()));
+	}
 
 	private void assertEqual(SiteMonResult res1, SiteMonResult res2) {
 		assertThat(res1.getSiteMonId(), is(res2.getSiteMonId()));

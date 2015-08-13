@@ -133,8 +133,8 @@ public class SiteMonService {
 	 * @param date
 	 * @return
 	 */
-	public List<String> getLog(String siteMonId, int testNumber, Date minTimestamp, Date maxTimestamp) {
-		return siteMonResultRepository.findErrorLog(siteMonId, testNumber, minTimestamp, maxTimestamp);
+	public List<String> getLog(String siteMonId, Date minTimestamp, Date maxTimestamp) {
+		return siteMonResultRepository.findErrorLog(siteMonId, minTimestamp, maxTimestamp);
 	}
 
 	/**

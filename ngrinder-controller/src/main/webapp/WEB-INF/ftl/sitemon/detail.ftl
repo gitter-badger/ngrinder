@@ -167,24 +167,21 @@ $(document).ready(function() {
 
 function bindEvent() {
 	$("#pause_siteMon_btn").click(function() {
-		showProgressBar("");
-		var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/pause/${siteMon.id}");
+		var ajaxObj = new AjaxProgressBarObj("${req.getContextPath()}/sitemon/api/pause/${siteMon.id}");
 		ajaxObj.success = function() {
 			location.href = "${req.getContextPath()}/sitemon/get/${siteMon.id}";
 		}
 		ajaxObj.call();
 	});
 	$("#start_siteMon_btn").click(function() {
-		showProgressBar("");
-		var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/run/${siteMon.id}");
+		var ajaxObj = new AjaxProgressBarObj("${req.getContextPath()}/sitemon/api/run/${siteMon.id}");
 		ajaxObj.success = function() {
 			location.href = "${req.getContextPath()}/sitemon/get/${siteMon.id}";
 		}
 		ajaxObj.call();
 	});
 	$("#delete_siteMon_btn").click(function() {
-		showProgressBar("");
-		var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/delete/${siteMon.id}");
+		var ajaxObj = new AjaxProgressBarObj("${req.getContextPath()}/sitemon/api/delete/${siteMon.id}");
 		ajaxObj.success = function() {
 			location.href = "${req.getContextPath()}/sitemon/list";
 		}
@@ -212,7 +209,6 @@ function bindEvent() {
 		}
 		var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/${siteMon.id}/log", null, "<@spring.message "common.error.error"/>");
 		ajaxObj.params = {
-			'testNumber' : labels[0],
 			'minTimestamp' : new Date(errorData[pointIndex][TIMESTAMP_INDEX]).getTime(),
 			'maxTimestamp' : new Date(errorData[pointIndex][LAST_TIMESTAMP_INDEX]).getTime()
 		};
@@ -261,6 +257,7 @@ function updateScriptResources(bInitHosts) {
 	ajaxObj.call();
 }
 
+var TEN_MINUTE_MS = 1000 * 60 * 10;
 var TIMESTAMP_INDEX = 0;
 var VALUE_INDEX = 1;
 var LAST_TIMESTAMP_INDEX = 2;
@@ -273,9 +270,9 @@ function drawReportChart() {
 			$("#sitemon_report_section_tab").show();
 			$("#sitemon_report_section_tab").find("a").tab('show');
 			var sumResult = sumResultGroupByTimestamp(res.successData, res.errorData);
-			var resultData = getSamplingData(sumResult[0], sumResult[1], 10);
+			var resultData = getSamplingData(sumResult[0], sumResult[1], TEN_MINUTE_MS);
 			errorData = resultData[1];
-			new Chart("test_result_chart", resultData, 1, {labels : ["success", "error"], xAxisMin : res.minTimestamp, xAxisMax : res.maxTimestamp, xAxisRenderer : $.jqplot.DateAxisRenderer, xAxisFormatString : '%H:%M'}).plot();
+			new Chart("test_result_chart", resultData, 1, {labels : ["success", "error"], seriesColors: ["#0000ff", "#ff0000"], markerStyle: "square", xAxisMin : res.minTimestamp, xAxisMax : res.maxTimestamp, xAxisRenderer : $.jqplot.DateAxisRenderer, xAxisFormatString : '%H:%M'}).plot();
 			new Chart("test_time_chart", res.testTimeData, 1, {labels : res.labels, xAxisMin : res.minTimestamp, xAxisMax : res.maxTimestamp, xAxisRenderer : $.jqplot.DateAxisRenderer, xAxisFormatString : '%H:%M'}).plot();
 			$("#sitemon_config_section_tab").find("a").tab('show');
 		}
@@ -310,19 +307,26 @@ function getSamplingData(successData, errorData, samplingInterval) {
 	var successRes = [];
 	var errorRes = []
 	var len = successData.length;
-	for (var i = 0; i < len; i += samplingInterval) {
-		var timestamp = successData[i][TIMESTAMP_INDEX];
-		var lastTimestamp = successData[i][TIMESTAMP_INDEX];
-		var min = successData[i][VALUE_INDEX];
-		var max = errorData[i][VALUE_INDEX];
-		for (var j = i; j < i + samplingInterval && j < len; j++) {
-			if (successData[j][VALUE_INDEX] < min) min = successData[j][VALUE_INDEX];
-			if (errorData[j][VALUE_INDEX] > max) max = errorData[j][VALUE_INDEX];
-			lastTimestamp = successData[j][TIMESTAMP_INDEX];
+	
+	var i = 0;
+	do {
+		var minTime = successData[i][TIMESTAMP_INDEX];
+		var maxTime = new Date(minTime).getTime() + samplingInterval - 1;
+		maxTime = dateToString(new Date(maxTime), "yyyy-MM-dd HH:mm:ss");
+		var success = successData[i][VALUE_INDEX];
+		var error = errorData[i][VALUE_INDEX];
+		
+		for(i = i + 1; i < len; i++) {
+			if (successData[i][TIMESTAMP_INDEX] > maxTime) {
+				break;
+			}
+			if (successData[i][VALUE_INDEX] < success) success = successData[i][VALUE_INDEX];
+			if (errorData[i][VALUE_INDEX] > error) error = errorData[i][VALUE_INDEX];
 		}
-		successRes.push([timestamp, min]);
-		errorRes.push([timestamp, max, lastTimestamp]);
-	}
+		successRes.push([minTime, success]);
+		errorRes.push([minTime, error, maxTime]);
+	} while (i < len);
+	
 	return [successRes, errorRes];
 }
 </script>

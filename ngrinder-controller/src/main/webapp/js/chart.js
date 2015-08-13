@@ -122,12 +122,14 @@ Chart.prototype.plot = function () {
 	this.ymax = this.calcYmax();
 	if (this.plotObj === undefined) {
 		this.plotObj = $.jqplot(this.containerId, this.values, {
+			seriesColors: this.opts.seriesColors,
 			gridPadding: this.gridPadding,
 			seriesDefaults: {
 				markerRenderer: $.jqplot.MarkerRenderer,
 				markerOptions: {
 					size: 2.0,
-					color: '#555555'
+					color: '#555555',
+					style: this.opts.markerStyle
 				},
 				lineWidth: 1.0
 			},
