@@ -42,7 +42,7 @@ public class SiteMonControllerServerListener {
 		public void handle(Message message) throws CommunicationException {
 			synchronized (eventSyncCondition) {
 				messages.add(message);
-				eventSyncCondition.notifyAll();
+				eventSyncCondition.notify();
 			}
 		}
 

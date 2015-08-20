@@ -213,7 +213,7 @@ public class SiteMonController implements Agent {
 				try {
 					sendCurrentState();
 				} catch (CommunicationException e) {
-					cancel();
+					shutdown();
 					LOGGER.error("Error while sending current state:" + e.getMessage());
 					LOGGER.debug("The error detail is", e);
 				}
