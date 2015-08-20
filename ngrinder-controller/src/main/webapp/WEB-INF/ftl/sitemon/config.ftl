@@ -39,6 +39,13 @@
 							</div>
 						</div>
 					</div>
+					<div class="row">
+						<div class="span">
+							<@control_group controls_style = "margin-left: 140px;" label_style = "width: 120px;" label_message_key="siteMon.config.name">
+								<input class="span3 left-float" name="name" maxlength="50" size="30" type="text" value="${siteMon.name!}"/>
+							</@control_group>
+						</div>
+					</div>
 				<#if saved>
 					<div class="row">
 						<div class="span">

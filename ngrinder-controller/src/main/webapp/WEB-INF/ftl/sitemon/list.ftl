@@ -16,7 +16,6 @@
 	<table class="table table-striped table-bordered ellipsis" id="siteMon_table">
 		<colgroup>
 			<col width="80">
-			<col width="100">
 			<col width="*">
 			<col width="100">
 			<col width="80">
@@ -25,8 +24,7 @@
 		<thead>
 		<tr>
 			<th><@spring.message "siteMon.list.agentState"/></th>
-			<th><@spring.message "siteMon.list.id"/></th>
-			<th class="ellipsis"><@spring.message "siteMon.list.scriptName"/></th>
+			<th><@spring.message "siteMon.list.name"/></th>
 			<th><@spring.message "siteMon.list.scriptRevision"/></th>
 			<th><@spring.message "siteMon.list.runState"/></th>
 			<th><@spring.message "common.label.actions"/></th>
@@ -51,9 +49,10 @@
 					<img class="status" src="${req.getContextPath()}/img/ball/${iconName}"/>
 				</div>
 			</td>
-			<td><a href="${req.getContextPath()}/sitemon/get/${siteMon.id}">${siteMon.id}</a></td>
 			<td>
-				<div class="ellipsis" title="${siteMon.scriptName}">${siteMon.scriptName}</div>
+				<div class="ellipsis" title="${siteMon.name}">
+					<a href="${req.getContextPath()}/sitemon/get/${siteMon.id}">${siteMon.name}</a>
+				</div>
 			</td>
 			<td><#if (siteMon.scriptRevision != -1)>${siteMon.scriptRevision}<#else>HEAD</#if></td>
 			<td>
@@ -92,7 +91,7 @@
 			"aaSorting": [
 				[1, "asc"]
 			],
-			"aoColumns": [null, {"asSorting": []}, {"asSorting": []}, null, null, null],
+			"aoColumns": [null, {"asSorting": []}, {"asSorting": []}, null, null],
 			"sPaginationType": "bootstrap",
 			"oLanguage": {
 				"oPaginate": {

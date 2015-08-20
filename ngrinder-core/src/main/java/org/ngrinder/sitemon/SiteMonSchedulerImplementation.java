@@ -13,6 +13,7 @@
  */
 package org.ngrinder.sitemon;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -159,6 +160,10 @@ public class SiteMonSchedulerImplementation implements SiteMonScheduler {
 		}
 
 		private List<Future<Object>> runScriptUsingThreadPool() {
+			Calendar cal = Calendar.getInstance();
+			cal.set(Calendar.SECOND, 0);
+			cal.set(Calendar.MILLISECOND, 0);
+			final long current = cal.getTimeInMillis();
 			List<Future<Object>> futures = new LinkedList<Future<Object>>();
 			for (Entry<String, RegistScheduleMessage> entry : siteMonMap.entrySet()) {
 				final String siteMonId = entry.getKey();
@@ -168,7 +173,8 @@ public class SiteMonSchedulerImplementation implements SiteMonScheduler {
 					@Override
 					public Object call() throws Exception {
 						scriptRunner.runWorker(siteMonId, message.getScriptname(),
-							message.getPropHosts(), message.getPropParam(), message.getErrorCallback());
+							message.getPropHosts(), message.getPropParam(),
+							message.getErrorCallback(), current);
 						return null;
 					}
 				};

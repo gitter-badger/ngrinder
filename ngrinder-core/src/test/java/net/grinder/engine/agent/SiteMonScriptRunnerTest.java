@@ -48,7 +48,7 @@ public class SiteMonScriptRunnerTest {
 		
 		assertThat(siteMonScriptRunner.pollAllResult().size(), is(0));
 		
-		siteMonScriptRunner.runWorker(monitorId, "sitemon.py", null, null, "");
+		siteMonScriptRunner.runWorker(monitorId, "sitemon.py", null, null, "", 0);
 
 		assertThat(siteMonScriptRunner.pollAllResult().size(), is(1));
 		assertThat(siteMonScriptRunner.pollAllResult().size(), is(0));

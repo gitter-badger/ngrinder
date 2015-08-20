@@ -107,15 +107,15 @@ public class SiteMonSchedulerImplementationTest {
 				return null;
 			}
 		}).when(siteMonScriptRunner).runWorker(anyString(), anyString(), anyString(), anyString(),
-			anyString());
+			anyString(), anyLong());
 		ThreadUtils.sleep(repeatTime / 2);
 		
 		sut.regist(message);
 		ThreadUtils.sleep(repeatTime);
 		
-		verify(siteMonScriptRunner, times(1)).runWorker(message.getSiteMonId(),
-			message.getScriptname(), message.getPropHosts(), message.getPropParam(),
-			message.getErrorCallback());
+		verify(siteMonScriptRunner, times(1)).runWorker(eq(message.getSiteMonId()),
+			eq(message.getScriptname()), eq(message.getPropHosts()), eq(message.getPropParam()),
+			eq(message.getErrorCallback()), anyLong());
 		
 		assertThat(lastRecordUseTime, greaterThan(scriptUseTime - littleTime));
 		assertThat(lastRecordUseTime, lessThan(scriptUseTime + littleTime));

@@ -13,6 +13,8 @@
  */
 package net.grinder.engine.agent;
 
+import static org.ngrinder.common.util.NoOp.*;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -47,8 +49,6 @@ import net.grinder.lang.Lang;
 import net.grinder.util.AbstractGrinderClassPathProcessor;
 import net.grinder.util.Directory;
 import net.grinder.util.NetworkUtils;
-
-import static org.ngrinder.common.util.NoOp.noOp;
 
 /**
  * @author Gisoo Gwon
@@ -99,7 +99,7 @@ public class SiteMonScriptRunner implements GrinderConstants {
 	}
 
 	public void runWorker(String siteMonId, String scriptname, String hosts, String params,
-		String errorCallback) {
+		String errorCallback, long executeTimestamp) {
 		FanOutStreamSender fanOutStreamSender = null;
 		ProcessWorker worker = null;
 
@@ -119,6 +119,7 @@ public class SiteMonScriptRunner implements GrinderConstants {
 			// init
 			properties.setProperty("sitemon.id", siteMonId);
 			properties.setProperty("sitemon.errorCallback", errorCallback);
+			properties.setLong("sitemon.executeTimestamp", executeTimestamp);
 			AbstractGrinderClassPathProcessor classPathProcessor = handler.getClassPathProcessor();
 			String grinderJVMClassPath = classPathProcessor.buildForemostClasspathBasedOnCurrentClassLoader(LOGGER)
 				+ File.pathSeparator

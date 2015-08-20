@@ -18,7 +18,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -104,6 +103,7 @@ public class SiteMonProcess {
 	private final boolean m_reportTimesToConsole;
 	private final String siteMonId;
 	private final String errorCallback;
+	private final Date executeTimestamp;
 	private final String logDirectory;
 	private final WorkerIdentity workerIdentity;
 
@@ -155,6 +155,7 @@ public class SiteMonProcess {
 
 			siteMonId = properties.getProperty("sitemon.id");
 			errorCallback = properties.getProperty("sitemon.errorCallback");
+			executeTimestamp = new Date(properties.getLong("sitemon.executeTimestamp", System.currentTimeMillis()));
 			logDirectory = properties.getProperty(GrinderProperties.LOG_DIRECTORY, ".");
 			m_reportTimesToConsole = properties.getBoolean("grinder.reportTimesToConsole", true);
 
@@ -456,7 +457,6 @@ public class SiteMonProcess {
 	private List<SiteMonResult> extractResults(TestStatisticsMap sample, final String errorLog) {
 		final List<SiteMonResult> results = new LinkedList<SiteMonResult>();
 		final StatisticsIndexMap indexMap = m_statisticsServices.getStatisticsIndexMap();
-		final Date timestamp = getTimestamp();
 		sample.new ForEach() {
 			@Override
 			protected void next(Test test, StatisticsSet statistics) {
@@ -464,20 +464,11 @@ public class SiteMonProcess {
 					statistics.getCount(indexMap.getLongSampleIndex("timedTests")),
 					statistics.getValue(indexMap.getLongIndex("errors")),
 					statistics.getSum(indexMap.getLongSampleIndex("timedTests")),
-					timestamp, errorLog);
+					executeTimestamp, errorLog);
 				results.add(result);
 			}
 		}.iterate();
 		return results;
-	}
-
-	/**
-	 * @return Date that millisec value is zero
-	 */
-	private Date getTimestamp() {
-		Calendar c = Calendar.getInstance();
-		c.set(Calendar.MILLISECOND, 0);
-		return c.getTime();
 	}
 
 	private class ReportToConsoleTimerTask extends TimerTask {

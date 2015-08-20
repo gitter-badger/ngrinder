@@ -78,7 +78,7 @@ public class SiteMonController extends BaseController {
 			"invalid permission for " + perfTestId + " perftest");
 
 		FileEntry siteMonScript = siteMonService.getSiteMonScript(user, perfTest, scriptClone);
-		modelMap.addAttribute("siteMon", new SiteMon("Perftest" + perfTestId, user,
+		modelMap.addAttribute("siteMon", new SiteMon("Perftest" + perfTestId, "", user,
 			siteMonScript.getPath(), siteMonScript.getRevision(), perfTest.getTargetHosts(),
 			perfTest.getParam(), null, true, ""));
 		modelMap.addAttribute("formMode", true);

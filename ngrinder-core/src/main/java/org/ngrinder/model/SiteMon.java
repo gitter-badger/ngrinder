@@ -38,6 +38,9 @@ public class SiteMon {
 	@Column(name = "id")
 	private String id;
 	
+	@Column(name = "name")
+	private String name;
+	
 	@OneToOne
 	@JoinColumn(name = "created_user")
 	private User createdUser;
@@ -71,9 +74,10 @@ public class SiteMon {
 		
 	}
 	
-	public SiteMon(String id, User createdUser, String scriptName, long scriptRevision,
+	public SiteMon(String id, String name, User createdUser, String scriptName, long scriptRevision,
 		String targetHosts, String param, String agentName, boolean run, String errorCallback) {
 		this.id = id;
+		this.name = name;
 		this.createdUser = createdUser;
 		this.scriptName = scriptName;
 		this.scriptRevision = scriptRevision;
@@ -90,6 +94,14 @@ public class SiteMon {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public User getCreatedUser() {
