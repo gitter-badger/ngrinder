@@ -31,7 +31,7 @@ import org.springframework.data.jpa.domain.Specification;
 public abstract class SiteMonResultSpecification {
 
 	/**
-	 * Find all {@link SiteMonResult}s where equal siteMonId AND greater than startTime ORDER BY timestamp.
+	 * Find all {@link SiteMonResult}s where equal siteMonId AND greater than or equal startTime ORDER BY timestamp.
 	 * @param siteMonId
 	 * @param startTime
 	 * @return
@@ -46,7 +46,7 @@ public abstract class SiteMonResultSpecification {
 				Expression<Date> timestamp = root.get("siteMonResultPK").get("timestamp").as(
 					Date.class);
 				query.orderBy(cb.asc(timestamp));
-				return cb.and(cb.equal(id, siteMonId), cb.greaterThan(timestamp, startTime));
+				return cb.and(cb.equal(id, siteMonId), cb.greaterThanOrEqualTo(timestamp, startTime));
 			}
 		};
 	}

@@ -66,10 +66,14 @@ public class SiteMonService {
 	}
 	
 	public Map<String, Object> getGraphDataRecentDay(String siteMonId) {
-		Map<String, Object> resultMap = new HashMap<String, Object>();
 		Date daysAgo = DateUtils.addDay(new Date(), -1);
+		return getGraphData(siteMonId, daysAgo);
+	}
+	
+	public Map<String, Object> getGraphData(String siteMonId, Date start) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
 		Specification<SiteMonResult> spec = SiteMonResultSpecification.idEqualAndAfterTimeOrderByTime(
-			siteMonId, daysAgo);
+			siteMonId, start);
 		List<SiteMonResult> resultData = siteMonResultRepository.findAll(spec);
 		SiteMonResultJson json = new SiteMonResultJson(resultData);
 		resultMap.put("labels", json.getLabelsList());

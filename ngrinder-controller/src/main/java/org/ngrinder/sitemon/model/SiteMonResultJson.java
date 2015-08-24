@@ -15,7 +15,7 @@ public class SiteMonResultJson {
 	
 	private String minTimestamp = null;
 	private String maxTimestamp = null;
-	// Data format [ [timestamp, value], ... ]
+	// Map<TestNumber, [{Timestamp, Value}, ...]>
 	private Map<Integer, List<List<Object>>> successMap = new HashMap<Integer, List<List<Object>>>();
 	private Map<Integer, List<List<Object>>> errorMap = new HashMap<Integer, List<List<Object>>>();
 	private Map<Integer, List<List<Object>>> testTimeMap = new HashMap<Integer, List<List<Object>>>();

@@ -80,7 +80,7 @@ Chart.prototype.calcYmax = function () {
 		for (var j = 0; j < series.length; j++) {
 			var each = series[j];
 			if (each instanceof Array) {
-				each = each[each.length - 1];
+				each = each[1];
 			}
 			if (each !== null && each > ymax) {
 				ymax = each;

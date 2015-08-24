@@ -153,6 +153,7 @@
 var labels = [];
 var bUpdatedReport = false;
 var bUpdatedResources = false;
+var bReportAutoRefresh = false;
 $(document).ready(function() {
 	$("#nav_siteMon").addClass("active");
 	showProgressBar('<@spring.message "siteMon.message.updateReport"/> & <@spring.message "perfTest.message.updateResource"/>');
@@ -203,14 +204,24 @@ function bindEvent() {
 		$("#use_revision_btn").hide();
 		updateScriptResources(true);
 	});
+	$("#auto_refresh_on").click(function() {
+		bReportAutoRefresh = true;
+		$("#auto_refresh_on").addClass("disabled");
+		$("#auto_refresh_off").removeClass("disabled");
+	});
+	$("#auto_refresh_off").click(function() {
+		bReportAutoRefresh = false;
+		$("#auto_refresh_on").removeClass("disabled");
+		$("#auto_refresh_off").addClass("disabled");
+	});
 	$("#test_result_chart").bind("jqplotDataClick", function (evt, seriesIndex, pointIndex, data) {
 		if (seriesIndex == 0) {	// success result value
 			return;
 		}
 		var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/${siteMon.id}/log", null, "<@spring.message "common.error.error"/>");
 		ajaxObj.params = {
-			'minTimestamp' : new Date(errorData[pointIndex][TIMESTAMP_INDEX]).getTime(),
-			'maxTimestamp' : new Date(errorData[pointIndex][LAST_TIMESTAMP_INDEX]).getTime()
+			'minTimestamp' : new Date(resultErrorData[pointIndex][TIMESTAMP_INDEX]).getTime(),
+			'maxTimestamp' : new Date(resultErrorData[pointIndex][LAST_TIMESTAMP_INDEX]).getTime()
 		};
 		ajaxObj.success = function(res) {
 			var html = "";
@@ -257,24 +268,32 @@ function updateScriptResources(bInitHosts) {
 	ajaxObj.call();
 }
 
-var TEN_MINUTE_MS = 1000 * 60 * 10;
+var ONE_MINUTE_MS = 1000 * 60;
+var TEN_MINUTE_MS = ONE_MINUTE_MS * 10;
 var TIMESTAMP_INDEX = 0;
 var VALUE_INDEX = 1;
 var LAST_TIMESTAMP_INDEX = 2;
-var errorData;
+var lastDataTimestamp;
+var resultSuccessData = [];
+var resultErrorData = [];
+var testTimeData;
+var resultChart;
+var timeChart;
 function drawReportChart() {
 	var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/${siteMon.id}/result", null, "<@spring.message "common.error.error"/>");
 	ajaxObj.success = function(res) {
 		if (res.successData && res.successData.length > 0) {
-			labels = res.labels;
-			$("#sitemon_report_section_tab").show();
 			$("#sitemon_report_section_tab").find("a").tab('show');
-			var sumResult = sumResultGroupByTimestamp(res.successData, res.errorData);
-			var resultData = getSamplingData(sumResult[0], sumResult[1], TEN_MINUTE_MS);
-			errorData = resultData[1];
-			new Chart("test_result_chart", resultData, 1, {labels : ["success", "error"], seriesColors: ["#0000ff", "#ff0000"], markerStyle: "square", xAxisMin : res.minTimestamp, xAxisMax : res.maxTimestamp, xAxisRenderer : $.jqplot.DateAxisRenderer, xAxisFormatString : '%H:%M'}).plot();
-			new Chart("test_time_chart", res.testTimeData, 1, {labels : res.labels, xAxisMin : res.minTimestamp, xAxisMax : res.maxTimestamp, xAxisRenderer : $.jqplot.DateAxisRenderer, xAxisFormatString : '%H:%M'}).plot();
+			$("#sitemon_report_section_tab").show();
+			labels = res.labels;
+			lastDataTimestamp = res.maxTimestamp;
+			var mergeResult = mergeLabel(res.successData, res.errorData);
+			addSamplingData(mergeResult[0], mergeResult[1], TEN_MINUTE_MS);
+			testTimeData = res.testTimeData;
+			resultChart = new Chart("test_result_chart", [resultSuccessData, resultErrorData], 1, {labels : ["success", "error"], seriesColors: ["#0000ff", "#ff0000"], markerStyle: "square", xAxisMin : res.minTimestamp, xAxisMax : res.maxTimestamp, xAxisRenderer : $.jqplot.DateAxisRenderer, xAxisFormatString : '%H:%M'}).plot();
+			timeChart = new Chart("test_time_chart", testTimeData, 1, {labels : res.labels, xAxisMin : res.minTimestamp, xAxisMax : res.maxTimestamp, xAxisRenderer : $.jqplot.DateAxisRenderer, xAxisFormatString : '%H:%M'}).plot();
 			$("#sitemon_config_section_tab").find("a").tab('show');
+			setInterval(reportAutoRefresh, ONE_MINUTE_MS);
 		}
 		bUpdatedReport = true;
 		if (bUpdatedResources) {
@@ -284,50 +303,121 @@ function drawReportChart() {
 	ajaxObj.call();
 }
 
-function sumResultGroupByTimestamp(successData, errorData) {
-	var testCount = successData.length;
-	var timestampCount = successData[0].length;
-	var successRes = [];
-	var errorRes = [];
-	for (var i = 0; i < timestampCount; i++) {
-		var timestamp = successData[0][i][TIMESTAMP_INDEX];
-		var success = 0;
-		var error = 0;
-		for (var j = 0; j < testCount; j++) {
-			success += successData[j][i][VALUE_INDEX];
-			error += errorData[j][i][VALUE_INDEX];
-		}
-		successRes[i] = [timestamp, success];
-		errorRes[i] = [timestamp, error];
+function reportAutoRefresh() {
+	if (bReportAutoRefresh == false) {
+		return;
 	}
-	return [successRes, errorRes];
+	var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/${siteMon.id}/result", null, "<@spring.message "common.error.error"/>");
+	ajaxObj.params = {
+		'start' : new Date(lastDataTimestamp).getTime() + 1
+	};
+	ajaxObj.success = function(res) {
+		var mergeResult = mergeLabel(res.successData, res.errorData);
+		addSamplingData(mergeResult[0], mergeResult[1], TEN_MINUTE_MS);
+		for (var i = 0; i < res.testTimeData.length; i++) {
+			testTimeData[i] = testTimeData[i].concat(res.testTimeData[i]);
+		}
+		lastDataTimestamp = res.maxTimestamp;
+		resultChart.xAxisMax = lastDataTimestamp;
+		timeChart.xAxisMax = lastDataTimestamp;
+		resultChart.plot();
+		timeChart.plot();
+	};
+	ajaxObj.call();
 }
 
-function getSamplingData(successData, errorData, samplingInterval) {
-	var successRes = [];
-	var errorRes = []
-	var len = successData.length;
+function mergeLabel(successData, errorData) {
+	if (successData.length == 1) {
+		return [successData[0], errorData[0]];
+	}
+	successData.push(merge(successData.pop(), successData.pop()));
+	errorData.push(merge(errorData.pop(), errorData.pop()));
 	
+	return mergeLabel(successData, errorData);
+}
+
+function merge(data1, data2) {
+	var i = 0;
+	var j = 0;
+	var result = [];
+	for (; i < data1.length && j < data2.length;) {
+		var time1 = data1[i][TIMESTAMP_INDEX];
+		var time2 = data2[j][TIMESTAMP_INDEX];
+		var value1 = data1[i][VALUE_INDEX];
+		var value2 = data2[j][VALUE_INDEX];
+		if (time1 == time2) {
+			result.push([time1, value1 + value2]);
+			i++;
+			j++;
+		} else if (time1 < time2) {
+			result.push([time1, value1]);
+			i++;
+		} else {
+			result.push([time2, value2]);
+			j++;
+		}
+	}
+	for (; i < data1.length; i++) {
+		result.push(data1[i]);
+	}
+	for (; j < data2.length; j++) {
+		result.push(data2[j]);
+	}
+	
+	return result;
+}
+
+function addSamplingData(successData, errorData, samplingInterval) {
+	var len = successData.length;
 	var i = 0;
 	do {
-		var minTime = successData[i][TIMESTAMP_INDEX];
-		var maxTime = new Date(minTime).getTime() + samplingInterval - 1;
-		maxTime = dateToString(new Date(maxTime), "yyyy-MM-dd HH:mm:ss");
-		var success = successData[i][VALUE_INDEX];
-		var error = errorData[i][VALUE_INDEX];
+		var data = undefined;
+		var bDataUpdate = true;
+		if (resultSuccessData.length > 0) {
+			var lastSuccessData = resultSuccessData[resultSuccessData.length - 1];
+			var lastErrorData = resultErrorData[resultErrorData.length - 1];
+			data = new SamplingData(lastSuccessData[0], 
+									lastSuccessData[2], 
+									lastSuccessData[1], 
+									lastErrorData[1]); 
+		}
+		if (data === undefined || successData[i][TIMESTAMP_INDEX] > data.maxTime) {
+			bDataUpdate = false;
+			var minTime = successData[i][TIMESTAMP_INDEX];
+			minTime = minTime.replace(/(\d\d:\d)\d(:\d\d)/, "$10$2");
+			var maxTime = new Date(minTime).getTime() + samplingInterval - 1;
+			maxTime = dateToString(new Date(maxTime), "yyyy-MM-dd HH:mm:ss");
+			var success = successData[i][VALUE_INDEX];
+			var error = errorData[i][VALUE_INDEX];
+			data = new SamplingData(minTime, maxTime, success, error);
+		}
 		
-		for(i = i + 1; i < len; i++) {
-			if (successData[i][TIMESTAMP_INDEX] > maxTime) {
+		for(; i < len; i++) {
+			if (successData[i][TIMESTAMP_INDEX] > data.maxTime) {
 				break;
 			}
-			if (successData[i][VALUE_INDEX] < success) success = successData[i][VALUE_INDEX];
-			if (errorData[i][VALUE_INDEX] > error) error = errorData[i][VALUE_INDEX];
+			data.add(successData[i][VALUE_INDEX], errorData[i][VALUE_INDEX]);
 		}
-		successRes.push([minTime, success]);
-		errorRes.push([minTime, error, maxTime]);
+		if (bDataUpdate) {
+			resultSuccessData.pop();
+			resultErrorData.pop();
+		}
+		resultSuccessData.push([data.minTime, data.success, data.maxTime]);
+		resultErrorData.push([data.minTime, data.error, data.maxTime]);
 	} while (i < len);
-	
-	return [successRes, errorRes];
+}
+
+function SamplingData(minTime, maxTime, success, error) {
+	this.minTime = minTime;
+	this.maxTime = maxTime;
+	this.success = success;
+	this.error = error;
+}
+SamplingData.prototype = {
+	add : function(success, error) {
+		if (success < this.success) this.success = success;
+		if (error > this.error) this.error = error;
+	}
 }
 </script>
 </body>

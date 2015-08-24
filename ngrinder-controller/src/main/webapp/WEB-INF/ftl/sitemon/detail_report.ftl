@@ -1,5 +1,18 @@
 <fieldSet>
-	<legend><@spring.message "siteMon.report.testResult"/></legend>
+	<legend>
+		<@spring.message "siteMon.report.testResult"/>
+		<div class="pull-right">
+			<@spring.message "siteMon.report.autoRefresh"/>
+			<div class="btn-group">
+				<button id="auto_refresh_on" class="btn btn-default">
+					<@spring.message "siteMon.report.autoRefresh.on"/>
+				</button>
+				<button id="auto_refresh_off" class="btn btn-default disabled">
+					<@spring.message "siteMon.report.autoRefresh.off"/>
+				</button>
+			</div>
+		</div>
+	</legend>
 </fieldSet>
 <div id="test_result_chart" class="chart"></div>
 <div class="row form-horizontal">
