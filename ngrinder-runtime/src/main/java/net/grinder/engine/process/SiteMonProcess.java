@@ -92,6 +92,9 @@ import ch.qos.logback.core.joran.spi.JoranException;
  * @author Gisoo Gwon
  */
 public class SiteMonProcess {
+	
+	private final static long DEFAULT_TIMEOUT = 10 * 1000;
+	private final static int DEFAULT_REPORT_TO_CONCONE_INTERVAL = 500;
 	// logger
 	private final LoggerContext m_logbackLoggerContext;
 	private final Logger m_terminalLogger;
@@ -101,8 +104,10 @@ public class SiteMonProcess {
 	private final ScriptLocation script;
 	private final GrinderProperties properties;
 	private final boolean m_reportTimesToConsole;
+	private final int reportToConsoleInterval;
 	private final String siteMonId;
 	private final String errorCallback;
+	private final long timeout;
 	private final Date executeTimestamp;
 	private final String logDirectory;
 	private final WorkerIdentity workerIdentity;
@@ -131,6 +136,7 @@ public class SiteMonProcess {
 	private ThreadStarter m_threadStarter = m_invalidThreadStarter;
 
 	private boolean m_recievedShutdown = false;
+	private boolean m_timeout = false;
 	private boolean m_communicationShutdown;
 
 	/**
@@ -155,9 +161,11 @@ public class SiteMonProcess {
 
 			siteMonId = properties.getProperty("sitemon.id");
 			errorCallback = properties.getProperty("sitemon.errorCallback");
+			timeout = properties.getLong("sitemon.timeout", DEFAULT_TIMEOUT);
 			executeTimestamp = new Date(properties.getLong("sitemon.executeTimestamp", System.currentTimeMillis()));
 			logDirectory = properties.getProperty(GrinderProperties.LOG_DIRECTORY, ".");
 			m_reportTimesToConsole = properties.getBoolean("grinder.reportTimesToConsole", true);
+			reportToConsoleInterval = properties.getInt("grinder.reportToConsole.interval", DEFAULT_REPORT_TO_CONCONE_INTERVAL);
 
 			// init logger
 			m_logbackLoggerContext = configureLogging(workerIdentity.getName(), logDirectory);
@@ -249,11 +257,6 @@ public class SiteMonProcess {
 			m_terminalLogger.info("Instrumentation agents: {}", instrumenter.getDescription());
 			
 			scriptEngine = scriptEngineContainer.getScriptEngine(script);
-
-			// init send process status schedule
-			Timer timer = new Timer(true);
-			int reportToConsoleInterval = properties.getInt("grinder.reportToConsole.interval", 500);
-			timer.schedule(new ReportToConsoleTimerTask(), 0, reportToConsoleInterval);
 		} catch (GrinderException e) {
 			if (m_logger != null) {
 				m_logger.error("Error running worker process", e);
@@ -306,6 +309,11 @@ public class SiteMonProcess {
 
 			Times times = new Times();
 			times.setExecutionStartTime();
+			
+			// init send process status & timeout schedule
+			Timer timer = new Timer(true);
+			timer.schedule(new ReportToConsoleTimerTask(), 0, reportToConsoleInterval);
+			timer.schedule(new TimeoutTask(), timeout);
 
 			// Wait for a termination event.
 			synchronized (m_eventSynchronisation) {
@@ -314,7 +322,37 @@ public class SiteMonProcess {
 						m_terminalLogger.info("Script {} shutdown.", script.getFile());
 						break;
 					}
+					
+					if (m_timeout) {
+						m_terminalLogger.info("Script execute time over than {}ms, shut down by timeout.", timeout);
+						break;
+					}
+					
 					m_eventSynchronisation.waitNoInterrruptException();
+				}
+			}
+			
+			synchronized (m_eventSynchronisation) {
+				if (!threadSynchronisation.isFinished()) {
+					m_terminalLogger.info("Waiting for threads to terminate");
+					
+					m_threadStarter = m_invalidThreadStarter;
+					m_threadContexts.shutdownAll();
+
+					// Interrupt any sleepers.
+					SleeperImplementation.shutdownAllCurrentSleepers();
+
+					final long time = System.currentTimeMillis();
+					final long maximumShutdownTime = 1000;
+
+					while (!threadSynchronisation.isFinished()) {
+						if (System.currentTimeMillis() - time > maximumShutdownTime) {
+							m_terminalLogger.info("Ignoring unresponsive threads");
+							break;
+						}
+
+						m_eventSynchronisation.waitNoInterrruptException(maximumShutdownTime);
+					}
 				}
 			}
 
@@ -377,7 +415,7 @@ public class SiteMonProcess {
 
 				try {
 					String errorLog = getErrorLog();
-					if (StringUtils.isNotEmpty(errorLog)) {
+					if (StringUtils.isNotEmpty(errorLog) || m_timeout) {
 						callErrorCallback();
 					}
 					SiteMonResultMessage message = new SiteMonResultMessage();					
@@ -397,29 +435,34 @@ public class SiteMonProcess {
 		if (StringUtils.isBlank(errorCallback)) {
 			return;
 		}
-		String stackTrace = getErrorStackTrace();
-		requestErrorCallback(stackTrace);
+		String error = null;
+		if (m_timeout) {
+			error = "execute time over " + timeout + "ms.";
+		} else {
+			error = getErrorStackTrace();
+		}
+		requestErrorCallback(error);
 	}
 
 	private void requestErrorCallback(final String stackTrace) {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-			try {
-				URL url = new URL(errorCallback);
-				HttpURLConnection con = (HttpURLConnection) url.openConnection();
-				con.setRequestMethod("POST");
-				con.setDoOutput(true);
-				DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-				wr.writeBytes("id=" + siteMonId + "&error=" + stackTrace);
-				wr.flush();
-				wr.close();
-				if (con.getResponseCode() != 200) {
-					throw new Exception("Response code is " + con.getResponseCode());
+				try {
+					URL url = new URL(errorCallback);
+					HttpURLConnection con = (HttpURLConnection) url.openConnection();
+					con.setRequestMethod("POST");
+					con.setDoOutput(true);
+					DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+					wr.writeBytes("id=" + siteMonId + "&error=" + stackTrace);
+					wr.flush();
+					wr.close();
+					if (con.getResponseCode() != 200) {
+						throw new Exception("Response code is " + con.getResponseCode());
+					}
+				} catch (Exception e) {
+					m_terminalLogger.info("Error request error callback api. {}", e.getMessage());
 				}
-			} catch (Exception e) {
-				m_terminalLogger.info("Error request error callback api. {}", e.getMessage());
-			}
 			}
 		}).start();
 	}
@@ -483,6 +526,16 @@ public class SiteMonProcess {
 
 					m_communicationShutdown = true;
 				}
+			}
+		}
+	}
+	
+	private class TimeoutTask extends TimerTask {
+		@Override
+		public void run() {
+			synchronized (m_eventSynchronisation) {
+				m_timeout = true;
+				m_eventSynchronisation.notifyAll();
 			}
 		}
 	}
