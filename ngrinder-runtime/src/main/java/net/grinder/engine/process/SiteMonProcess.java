@@ -13,9 +13,6 @@
  */
 package net.grinder.engine.process;
 
-import java.io.DataOutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -29,6 +26,7 @@ import java.util.TimerTask;
 import org.apache.commons.lang.StringUtils;
 import org.ngrinder.sitemon.logger.ErrorCollectLogger;
 import org.ngrinder.sitemon.messages.ShutdownSiteMonProcessMessage;
+import org.ngrinder.sitemon.messages.SiteMonErrorCallbackMessage;
 import org.ngrinder.sitemon.messages.SiteMonResultMessage;
 import org.ngrinder.sitemon.model.SiteMonResult;
 import org.slf4j.ILoggerFactory;
@@ -93,6 +91,7 @@ import ch.qos.logback.core.joran.spi.JoranException;
  */
 public class SiteMonProcess {
 	
+	private static final String NEW_LINE = System.getProperty("line.separator");
 	private final static long DEFAULT_TIMEOUT = 10 * 1000;
 	private final static int DEFAULT_REPORT_TO_CONCONE_INTERVAL = 500;
 	// logger
@@ -431,40 +430,13 @@ public class SiteMonProcess {
 		}
 	}
 	
-	private void callErrorCallback() {
+	private void callErrorCallback() throws CommunicationException {
 		if (StringUtils.isBlank(errorCallback)) {
 			return;
 		}
-		String error = null;
-		if (m_timeout) {
-			error = "execute time over " + timeout + "ms.";
-		} else {
-			error = getErrorStackTrace();
-		}
-		requestErrorCallback(error);
-	}
-
-	private void requestErrorCallback(final String stackTrace) {
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					URL url = new URL(errorCallback);
-					HttpURLConnection con = (HttpURLConnection) url.openConnection();
-					con.setRequestMethod("POST");
-					con.setDoOutput(true);
-					DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-					wr.writeBytes("id=" + siteMonId + "&error=" + stackTrace);
-					wr.flush();
-					wr.close();
-					if (con.getResponseCode() != 200) {
-						throw new Exception("Response code is " + con.getResponseCode());
-					}
-				} catch (Exception e) {
-					m_terminalLogger.info("Error request error callback api. {}", e.getMessage());
-				}
-			}
-		}).start();
+		String error = m_timeout ? ("execute time over " + timeout + "ms." + NEW_LINE) : "";
+		error += getErrorStackTrace();
+		m_consoleSender.send(new SiteMonErrorCallbackMessage(errorCallback, siteMonId, error));
 	}
 
 	private String getErrorStackTrace() {
@@ -473,13 +445,13 @@ public class SiteMonProcess {
 			stackTrace.append(t.getClass().getSimpleName());
 			stackTrace.append("-");
 			stackTrace.append(t.getMessage());
-			stackTrace.append(System.getProperty("line.separator"));
+			stackTrace.append(NEW_LINE);
 			for (StackTraceElement ste : t.getStackTrace()) {
 				stackTrace.append("at ");
 				stackTrace.append(ste);
-				stackTrace.append(System.getProperty("line.separator"));
+				stackTrace.append(NEW_LINE);
 			}
-			stackTrace.append(System.getProperty("line.separator"));
+			stackTrace.append(NEW_LINE);
 		}
 		return stackTrace.toString();
 	}

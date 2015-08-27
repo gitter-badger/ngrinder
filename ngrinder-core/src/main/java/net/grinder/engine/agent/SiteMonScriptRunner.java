@@ -30,6 +30,7 @@ import org.ngrinder.common.constants.GrinderConstants;
 import org.ngrinder.sitemon.SiteMonControllerServerDaemon;
 import org.ngrinder.sitemon.engine.process.SiteMonProcessEntryPoint;
 import org.ngrinder.sitemon.messages.ShutdownSiteMonProcessMessage;
+import org.ngrinder.sitemon.messages.SiteMonErrorCallbackMessage;
 import org.ngrinder.sitemon.messages.SiteMonResultMessage;
 import org.ngrinder.sitemon.model.SiteMonResult;
 import org.slf4j.Logger;
@@ -69,7 +70,8 @@ public class SiteMonScriptRunner implements GrinderConstants {
 		
 		ConsoleCommunication console = scriptProcessConsole.getComponent(ConsoleCommunication.class);
 		MessageDispatchRegistry messageDispatchRegistry = console.getMessageDispatchRegistry();	
-		messageDispatchRegistry.set(SiteMonResultMessage.class, new Handler<SiteMonResultMessage>() {
+		messageDispatchRegistry.set(SiteMonResultMessage.class,
+			new Handler<SiteMonResultMessage>() {
 				@Override
 				public void handle(SiteMonResultMessage message) throws CommunicationException {
 					synchronized (monitoringResults) {
@@ -81,7 +83,18 @@ public class SiteMonScriptRunner implements GrinderConstants {
 				public void shutdown() {
 					noOp();
 				}
+			});
+		messageDispatchRegistry.set(SiteMonErrorCallbackMessage.class,
+			new Handler<SiteMonErrorCallbackMessage>() {
+				@Override
+				public void handle(SiteMonErrorCallbackMessage message) throws CommunicationException {
+					message.start();
+				}
 
+				@Override
+				public void shutdown() {
+					noOp();
+				}
 			});
 	}
 	
