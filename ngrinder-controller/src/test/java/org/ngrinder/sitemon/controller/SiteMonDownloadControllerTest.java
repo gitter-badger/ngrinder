@@ -42,6 +42,8 @@ public class SiteMonDownloadControllerTest {
 		String controllerIp = "111.111.111.111";
 		int controllerPort = 12345;
 		String owner = "me";
+		boolean useLogging = true;
+		int logMaxHistory = 12;
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		Config config = mock(Config.class);
 
@@ -49,10 +51,13 @@ public class SiteMonDownloadControllerTest {
 		
 		when(config.getSiteMonAgentControllerIp()).thenReturn(controllerIp);
 		when(config.getSiteMonAgentControllerPort()).thenReturn(controllerPort);
+		when(config.getSiteMonAgentUseLogging()).thenReturn(useLogging);
+		when(config.getSiteMonAgentLogMaxHistory()).thenReturn(logMaxHistory);
 		
 		sut.download(owner, response);
 		
 		verify(agentPackageService, times(1)).createSiteMonAgentPackage(
-			(URLClassLoader) getClass().getClassLoader(), controllerIp, controllerPort, owner);
+			(URLClassLoader) getClass().getClassLoader(), controllerIp, controllerPort, owner,
+			useLogging, logMaxHistory);
 	}
 }

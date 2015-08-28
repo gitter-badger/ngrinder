@@ -19,8 +19,11 @@ package org.ngrinder.common.constants;
  * @author Gisoo Gwon
  */
 public interface SiteMonAgentConstants {
+	
 	public static final String PROP_SITEMON_AGENT_CONTROLLER_IP = "sitemon_agent.controller_host";
 	public static final String PROP_SITEMON_AGENT_CONTROLLER_PORT = "sitemon_agent.controller_port";
 	public static final String PROP_SITEMON_AGENT_OWNER = "sitemon_agent.owner";
+	public static final String PROP_SITEMON_AGENT_USE_LOGGING = "sitemon_agent.use.logging";
+	public static final String PROP_SITEMON_AGENT_LOG_MAX_HISTORY = "sitemon_agent.log.max_history";
 
 }

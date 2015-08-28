@@ -83,8 +83,11 @@ import net.grinder.util.thread.Condition;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.joran.spi.JoranException;
+import ch.qos.logback.core.rolling.RollingFileAppender;
+import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 
 /**
  * @author Gisoo Gwon
@@ -137,6 +140,8 @@ public class SiteMonProcess {
 	private boolean m_recievedShutdown = false;
 	private boolean m_timeout = false;
 	private boolean m_communicationShutdown;
+	private boolean useLogging;
+	private int logMaxHistory;
 
 	/**
 	 * Creates a new <code>GrinderProcess</code> instance.
@@ -162,14 +167,16 @@ public class SiteMonProcess {
 			errorCallback = properties.getProperty("sitemon.errorCallback");
 			timeout = properties.getLong("sitemon.timeout", DEFAULT_TIMEOUT);
 			executeTimestamp = new Date(properties.getLong("sitemon.executeTimestamp", System.currentTimeMillis()));
+			useLogging = properties.getBoolean("sitemon.useLogging", false);
+			logMaxHistory = properties.getInt("sitemon.logMaxHistory", 7);
 			logDirectory = properties.getProperty(GrinderProperties.LOG_DIRECTORY, ".");
 			m_reportTimesToConsole = properties.getBoolean("grinder.reportTimesToConsole", true);
 			reportToConsoleInterval = properties.getInt("grinder.reportToConsole.interval", DEFAULT_REPORT_TO_CONCONE_INTERVAL);
 
 			// init logger
-			m_logbackLoggerContext = configureLogging(workerIdentity.getName(), logDirectory);
-			m_terminalLogger = LoggerFactory.getLogger(workerIdentity.getName());
-			m_logger = new ErrorCollectLogger(LoggerFactory.getLogger("worker"));
+			m_logbackLoggerContext = configureLogging(siteMonId, logDirectory);
+			m_terminalLogger = LoggerFactory.getLogger(siteMonId);
+			m_logger = new ErrorCollectLogger(LoggerFactory.getLogger(useLogging ? "worker" : "no_logging"));
 
 			// init console connection
 			MessageDispatchSender messageDispatcher = new MessageDispatchSender();
@@ -265,7 +272,6 @@ public class SiteMonProcess {
 	}
 
 	private LoggerContext configureLogging(final String workerName, final String logDirectory) throws EngineException {
-		// TODO : log file path 설정
 		final ILoggerFactory iLoggerFactory = LoggerFactory.getILoggerFactory();
 
 		if (iLoggerFactory instanceof Context) {
@@ -278,10 +284,11 @@ public class SiteMonProcess {
 			context.putProperty("LOG_DIRECTORY", logDirectory);
 
 			try {
-				configurator.doConfigure(GrinderProcess.class.getResource("/logback-worker.xml"));
+				configurator.doConfigure(GrinderProcess.class.getResource("/logback-sitemon.xml"));
 			} catch (final JoranException e) {
 				throw new EngineException("Could not initialise logger", e);
 			}
+			initMaxHistoryPolicy();
 
 			return result;
 		} else {
@@ -290,6 +297,17 @@ public class SiteMonProcess {
 
 			return null;
 		}
+	}
+
+	private void initMaxHistoryPolicy() {
+		ch.qos.logback.classic.Logger logger = 
+			(ch.qos.logback.classic.Logger) LoggerFactory.getLogger("worker");
+		RollingFileAppender<ILoggingEvent> appender = 
+			(RollingFileAppender<ILoggingEvent>) logger.getAppender("log-file");
+		TimeBasedRollingPolicy<ILoggingEvent> triggeringPolicy = 
+			(TimeBasedRollingPolicy<ILoggingEvent>) appender.getTriggeringPolicy();
+		triggeringPolicy.setMaxHistory(logMaxHistory);
+		triggeringPolicy.start();
 	}
 
 	public void run() throws GrinderException {

@@ -165,7 +165,8 @@ public class Config extends AbstractConfig implements ControllerConstants, Clust
 	 * @return a controller ip address, if doesn't set, it returns a local ip address.
 	 */
 	public String getSiteMonAgentControllerIp() throws UnknownHostException {
-		String ip = getControllerProperties().getProperty(ControllerConstants.PROP_CONTROLLER_SITEMON_AGENT_CONTROLLER_IP);
+		String ip = getControllerProperties().getProperty(
+			ControllerConstants.PROP_CONTROLLER_SITEMON_AGENT_CONTROLLER_IP);
 		if (ip == null) {
 			// If there was not defined a controller ip that should be received a response from the sitemon agent,
 			// instead, ngrinder will use the controller ip where generate the sitemon agent package.
@@ -178,7 +179,18 @@ public class Config extends AbstractConfig implements ControllerConstants, Clust
 	}
 	
 	public int getSiteMonAgentControllerPort() {
-		return getControllerProperties().getPropertyInt(ControllerConstants.PROP_CONTROLLER_SITEMON_AGENT_CONTROLLER_PORT);
+		return getControllerProperties().getPropertyInt(
+			ControllerConstants.PROP_CONTROLLER_SITEMON_AGENT_CONTROLLER_PORT);
+	}
+	
+	public boolean getSiteMonAgentUseLogging() {
+		return getControllerProperties().getPropertyBoolean(
+			ControllerConstants.PROP_CONTROLLER_SITEMON_AGENT_USE_LOGGING, false);
+	}
+	
+	public int getSiteMonAgentLogMaxHistory() {
+		return getControllerProperties().getPropertyInt(
+			ControllerConstants.PROP_CONTROLLER_SITEMON_AGENT_LOG_MAX_HISTORY, 7);
 	}
 
 	/**

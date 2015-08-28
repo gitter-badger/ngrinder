@@ -60,28 +60,31 @@ public class AgentPackageServiceTest {
 	}
 	
 	@Test
-		public void testCreateSiteMonAgentPackage() throws Exception {
-			// given
-			String connectionIP = "1.2.3.4";
-			int port = 12345;
-			String version = "3.4";
-			String owner = "me";
-			Home home = mock(Home.class);
-			URLClassLoader ngrinderShClassLoader = loadTargetFolderContainClassLoader();
-			
-			when(config.getHome()).thenReturn(home);
-			when(config.getVersion()).thenReturn(version);
-			when(home.getSubFile("download")).thenReturn(testFolder);
-			
-			
-			// when
-			File siteMonAgentPackage = sut.createSiteMonAgentPackage(ngrinderShClassLoader, connectionIP, port, owner);
-	
-			// then
-			assertThat(siteMonAgentPackage.exists(), is(true));
-			assertThat(siteMonAgentPackage.getName(), is("ngrinder-sitemon-" + version + "-" + connectionIP + "-me.tar"));
-			assertTarFiles(siteMonAgentPackage);
-		}
+	public void testCreateSiteMonAgentPackage() throws Exception {
+		// given
+		String connectionIP = "1.2.3.4";
+		int port = 12345;
+		String version = "3.4";
+		String owner = "me";
+		boolean useLogging = true;
+		int logMaxHistory = 12;
+		Home home = mock(Home.class);
+		URLClassLoader ngrinderShClassLoader = loadTargetFolderContainClassLoader();
+		
+		when(config.getHome()).thenReturn(home);
+		when(config.getVersion()).thenReturn(version);
+		when(home.getSubFile("download")).thenReturn(testFolder);
+		
+		
+		// when
+		File siteMonAgentPackage = sut.createSiteMonAgentPackage(ngrinderShClassLoader,
+			connectionIP, port, owner, useLogging, logMaxHistory);
+
+		// then
+		assertThat(siteMonAgentPackage.exists(), is(true));
+		assertThat(siteMonAgentPackage.getName(), is("ngrinder-sitemon-" + version + "-" + connectionIP + "-me.tar"));
+		assertTarFiles(siteMonAgentPackage);
+	}
 
 	/**
 	 * @return The ClassLoader load the target folder, Contain current ClassLoader urls  

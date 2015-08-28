@@ -52,10 +52,12 @@ public class SiteMonDownloadController extends BaseController {
         					HttpServletResponse response) throws UnknownHostException {
 		String ip = getConfig().getSiteMonAgentControllerIp();
 		int port = getConfig().getSiteMonAgentControllerPort();
+		boolean useLogging = getConfig().getSiteMonAgentUseLogging();
+		int logMaxHistory = getConfig().getSiteMonAgentLogMaxHistory();
 		
 		try {
 			final File siteMonAgentPackage = agentPackageService.createSiteMonAgentPackage(
-				(URLClassLoader) getClass().getClassLoader(), ip, port, owner);
+				(URLClassLoader) getClass().getClassLoader(), ip, port, owner, useLogging, logMaxHistory);
 			FileDownloadUtils.downloadFile(response, siteMonAgentPackage);
 		} catch (Exception e) {
 			throw processException(e);

@@ -193,7 +193,10 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 			String controllerIP = getIP(agentConfig.getSiteMonAgentControllerIp());
 			int controllerPort = agentConfig.getSiteMonAgentControllerPort();
 			String owner = agentConfig.getSiteMonAgentOwner();
+			boolean useLogging = agentConfig.useLogging();
+			int logMaxHistory = agentConfig.getLogMaxHistory();
 			LOG.info("connecting to controller {}, owner-{}", (controllerIP + ":" + controllerPort), owner);
+			LOG.info("use logging {}, log max history day {}", useLogging, logMaxHistory);
 
 			try {
 				File agentRootDir = agentConfig.getHome().getDirectory();
@@ -208,7 +211,7 @@ public class NGrinderAgentStarter implements AgentConstants, CommonConstants {
 				Condition eventSyncCondition = new Condition();
 				// init for script runner process
 				SiteMonScriptRunner scriptRunner
-					= new SiteMonScriptRunner(scriptDistDir);
+					= new SiteMonScriptRunner(scriptDistDir, useLogging, logMaxHistory);
 				SiteMonScheduler siteMonScheduler
 					= new SiteMonSchedulerImplementation(scriptRunner, agentStateMonitor);
 				// init for agent main process

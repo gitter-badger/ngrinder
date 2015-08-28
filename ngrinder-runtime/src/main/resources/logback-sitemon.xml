@@ -1,0 +1,32 @@
+<configuration>
+
+	<property name="PREFIX" value="${LOG_DIRECTORY}/${WORKER_NAME}" />
+
+	<appender name="log-file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${PREFIX}.log</file>
+
+		<encoder>
+			<pattern>%d %-5level %message%n</pattern>
+		</encoder>
+
+		<triggeringPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${PREFIX}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+			<maxHistory>7</maxHistory>
+			<timeBasedFileNamingAndTriggeringPolicy
+				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>5MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</triggeringPolicy>
+	</appender>
+	
+	<appender name="data-file" class="ch.qos.logback.core.helpers.NOPAppender" />
+
+	<logger name="worker" additivity="false">
+		<appender-ref ref="log-file" />
+	</logger>
+	
+	<logger name="no_logging" additivity="false" level="ERROR">
+		<appender-ref ref="data-file" />
+	</logger>
+
+</configuration>

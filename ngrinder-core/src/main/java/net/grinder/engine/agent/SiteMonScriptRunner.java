@@ -61,9 +61,13 @@ public class SiteMonScriptRunner implements GrinderConstants {
 	private final File baseDirectory;
 	private ConcurrentLinkedQueue<SiteMonResult> monitoringResults = new ConcurrentLinkedQueue<SiteMonResult>();
 	private SiteMonControllerServerDaemon scriptProcessConsole;
+	private final boolean useLogging;
+	private final int logMaxHistory;
 
-	public SiteMonScriptRunner(File baseDirectory) {
+	public SiteMonScriptRunner(File baseDirectory, boolean useLogging, int logMaxHistory) {
 		this.baseDirectory = baseDirectory;
+		this.useLogging = useLogging;
+		this.logMaxHistory = logMaxHistory;
 		scriptProcessConsole = new SiteMonControllerServerDaemon(
 			NetworkUtils.getFreePortOfLocal());
 		scriptProcessConsole.start();
@@ -133,6 +137,8 @@ public class SiteMonScriptRunner implements GrinderConstants {
 			properties.setProperty("sitemon.id", siteMonId);
 			properties.setProperty("sitemon.errorCallback", errorCallback);
 			properties.setLong("sitemon.executeTimestamp", executeTimestamp);
+			properties.setBoolean("sitemon.useLogging", useLogging);
+			properties.setInt("sitemon.logMaxHistory", logMaxHistory);
 			AbstractGrinderClassPathProcessor classPathProcessor = handler.getClassPathProcessor();
 			String grinderJVMClassPath = classPathProcessor.buildForemostClasspathBasedOnCurrentClassLoader(LOGGER)
 				+ File.pathSeparator

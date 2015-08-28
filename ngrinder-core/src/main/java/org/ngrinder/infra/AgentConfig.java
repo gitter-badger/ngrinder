@@ -379,6 +379,14 @@ public class AgentConfig implements AgentConstants, MonitorConstants, SiteMonAge
 	public String getSiteMonAgentOwner() {
 		return getSitemonAgentProperties().getProperty(PROP_SITEMON_AGENT_OWNER, "");
 	}
+	
+	public boolean useLogging() {
+		return getSitemonAgentProperties().getPropertyBoolean(PROP_SITEMON_AGENT_USE_LOGGING, false);
+	}
+	
+	public int getLogMaxHistory() {
+		return getSitemonAgentProperties().getPropertyInt(PROP_SITEMON_AGENT_LOG_MAX_HISTORY, 7);
+	}
 
 	public PropertiesWrapper getCommonProperties() {
 		return commonProperties;

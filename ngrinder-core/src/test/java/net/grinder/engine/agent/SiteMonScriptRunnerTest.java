@@ -31,7 +31,7 @@ public class SiteMonScriptRunnerTest {
 
 	@Before
 	public void before() throws Exception {
-		siteMonScriptRunner = new SiteMonScriptRunner(scriptDir);
+		siteMonScriptRunner = new SiteMonScriptRunner(scriptDir, false, 0);
 		Thread.sleep(1000);
 	}
 

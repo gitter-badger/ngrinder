@@ -279,7 +279,8 @@ public class AgentPackageService {
 	 * @param owner        owner
 	 * @return File
 	 */
-	public synchronized File createSiteMonAgentPackage(final URLClassLoader classLoader, String connectionIP, int port, String owner) {
+	public synchronized File createSiteMonAgentPackage(final URLClassLoader classLoader,
+			String connectionIP, int port, String owner, final boolean useLogging, final int logMaxHistory) {
 		return createPackage(new PackageSetting(classLoader, "ngrinder-sitemon", null, connectionIP, port, owner) {
 			@Override
 			public boolean isDependentLibs(File file) throws IOException {
@@ -292,8 +293,9 @@ public class AgentPackageService {
 			}
 			
 			@Override
-			public void addConfToTar(TarArchiveOutputStream tarOutputStream, String basePath, String regionName, String connectionIP, int port, String owner) throws IOException {
-				addSiteMonAgentConfToTar(tarOutputStream, basePath, connectionIP, port, owner);
+			public void addConfToTar(TarArchiveOutputStream tarOutputStream, String basePath,
+				String regionName, String connectionIP, int port, String owner) throws IOException {
+				addSiteMonAgentConfToTar(tarOutputStream, basePath, connectionIP, port, owner, useLogging, logMaxHistory);
 			}
 		});
 	}
@@ -325,10 +327,10 @@ public class AgentPackageService {
 	}
 
 	private void addSiteMonAgentConfToTar(TarArchiveOutputStream tarOutputStream, String basePath,
-	                               String connectingIP, int port, String owner) throws IOException {
+		String connectingIP, int port, String owner, boolean useLogging, int logMaxHistory) throws IOException {
 		if (isNotEmpty(connectingIP)) {
 			final String config = getAgentConfigContent("agent_sitemon.conf", getSiteMonAgentConfigParam(
-					connectingIP, port, owner));
+					connectingIP, port, owner, useLogging, logMaxHistory));
 			final byte[] bytes = config.getBytes();
 			addInputStreamToTar(tarOutputStream, new ByteArrayInputStream(bytes), basePath + "__agent.conf",
 					bytes.length, TarArchiveEntry.DEFAULT_FILE_MODE);
@@ -390,13 +392,16 @@ public class AgentPackageService {
 		return confMap;
 	}
 
-	private Map<String, Object> getSiteMonAgentConfigParam(String controllerIP, int port, String owner) {
+	private Map<String, Object> getSiteMonAgentConfigParam(String controllerIP, int port, String owner,
+			boolean useLogging, int logMaxHistory) {
 		Map<String, Object> confMap = newHashMap();
 		confMap.put("controllerIP", controllerIP);
 		confMap.put("controllerPort", String.valueOf(port));
 		if (owner != null) {
 			confMap.put("owner", owner);
 		}
+		confMap.put("useLogging", useLogging);
+		confMap.put("logMaxHistory", logMaxHistory);
 		
 		return confMap;
 	}

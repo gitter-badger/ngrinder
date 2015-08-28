@@ -47,6 +47,8 @@ public interface ControllerConstants {
 	public static final String PROP_CONTROLLER_CONSOLE_PORT_BASE = "controller.console_port_base";
 	public static final String PROP_CONTROLLER_SITEMON_AGENT_CONTROLLER_IP = "controller.sitemon_agent_controller_ip";
 	public static final String PROP_CONTROLLER_SITEMON_AGENT_CONTROLLER_PORT = "controller.sitemon_agent_controller_port";
+	public static final String PROP_CONTROLLER_SITEMON_AGENT_USE_LOGGING = "controller.sitemon_agent_use_logging";
+	public static final String PROP_CONTROLLER_SITEMON_AGENT_LOG_MAX_HISTORY = "controller.sitemon_agent_log_max_history";
 	public static final String PROP_CONTROLLER_CONTROLLER_PORT = "controller.controller_port";
 	public static final String PROP_CONTROLLER_DEFAULT_LANG = "controller.default_lang";
 	public static final String PROP_CONTROLLER_DEMO_MODE = "controller.demo_mode";

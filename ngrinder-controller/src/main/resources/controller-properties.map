@@ -14,6 +14,8 @@ controller.max_run_hour,8,agent.max.runhour
 controller.max_concurrent_test,10,ngrinder.max.concurrenttest
 controller.sitemon_agent_controller_ip
 controller.sitemon_agent_controller_port,16000
+controller.sitemon_agent_use_logging,false
+controller.sitemon_agent_log_max_history,7
 controller.monitor_port,13243,monitor.listen.port
 controller.url,,ngrinder.http.url,http.url
 controller.console_port_base,12000,ngrinder.console.portbase
