@@ -30,6 +30,7 @@ public class SiteMonResultRepositoryTest extends AbstractNGrinderTransactionalTe
 	
 	@Before
 	public void before() throws ParseException {
+		sut.deleteAll();
 		siteMonResult1 = new SiteMonResult("id1", 1, 1, 1, 1, DateUtils.toDate("2015-08-04 10:52:00"), "log1");
 		siteMonResult2 = new SiteMonResult("id2", 2, 2, 2, 2, DateUtils.toDate("2015-08-04 10:53:00"), "log2");
 		siteMonResult3 = new SiteMonResult("id3", 3, 3, 3, 3, DateUtils.toDate("2015-08-04 10:54:00"), "log3");
@@ -76,12 +77,12 @@ public class SiteMonResultRepositoryTest extends AbstractNGrinderTransactionalTe
 		String siteMonId = siteMonResult1.getSiteMonId();
 		Date timestamp = siteMonResult1.getTimestamp();
 		List<SiteMonResult> findAll = sut.findAll(SiteMonResultSpecification.idEqualAndAfterTimeOrderByTime(
-			siteMonId, timestamp));
+			siteMonId, DateUtils.addDay(timestamp, 1)));
 		
 		assertThat(findAll.size(), is(0));
 		
 		findAll = sut.findAll(SiteMonResultSpecification.idEqualAndAfterTimeOrderByTime(
-			siteMonId, DateUtils.addDay(timestamp, -1)));
+			siteMonId, timestamp));
 		
 		assertThat(findAll.size(), is(1));
 	}
@@ -93,6 +94,13 @@ public class SiteMonResultRepositoryTest extends AbstractNGrinderTransactionalTe
 		
 		assertThat(errorLog.size(), is(1));
 		assertThat(errorLog.get(0), is(siteMonResult1.getErrorLog()));
+	}
+	
+	@Test
+	public void testDeleteBeforeTimestamp() throws Exception {
+		int affected = sut.deleteBeforeTimestamp(siteMonResult2.getTimestamp());
+		
+		assertThat(affected, is(2));
 	}
 
 	private void assertEqual(SiteMonResult res1, SiteMonResult res2) {

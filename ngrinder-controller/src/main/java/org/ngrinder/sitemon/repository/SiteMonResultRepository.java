@@ -20,6 +20,7 @@ import org.ngrinder.sitemon.model.SiteMonResult;
 import org.ngrinder.sitemon.model.SiteMonResult.SiteMonResultPK;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 /**
@@ -45,5 +46,9 @@ public interface SiteMonResultRepository extends
 		+ " where s.siteMonResultPK.siteMonId = ?1"
 		+ " and s.siteMonResultPK.timestamp >= ?2 and s.siteMonResultPK.timestamp <= ?3")
 	public List<String> findErrorLog(String siteMonId, Date minTimestamp, Date maxTimestamp);
+	
+	@Modifying
+	@Query("delete from SiteMonResult s where s.siteMonResultPK.timestamp <= ?1")
+	public int deleteBeforeTimestamp(Date end);
 	
 }

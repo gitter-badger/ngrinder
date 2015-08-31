@@ -12,6 +12,8 @@ controller.max_vuser_per_agent,3000,agent.max.vuser
 controller.max_run_count,10000,agent.max.runcount
 controller.max_run_hour,8,agent.max.runhour
 controller.max_concurrent_test,10,ngrinder.max.concurrenttest
+controller.batch_server_ip
+controller.sitemon_result_max_history,7
 controller.sitemon_agent_controller_ip
 controller.sitemon_agent_controller_port,16000
 controller.sitemon_agent_use_logging,false

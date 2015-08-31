@@ -161,6 +161,19 @@ public class Config extends AbstractConfig implements ControllerConstants, Clust
 	}
 	
 	/**
+	 * @return The server ip for execute batch.
+	 */
+	public String getBatchServerIp() {
+		return getControllerProperties().getProperty(
+			ControllerConstants.PROP_CONTROLLER_BATCH_SERVER_IP);
+	}
+	
+	public int getSiteMonResultMaxHistory() {
+		return getControllerProperties().getPropertyInt(
+			ControllerConstants.PROP_CONTROLLER_SITEMON_RESULT_MAX_HISTORY);
+	}
+	
+	/**
 	 * Return a controller ip address of the sitemon agent.
 	 * @return a controller ip address, if doesn't set, it returns a local ip address.
 	 */
