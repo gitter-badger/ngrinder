@@ -14,12 +14,15 @@
 			<column name="id" type="varchar(50)">
 				<constraints primaryKey="true" nullable="false" />
 			</column>
+			<column name="name" type="VARCHAR(255)" defaultValue="" />
 			<column name="created_user" type="BIGINT" />
 			<column name="script_name" type="varchar(255)" />
 			<column name="script_revision" type="BIGINT" />
 			<column name="target_hosts" type="varchar(65535)" />
 			<column name="param" type="varchar(256)" defaultValue="" />
 			<column name="agent_name" type="varchar(255)" />
+			<column name="run_state" type="boolean" defaultValue="T" />
+			<column name="error_callback" type="VARCHAR(255)" defaultValue="" />
 		</createTable>
 		<createIndex indexName="sitemon_agent_name_index"
 					 tableName="SITEMON"

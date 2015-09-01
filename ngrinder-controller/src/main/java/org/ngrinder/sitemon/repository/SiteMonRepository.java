@@ -30,8 +30,8 @@ public interface SiteMonRepository extends JpaRepository<SiteMon, String>,
 	
 	List<SiteMon> findByCreatedUser(User createdUser);
 	
-	List<SiteMon> findByRun(boolean run);
+	List<SiteMon> findByRunState(boolean runState);
 
-	List<SiteMon> findByAgentNameAndRun(String agentName, boolean run);
+	List<SiteMon> findByAgentNameAndRunState(String agentName, boolean runState);
 
 }

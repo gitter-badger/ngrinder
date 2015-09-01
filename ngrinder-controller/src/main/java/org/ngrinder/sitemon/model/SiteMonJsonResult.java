@@ -9,9 +9,11 @@ import java.util.Map;
 import org.ngrinder.common.util.DateUtils;
 
 /**
+ * Create sitemon result for json object.
+ * 
  * @author Gisoo Gwon
  */
-public class SiteMonResultJson {
+public class SiteMonJsonResult {
 	
 	private String minTimestamp = null;
 	private String maxTimestamp = null;
@@ -20,7 +22,7 @@ public class SiteMonResultJson {
 	private Map<Integer, List<List<Object>>> errorMap = new HashMap<Integer, List<List<Object>>>();
 	private Map<Integer, List<List<Object>>> testTimeMap = new HashMap<Integer, List<List<Object>>>();
 	
-	public SiteMonResultJson(List<SiteMonResult> siteMonResults) {
+	public SiteMonJsonResult(List<SiteMonResult> siteMonResults) {
 		try {
 			minTimestamp = DateUtils.dateToString(DateUtils.toSimpleDate("2999-12-31 00:00:00"));
 			maxTimestamp = DateUtils.dateToString(DateUtils.toSimpleDate("1900-01-01 00:00:00"));

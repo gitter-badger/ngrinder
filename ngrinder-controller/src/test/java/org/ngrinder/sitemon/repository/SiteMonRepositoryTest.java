@@ -63,9 +63,9 @@ public class SiteMonRepositoryTest extends AbstractNGrinderTransactionalTest {
 	}
 	
 	@Test
-	public void testFindByRun() throws Exception {
-		List<SiteMon> runList = sut.findByRun(true);
-		List<SiteMon> pauseList = sut.findByRun(false);
+	public void testFindByRunState() throws Exception {
+		List<SiteMon> runList = sut.findByRunState(true);
+		List<SiteMon> pauseList = sut.findByRunState(false);
 		
 		assertThat(runList.size(), is(1));
 		assertThat(pauseList.size(), is(1));
@@ -74,9 +74,9 @@ public class SiteMonRepositoryTest extends AbstractNGrinderTransactionalTest {
 	}
 	
 	@Test
-	public void testFindByAgentNameAndRun() throws Exception {
-		List<SiteMon> runSiteMons = sut.findByAgentNameAndRun(siteMon1.getAgentName(), true);
-		List<SiteMon> pauseSiteMons = sut.findByAgentNameAndRun(siteMon1.getAgentName(), false);
+	public void testFindByAgentNameAndRunState() throws Exception {
+		List<SiteMon> runSiteMons = sut.findByAgentNameAndRunState(siteMon1.getAgentName(), true);
+		List<SiteMon> pauseSiteMons = sut.findByAgentNameAndRunState(siteMon1.getAgentName(), false);
 		
 		assertThat(runSiteMons.size(), is(1));
 		assertThat(pauseSiteMons.size(), is(0));
@@ -113,7 +113,7 @@ public class SiteMonRepositoryTest extends AbstractNGrinderTransactionalTest {
 		assertThat(mon2.getTargetHosts(), is(mon1.getTargetHosts()));
 		assertThat(mon2.getParam(), is(mon1.getParam()));
 		assertThat(mon2.getAgentName(), is(mon1.getAgentName()));
-		assertThat(mon2.isRun(), is(mon1.isRun()));
+		assertThat(mon2.isRunState(), is(mon1.isRunState()));
 		assertThat(mon2.getErrorCallback(), is(mon1.getErrorCallback()));
 	}
 	

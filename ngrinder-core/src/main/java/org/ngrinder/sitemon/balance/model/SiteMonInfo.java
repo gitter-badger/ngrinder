@@ -21,12 +21,14 @@ import org.ngrinder.model.SiteMon;
 import net.grinder.console.communication.AgentProcessControlImplementation.AgentStatus;
 
 /**
+ * The relation meta info of sitemon and agent.
+ * 
  * @author Gisoo Gwon
  */
 public class SiteMonInfo {
 	
-	private final List<SiteMon> siteMons = new LinkedList<SiteMon>();
 	private final AgentStatus agentStatus;
+	private final List<SiteMon> siteMons = new LinkedList<SiteMon>();
 
 	public SiteMonInfo(AgentStatus agentStatus) {
 		this.agentStatus = agentStatus;

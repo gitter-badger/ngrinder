@@ -24,10 +24,12 @@ import net.grinder.engine.common.EngineException;
 import net.grinder.messages.agent.ClearCacheMessage;
 
 /**
- * Wrapping {@link FileStore} for public access. 
+ * Wrapping {@link FileStore} for public access.
+ *  
  * @author Gisoo Gwon
  */
 public class FileStoreSupport {
+	
 	private final FileStore fileStore;
 	private final MessageDispatchSender messageDispatcherSender;
 

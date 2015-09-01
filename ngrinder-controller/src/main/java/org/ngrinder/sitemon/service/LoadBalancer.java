@@ -51,7 +51,7 @@ public class LoadBalancer extends AbstractLoadBalancer {
 			@Override
 			public void run() {
 				Set<AgentStatus> statusList = siteMonAgentManagerService.getAllAgentStatus();
-				List<SiteMon> siteMonList = siteMonRepository.findByRun(true);
+				List<SiteMon> siteMonList = siteMonRepository.findByRunState(true);
 				executeRebalance(statusList, siteMonList);
 			}
 		}, DELAY, PERIOD);

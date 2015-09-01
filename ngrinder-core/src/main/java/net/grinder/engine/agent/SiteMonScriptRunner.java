@@ -45,6 +45,7 @@ import net.grinder.communication.MessageDispatchRegistry.Handler;
 import net.grinder.communication.StreamSender;
 import net.grinder.console.communication.ConsoleCommunication;
 import net.grinder.engine.common.ScriptLocation;
+import net.grinder.engine.process.SiteMonProcess;
 import net.grinder.lang.AbstractLanguageHandler;
 import net.grinder.lang.Lang;
 import net.grinder.util.AbstractGrinderClassPathProcessor;
@@ -52,6 +53,8 @@ import net.grinder.util.Directory;
 import net.grinder.util.NetworkUtils;
 
 /**
+ * Run {@link SiteMonProcess} from sitemon meta info.
+ * 
  * @author Gisoo Gwon
  */
 public class SiteMonScriptRunner implements GrinderConstants {

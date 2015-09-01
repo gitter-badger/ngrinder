@@ -56,6 +56,8 @@ import net.grinder.util.NetworkUtils;
 import net.grinder.util.thread.Condition;
 
 /**
+ * Sitemon agent controller which handles message of controller server.
+ * 
  * @author Gisoo Gwon
  */
 public class SiteMonController implements Agent {
@@ -246,4 +248,5 @@ public class SiteMonController implements Agent {
 		}, 0, agentStateMonitor == null ? DateUtils.MILLIS_PER_MINUTE : agentStateMonitor.getRepeatInterval());
 		connected = true;
 	}
+	
 }

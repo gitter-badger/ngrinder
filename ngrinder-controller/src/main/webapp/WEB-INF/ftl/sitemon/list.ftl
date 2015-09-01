@@ -34,7 +34,7 @@
 		<@list list_items=siteMons others="table_list" colspan="8"; siteMon>
 		<tr>
 			<#if siteMon.agentRunning>
-				<#if siteMon.run>
+				<#if siteMon.runState>
 					<#assign iconName="green_anime.gif"/>
 				<#else>
 					<#assign iconName="green.png"/>
@@ -56,14 +56,14 @@
 			</td>
 			<td><#if (siteMon.scriptRevision != -1)>${siteMon.scriptRevision}<#else>HEAD</#if></td>
 			<td>
-				<#if siteMon.run>
+				<#if siteMon.runState>
 					<@spring.message 'siteMon.state.start'/>
 				<#else>
 					<@spring.message 'siteMon.state.pause'/>
 				</#if>
 			</td>
 			<td>
-				<#if siteMon.run>
+				<#if siteMon.runState>
 					<i id="pause_${siteMon.id}" class="icon-pause pointer-cursor" sid="${siteMon.id}"></i>
 				<#else>
 					<i id="play_${siteMon.id}" class="icon-play pointer-cursor" sid="${siteMon.id}"></i>

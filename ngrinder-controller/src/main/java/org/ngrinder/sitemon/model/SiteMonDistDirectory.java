@@ -20,6 +20,7 @@ import java.io.File;
  * @author Gisoo Gwon
  */
 public class SiteMonDistDirectory {
+	
 	private File rootDirectory;
 	private File scriptDirectory;
 

@@ -14,6 +14,8 @@
 package org.ngrinder.common.util;
 
 /**
+ * String utility.
+ * 
  * @author Gisoo Gwon
  */
 public class StringUtils {

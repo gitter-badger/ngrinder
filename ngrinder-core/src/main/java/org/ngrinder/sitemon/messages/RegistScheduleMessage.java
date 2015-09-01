@@ -16,6 +16,8 @@ package org.ngrinder.sitemon.messages;
 import net.grinder.communication.Message;
 
 /**
+ * The regist sitemon message.
+ * 
  * @author Gisoo Gwon
  */
 public class RegistScheduleMessage implements Message {

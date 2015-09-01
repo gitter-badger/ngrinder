@@ -26,6 +26,7 @@ import org.ngrinder.sitemon.model.SiteMonResult;
 import org.springframework.data.jpa.domain.Specification;
 
 /**
+ * SiteMonResult JPA Specification.
  * @author Gisoo Gwon
  */
 public abstract class SiteMonResultSpecification {

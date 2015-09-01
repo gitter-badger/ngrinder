@@ -16,8 +16,12 @@ package org.ngrinder.sitemon.messages;
 import net.grinder.communication.Message;
 
 /**
+ * The shutdown server message.
+ * 
  * @author Gisoo Gwon
  */
 public class ShutdownServerMessage implements Message {
+	
 	private static final long serialVersionUID = 4626239856439011083L;
+	
 }

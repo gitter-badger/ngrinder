@@ -78,8 +78,8 @@ public class SiteMonController extends BaseController {
 			"invalid permission for " + perfTestId + " perftest");
 
 		FileEntry siteMonScript = siteMonService.getSiteMonScript(user, perfTest, scriptClone);
-		modelMap.addAttribute("siteMon", new SiteMon("Perftest" + perfTestId, "", user,
-			siteMonScript.getPath(), siteMonScript.getRevision(), perfTest.getTargetHosts(),
+		modelMap.addAttribute("siteMon", new SiteMon("Perftest" + perfTestId, perfTest.getTestName(), 
+			user, siteMonScript.getPath(), siteMonScript.getRevision(), perfTest.getTargetHosts(),
 			perfTest.getParam(), null, true, ""));
 		modelMap.addAttribute("formMode", true);
 		return "sitemon/detail";
@@ -95,7 +95,7 @@ public class SiteMonController extends BaseController {
 			String agentName = agentManager.getIdleResouceAgentName();
 			siteMon.setCreatedUser(user);
 			siteMon.setAgentName(agentName);
-			if (siteMon.isRun()) {
+			if (siteMon.isRunState()) {
 				agentManager.sendRegist(siteMon, agentName);
 			}
 			siteMonService.save(siteMon);

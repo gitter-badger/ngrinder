@@ -50,6 +50,7 @@ import static org.ngrinder.common.util.NoOp.noOp;
  * @since 3.0
  */
 public abstract class NetworkUtils {
+	
 	private static final Logger LOGGER = LoggerFactory.getLogger(NetworkUtils.class);
 	public static String DEFAULT_LOCAL_HOST_ADDRESS = getLocalHostAddress();
 	public static String DEFAULT_LOCAL_HOST_NAME = getLocalHostName();
@@ -522,4 +523,5 @@ public abstract class NetworkUtils {
 		IOUtils.closeQuietly(socket);
 		return port;
 	}
+	
 }

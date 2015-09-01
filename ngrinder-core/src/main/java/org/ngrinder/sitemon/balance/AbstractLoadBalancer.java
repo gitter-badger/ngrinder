@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory;
 import net.grinder.console.communication.AgentProcessControlImplementation.AgentStatus;
 
 /**
+ * Find rebalnce sitemon and bind site mon to idle agent.
+ * 
  * @author Gisoo Gwon
  */
 public abstract class AbstractLoadBalancer {
@@ -92,20 +94,20 @@ public abstract class AbstractLoadBalancer {
 
 	/**
 	 * @param statusList
-	 * @param monitorList
+	 * @param siteMons
 	 * @return Map<AgentName, SiteMonInfo>
 	 */
 	private Map<String, SiteMonInfo> createSiteMonInfoList(
-		Collection<AgentStatus> statusList, Collection<SiteMon> monitorList) {
+		Collection<AgentStatus> statusList, Collection<SiteMon> siteMons) {
 		Map<String, SiteMonInfo> map = new HashMap<String, SiteMonInfo>();
-		for (SiteMon monitor : monitorList) {
-			String agentName = monitor.getAgentName();
+		for (SiteMon siteMon : siteMons) {
+			String agentName = siteMon.getAgentName();
 			if (map.get(agentName) == null) {
 				AgentStatus agentStatus = findAgentStatus(statusList, agentName);
 				SiteMonInfo info = new SiteMonInfo(agentStatus);
 				map.put(agentName, info);
 			}
-			map.get(agentName).addSiteMon(monitor);
+			map.get(agentName).addSiteMon(siteMon);
 		}
 		return map;
 	}

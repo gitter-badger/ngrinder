@@ -21,6 +21,7 @@ import net.grinder.communication.Message;
  * @author Gisoo Gwon
  */
 public class UnregistScheduleMessage implements Message {
+	
 	private static final long serialVersionUID = -7272801198614843623L;
 	
 	private final String siteMonId;

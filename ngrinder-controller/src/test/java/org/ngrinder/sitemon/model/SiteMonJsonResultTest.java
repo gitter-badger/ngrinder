@@ -15,9 +15,9 @@ import org.ngrinder.common.util.DateUtils;
 /**
  * @author Gisoo Gwon
  */
-public class SiteMonResultJsonTest {
+public class SiteMonJsonResultTest {
 	
-	private SiteMonResultJson sut;
+	private SiteMonJsonResult sut;
 	private int testNumber1 = 1;
 	private int testNumber2 = 2;
 	private String minTimestampStr = "2015-07-30 12:00:50";
@@ -31,7 +31,7 @@ public class SiteMonResultJsonTest {
 			new SiteMonResult(null, testNumber1, 1, 4, 7, DateUtils.toDate(minTimestampStr), null),
 			new SiteMonResult(null, testNumber2, 2, 5, 8, DateUtils.toDate(midtimestampStr), null),
 			new SiteMonResult(null, testNumber2, 3, 6, 9, DateUtils.toDate(maxTimestampStr), null));
-		sut = new SiteMonResultJson(siteMonResults);
+		sut = new SiteMonJsonResult(siteMonResults);
 	}
 
 	@Test

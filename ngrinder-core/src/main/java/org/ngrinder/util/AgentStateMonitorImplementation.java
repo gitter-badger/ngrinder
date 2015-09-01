@@ -19,6 +19,8 @@ import org.ngrinder.monitor.collector.SystemDataCollector;
 import org.ngrinder.monitor.share.domain.SystemInfo;
 
 /**
+ * Agent hardware resource monitor.
+ * 
  * @author Gisoo Gwon
  */
 public class AgentStateMonitorImplementation implements AgentStateMonitor {

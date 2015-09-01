@@ -247,7 +247,7 @@ public class SiteMonAgentManagerService implements ControllerConstants {
 	}
 	
 	private void initSiteMon(AgentIdentity identity)  {
-		List<SiteMon> siteMons = siteMonRepository.findByAgentNameAndRun(identity.getName(), true);
+		List<SiteMon> siteMons = siteMonRepository.findByAgentNameAndRunState(identity.getName(), true);
 		for (SiteMon siteMon : siteMons) {
 			try {
 				sendUnregist(siteMon.getId());

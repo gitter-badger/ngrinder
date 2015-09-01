@@ -16,6 +16,7 @@ package org.ngrinder.sitemon.messages;
 import java.io.DataOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,8 @@ import org.slf4j.LoggerFactory;
 import net.grinder.communication.Message;
 
 /**
+ * Send error message to callback api with {@link Thread}.
+ * 
  * @author Gisoo Gwon
  */
 public class SiteMonErrorCallbackMessage extends Thread implements Message {
@@ -47,7 +50,8 @@ public class SiteMonErrorCallbackMessage extends Thread implements Message {
 			con.setRequestMethod("POST");
 			con.setDoOutput(true);
 			DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-			wr.writeBytes("id=" + siteMonId + "&error=" + error);
+			wr.writeBytes("id=" + URLEncoder.encode(siteMonId, "UTF-8")
+				+ "&error=" + URLEncoder.encode(error, "UTF-8"));
 			wr.flush();
 			wr.close();
 			if (con.getResponseCode() != 200) {

@@ -25,7 +25,7 @@ import org.ngrinder.model.User;
 import org.ngrinder.script.model.FileEntry;
 import org.ngrinder.script.service.FileEntryService;
 import org.ngrinder.sitemon.model.SiteMonResult;
-import org.ngrinder.sitemon.model.SiteMonResultJson;
+import org.ngrinder.sitemon.model.SiteMonJsonResult;
 import org.ngrinder.sitemon.repository.SiteMonRepository;
 import org.ngrinder.sitemon.repository.SiteMonResultRepository;
 import org.ngrinder.sitemon.repository.SiteMonResultSpecification;
@@ -36,6 +36,8 @@ import org.springframework.stereotype.Component;
 import net.grinder.common.processidentity.AgentIdentity;
 
 /**
+ * {@link SiteMon} and {@link SiteMonResult} service class.
+ * 
  * @author Gisoo Gwon
  */
 @Component
@@ -75,7 +77,7 @@ public class SiteMonService {
 		Specification<SiteMonResult> spec = SiteMonResultSpecification.idEqualAndAfterTimeOrderByTime(
 			siteMonId, start);
 		List<SiteMonResult> resultData = siteMonResultRepository.findAll(spec);
-		SiteMonResultJson json = new SiteMonResultJson(resultData);
+		SiteMonJsonResult json = new SiteMonJsonResult(resultData);
 		resultMap.put("labels", json.getLabelsList());
 		resultMap.put("minTimestamp", json.getMinTimestamp());
 		resultMap.put("maxTimestamp", json.getMaxTimestamp());
@@ -105,7 +107,7 @@ public class SiteMonService {
 		if (siteMon == null) {
 			return;
 		}
-		siteMon.setRun(run);
+		siteMon.setRunState(run);
 		siteMonRepository.saveAndFlush(siteMon);
 	}
 	

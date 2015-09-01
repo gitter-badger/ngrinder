@@ -23,6 +23,7 @@
 			<column name="time_stamp" type="TIMESTAMP">
 				<constraints primaryKey="true" nullable="false" />
 			</column>
+			<column name="error_log" type="varchar(65535)" defaultValue="" />
 		</createTable>
 		<modifySql dbms="cubrid">
 			<append value=" REUSE_OID"/>

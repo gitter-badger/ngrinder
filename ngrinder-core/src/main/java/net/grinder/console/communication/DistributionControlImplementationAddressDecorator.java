@@ -21,6 +21,7 @@ import net.grinder.util.FileContents;
  * {@link FileDistributionImplementation} distribute all agent, so can't choose send target agent.
  * <p>{@link DistributionControlImplementationAddressDecorator} change the send 
  * target address to replaceAddress.</p>
+ * 
  * @author Gisoo Gwon
  */
 public class DistributionControlImplementationAddressDecorator extends

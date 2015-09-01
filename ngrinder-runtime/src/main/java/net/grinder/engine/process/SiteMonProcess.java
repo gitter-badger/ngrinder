@@ -90,6 +90,8 @@ import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 
 /**
+ * The worker for site monitoring.
+ * 
  * @author Gisoo Gwon
  */
 public class SiteMonProcess {

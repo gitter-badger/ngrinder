@@ -60,9 +60,9 @@ public class SiteMon {
 	@Column(name = "agent_name")
 	private String agentName;
 	
-	@Column(name = "run")
+	@Column(name = "run_state")
 	@Type(type = "true_false")
-	private boolean run;
+	private boolean runState;
 	
 	@Column(name = "error_callback")
 	private String errorCallback;
@@ -75,7 +75,7 @@ public class SiteMon {
 	}
 	
 	public SiteMon(String id, String name, User createdUser, String scriptName, long scriptRevision,
-		String targetHosts, String param, String agentName, boolean run, String errorCallback) {
+		String targetHosts, String param, String agentName, boolean runState, String errorCallback) {
 		this.id = id;
 		this.name = name;
 		this.createdUser = createdUser;
@@ -84,7 +84,7 @@ public class SiteMon {
 		this.targetHosts = targetHosts;
 		this.param = param;
 		this.agentName = agentName;
-		this.run = run;
+		this.runState = runState;
 		this.errorCallback = errorCallback;
 	}
 
@@ -152,12 +152,12 @@ public class SiteMon {
 		this.agentName = agentName;
 	}
 
-	public boolean isRun() {
-		return run;
+	public boolean isRunState() {
+		return runState;
 	}
 
-	public void setRun(boolean run) {
-		this.run = run;
+	public void setRunState(boolean runState) {
+		this.runState = runState;
 	}
 
 	public String getErrorCallback() {

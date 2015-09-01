@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.Marker;
 
 /**
+ * Wrapping logger instance for collect throwable.
+ * 
  * @author Gisoo Gwon
  */
 public class ErrorCollectLogger implements Logger {

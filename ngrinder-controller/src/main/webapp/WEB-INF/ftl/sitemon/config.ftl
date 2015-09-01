@@ -9,7 +9,7 @@
 <form id="siteMon_config_form" name="siteMon_config_form" action="${req.getContextPath()}/sitemon/save"  method="POST" style="margin-bottom: 0px;">
 	<div class="well" style="margin-top:0">
 		<input type="hidden" id="siteMon_id" name="id" value="${(siteMon.id)!}">
-		<input type="hidden" name="run" value="${(siteMon.run)?string('true', 'false')}">
+		<input type="hidden" name="runState" value="${(siteMon.runState)?string('true', 'false')}">
 		<div class="form-horizontal" id="query_div">
 			<fieldset>
 				<div class="control-group" style="margin-bottom:0px;">
@@ -57,7 +57,7 @@
 					<div class="row">
 						<div class="span">
 							<@control_group controls_style = "margin-left: 140px;" label_style = "width: 120px;" label_message_key="siteMon.list.runState">
-							<#if siteMon.run>
+							<#if siteMon.runState>
 								<input class="span3 left-float" maxlength="50" size="30" type="text" value="<@spring.message 'siteMon.state.start'/>" disabled/>
 								<button type="button" class="btn btn-warning" id="pause_siteMon_btn" ${disabled!}>
 									<@spring.message "siteMon.config.pause"/>

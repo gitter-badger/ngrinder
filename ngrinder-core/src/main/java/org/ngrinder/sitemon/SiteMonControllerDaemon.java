@@ -23,6 +23,7 @@ import net.grinder.engine.agent.Agent;
 /**
  * Run {@link SiteMonController}.
  * If the connection fails, retry before shutdown
+ * 
  * @author Gisoo Gwon
  */
 public class SiteMonControllerDaemon implements Agent {
