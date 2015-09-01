@@ -16,7 +16,6 @@ package org.ngrinder.sitemon.controller;
 import static org.ngrinder.common.util.ExceptionUtils.*;
 
 import java.io.File;
-import java.net.URLClassLoader;
 import java.net.UnknownHostException;
 
 import javax.servlet.http.HttpServletResponse;
@@ -48,19 +47,20 @@ public class SiteMonDownloadController extends BaseController {
 	 * @throws UnknownHostException 
 	 */
 	@RequestMapping(value = "/download")
-	public void download(	@RequestParam(value = "owner", required = false) String owner,
-        					HttpServletResponse response) throws UnknownHostException {
+	public void download(@RequestParam(value = "owner", required = false) String owner,
+		HttpServletResponse response) throws UnknownHostException {
 		String ip = getConfig().getSiteMonAgentControllerIp();
 		int port = getConfig().getSiteMonAgentControllerPort();
 		boolean useLogging = getConfig().getSiteMonAgentUseLogging();
 		int logMaxHistory = getConfig().getSiteMonAgentLogMaxHistory();
 		
 		try {
-			final File siteMonAgentPackage = agentPackageService.createSiteMonAgentPackage(
-				(URLClassLoader) getClass().getClassLoader(), ip, port, owner, useLogging, logMaxHistory);
+			final File siteMonAgentPackage = agentPackageService.createSiteMonAgentPackage(ip,
+				port, owner, useLogging, logMaxHistory);
 			FileDownloadUtils.downloadFile(response, siteMonAgentPackage);
 		} catch (Exception e) {
 			throw processException(e);
 		}
 	}
+	
 }

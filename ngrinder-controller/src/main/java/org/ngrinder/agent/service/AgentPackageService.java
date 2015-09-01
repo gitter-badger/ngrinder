@@ -116,10 +116,10 @@ public class AgentPackageService {
 	 * @param forWindow    if true, then package type is zip,if false, package type is tar.
 	 * @return String  module full name.
 	 */
-	public String getDistributionPackageName(PackageSetting setting, boolean forWindow) {
-		return getPackageName(setting.moduleName) + getFilenameComponent(setting.regionName) + 
-				getFilenameComponent(setting.connectionIP) + 
-				getFilenameComponent(setting.owner) + (forWindow ? ".zip" : ".tar");
+	private String getDistributionPackageName(PackageParam param, boolean forWindow) {
+		return getPackageName(param.moduleName) + getFilenameComponent(param.regionName) + 
+				getFilenameComponent(param.connectionIP) + 
+				getFilenameComponent(param.owner) + (forWindow ? ".zip" : ".tar");
 	}
 
 	private String getFilenameComponent(String value) {
@@ -135,7 +135,7 @@ public class AgentPackageService {
 	 *
 	 * @return File  agent package dir.
 	 */
-	public File getPackagesDir() {
+	private File getPackagesDir() {
 		return config.getHome().getSubFile("download");
 	}
 
@@ -160,21 +160,36 @@ public class AgentPackageService {
 		return createAgentPackage((URLClassLoader) getClass().getClassLoader(), region, connectionIP, port, owner);
 	}
 	
-	public File createPackage(PackageSetting setting) {
-		File tarPackage = preparePackage(setting);
+	/**
+	 * Create site monitor agent package.
+	 * @param connectionIP	host ip
+	 * @param port			host port
+	 * @param owner			owner
+	 * @param useLogging	use logging
+	 * @param logMaxHistory	log max history
+	 * @return
+	 */
+	public synchronized File createSiteMonAgentPackage(String connectionIP, int port, String owner,
+		final boolean useLogging, final int logMaxHistory) {
+		return createSiteMonAgentPackage((URLClassLoader) getClass().getClassLoader(),
+			connectionIP, port, owner, useLogging, logMaxHistory);
+	}
+	
+	private File createPackage(PackageParam param) {
+		File tarPackage = preparePackage(param);
 		
 		if (tarPackage.exists()) {
 			return tarPackage;
 		}
 		
-		final String basePath = setting.moduleName + "/";
+		final String basePath = param.moduleName + "/";
 		final String libPath = basePath + "lib/";
 		TarArchiveOutputStream tarOutputStream = null;
 		
 		try {
-			tarOutputStream = packagingToTar(setting, tarPackage, basePath, libPath);
+			tarOutputStream = packagingToTar(param, tarPackage, basePath, libPath);
 		} catch (IOException e) {
-			LOGGER.error("Error while generating an " + setting.moduleName + e.getMessage());
+			LOGGER.error("Error while generating an " + param.moduleName + e.getMessage());
 		} finally {
 			IOUtils.closeQuietly(tarOutputStream);
 		}
@@ -182,14 +197,14 @@ public class AgentPackageService {
 		return tarPackage;
 	}
 
-	private TarArchiveOutputStream packagingToTar(final PackageSetting setting,
+	private TarArchiveOutputStream packagingToTar(final PackageParam param,
 			File tarPackage, final String basePath, final String libPath) throws IOException {		
 		TarArchiveOutputStream tarOutputStream;
 		tarOutputStream = createTarArchiveStream(tarPackage);
 		addFolderToTar(tarOutputStream, basePath);
 		addFolderToTar(tarOutputStream, libPath);
 		
-		for (URL eachUrl : setting.urlClassLoader.getURLs()) {
+		for (URL eachUrl : param.urlClassLoader.getURLs()) {
 			File eachClassPath = new File(eachUrl.getFile());
 			if (!isJar(eachClassPath)) {
 				continue;
@@ -199,31 +214,31 @@ public class AgentPackageService {
 					@Override
 					public boolean evaluate(Object object) {
 						ZipEntry zipEntry = (ZipEntry) object;
-						return setting.isDependentExec(zipEntry.getName());
+						return param.isDependentExec(zipEntry.getName());
 					}
 				}, basePath, EXEC));
-			} else if (setting.isDependentLibs(eachClassPath)) {
+			} else if (param.isDependentLibs(eachClassPath)) {
 				addFileToTar(tarOutputStream, eachClassPath, libPath + eachClassPath.getName());
 			}
 		}
-		setting.addConfToTar(tarOutputStream, basePath, setting.regionName, setting.connectionIP,setting.port, setting.owner);
+		param.addConfToTar(tarOutputStream, basePath, param.regionName, param.connectionIP,param.port, param.owner);
 		return tarOutputStream;
 	}
 
-	private File preparePackage(PackageSetting setting) {
+	private File preparePackage(PackageParam param) {
 		File packageDir = getPackagesDir();
 		if (packageDir.mkdirs()) {
 			LOGGER.info("{} is created", packageDir.getPath());
 		}
-		final String packageName = getDistributionPackageName(setting, false);
+		final String packageName = getDistributionPackageName(param, false);
 		File tarPackage = new File(packageDir, packageName);
 		return tarPackage;
 	}
 
-	public File createMonitorPackage() {		
+	public synchronized File createMonitorPackage() {		
 		final URLClassLoader classLoader = (URLClassLoader) getClass().getClassLoader();
 		
-		return createPackage(new PackageSetting(classLoader, "ngrinder-monitor", null, null, config.getMonitorPort(), null) {
+		return createPackage(new PackageParam(classLoader, "ngrinder-monitor", null, null, config.getMonitorPort(), null) {
 			@Override
 			public boolean isDependentLibs(File file) throws IOException {
 				return isMonitorDependentLib(file, getMonitorDependentLibs(classLoader));
@@ -251,9 +266,9 @@ public class AgentPackageService {
 	 * @param owner        owner
 	 * @return File
 	 */
-	synchronized File createAgentPackage(final URLClassLoader classLoader, String regionName, String connectionIP,
+	File createAgentPackage(final URLClassLoader classLoader, String regionName, String connectionIP,
 	                                     int port, String owner) {
-		return createPackage(new PackageSetting(classLoader, "ngrinder-agent", regionName, connectionIP, port, owner) {
+		return createPackage(new PackageParam(classLoader, "ngrinder-agent", regionName, connectionIP, port, owner) {
 			@Override
 			public boolean isDependentLibs(File file) throws IOException {
 				return isAgentDependentLib(file, getDependentLibs(classLoader));
@@ -279,9 +294,9 @@ public class AgentPackageService {
 	 * @param owner        owner
 	 * @return File
 	 */
-	public synchronized File createSiteMonAgentPackage(final URLClassLoader classLoader,
+	File createSiteMonAgentPackage(final URLClassLoader classLoader,
 			String connectionIP, int port, String owner, final boolean useLogging, final int logMaxHistory) {
-		return createPackage(new PackageSetting(classLoader, "ngrinder-sitemon", null, connectionIP, port, owner) {
+		return createPackage(new PackageParam(classLoader, "ngrinder-sitemon", null, connectionIP, port, owner) {
 			@Override
 			public boolean isDependentLibs(File file) throws IOException {
 				return isAgentDependentLib(file, getDependentLibs(classLoader));
@@ -412,7 +427,7 @@ public class AgentPackageService {
 	 * @param libFile lib file
 	 * @return true if it's jar
 	 */
-	public boolean isJar(File libFile) {
+	private boolean isJar(File libFile) {
 		return StringUtils.endsWith(libFile.getName(), ".jar");
 	}
 
@@ -423,7 +438,7 @@ public class AgentPackageService {
 	 * @param libName desirable name
 	 * @return true if dependent lib
 	 */
-	public boolean isAgentDependentLib(File libFile, String libName) {
+	private boolean isAgentDependentLib(File libFile, String libName) {
 		return StringUtils.startsWith(libFile.getName(), libName);
 	}
 
@@ -434,7 +449,7 @@ public class AgentPackageService {
 	 * @param libs    lib set
 	 * @return true if dependent lib
 	 */
-	public boolean isMonitorDependentLib(File libFile, Set<String> libs) {
+	private boolean isMonitorDependentLib(File libFile, Set<String> libs) {
 		if (libFile.getName().contains("grinder-3.9.1.jar")) {
 			return false;
 		}
@@ -455,7 +470,7 @@ public class AgentPackageService {
 	 * @param libs    lib set
 	 * @return true if dependent lib
 	 */
-	public boolean isAgentDependentLib(File libFile, Set<String> libs) {
+	private boolean isAgentDependentLib(File libFile, Set<String> libs) {
 		if (libFile.getName().contains("grinder-3.9.1.jar")) {
 			return false;
 		}
@@ -471,7 +486,7 @@ public class AgentPackageService {
 	 * @param values       map of configurations.
 	 * @return generated string
 	 */
-	public String getAgentConfigContent(String templateName, Map<String, Object> values) {
+	private String getAgentConfigContent(String templateName, Map<String, Object> values) {
 		StringWriter writer = null;
 		try {
 			Configuration config = new Configuration();
@@ -519,7 +534,7 @@ public class AgentPackageService {
 		}
 	}
 	
-	abstract class PackageSetting {
+	abstract class PackageParam {
 		URLClassLoader urlClassLoader;
 		String moduleName;
 		String regionName;
@@ -527,7 +542,16 @@ public class AgentPackageService {
 		Integer port;
 		String owner;
 		
-		public PackageSetting(URLClassLoader urlClassLoader, String moduleName, String regionName, 
+		/**
+		 * The constructor.
+		 * @param urlClassLoader	The class loader.
+		 * @param moduleName		Agent module name. eg) agent, monitor, sitemon ...
+		 * @param regionName		region for perftest agent. 
+		 * @param connectionIP		host ip
+		 * @param port				host port
+		 * @param owner				owner
+		 */
+		public PackageParam(URLClassLoader urlClassLoader, String moduleName, String regionName, 
 				String connectionIP, Integer port, String owner) {
 			this.urlClassLoader = urlClassLoader;
 			this.moduleName = moduleName;

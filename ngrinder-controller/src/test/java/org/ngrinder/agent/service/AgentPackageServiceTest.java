@@ -16,6 +16,7 @@ package org.ngrinder.agent.service;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import static org.ngrinder.common.util.TypeConvertUtils.*;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -30,6 +31,7 @@ import java.util.Map;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.lang.ArrayUtils;
 import org.fest.util.Arrays;
 import org.junit.After;
 import org.junit.Test;
@@ -46,6 +48,7 @@ import org.ngrinder.infra.config.Config;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class AgentPackageServiceTest {
+	
 	@Mock
 	Config config;
 	
@@ -91,25 +94,15 @@ public class AgentPackageServiceTest {
 	 * @throws MalformedURLException
 	 */
 	private URLClassLoader loadTargetFolderContainClassLoader() throws MalformedURLException {
-		List<File> allFileInTarget = FileUtils.listContainSubFolder(new File("target"), new LinkedList<File>());
-				
-		URLClassLoader originClassLoader = (URLClassLoader) getClass().getClassLoader();
-		URL[] origin = originClassLoader.getURLs();
+		URLClassLoader origin = (URLClassLoader) this.getClass().getClassLoader();
+		URL core = origin.getResource("lib/ngrinder-core-test.jar");
+		URL sh = origin.getResource("lib/ngrinder-sh-test.jar");
+		URL[] ngrinderLib = {core, sh};
+		URL[] urls = origin.getURLs();
+		URL[] allLib = cast(ArrayUtils.addAll(urls, ngrinderLib));
+		URLClassLoader child = new URLClassLoader(allLib, this.getClass().getClassLoader());
 		
-		URL[] newUrls = copyAndAppend(allFileInTarget, origin);
-		URLClassLoader ngrinderShClassLoader = new URLClassLoader(newUrls);
-		
-		return ngrinderShClassLoader;
-	}
-
-	private URL[] copyAndAppend(List<File> addFiles, URL[] origin) throws MalformedURLException {
-		URL[] newUrls = Arrays.copyOf(origin, origin.length + addFiles.size());
-		
-		for (int i = 0; i < addFiles.size(); i++) {
-			newUrls[origin.length + i] = addFiles.get(i).toURI().toURL();
-		}
-		
-		return newUrls;
+		return child;
 	}
 
 	private void assertTarFiles(File siteMonAgentPackage) throws Exception {
@@ -136,4 +129,5 @@ public class AgentPackageServiceTest {
 		assertTrue(existFileFlag.get("ngrinder-sitemon/stop_sitemon.bat"));
 		assertTrue(existFileFlag.get("ngrinder-sitemon/stop_sitemon.sh"));
 	}
+	
 }

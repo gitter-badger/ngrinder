@@ -15,8 +15,6 @@ package org.ngrinder.sitemon.controller;
 
 import static org.mockito.Mockito.*;
 
-import java.net.URLClassLoader;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -56,8 +54,7 @@ public class SiteMonDownloadControllerTest {
 		
 		sut.download(owner, response);
 		
-		verify(agentPackageService, times(1)).createSiteMonAgentPackage(
-			(URLClassLoader) getClass().getClassLoader(), controllerIp, controllerPort, owner,
-			useLogging, logMaxHistory);
+		verify(agentPackageService, times(1)).createSiteMonAgentPackage(controllerIp,
+			controllerPort, owner, useLogging, logMaxHistory);
 	}
 }
