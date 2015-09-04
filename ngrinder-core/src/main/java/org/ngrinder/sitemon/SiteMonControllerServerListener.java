@@ -50,7 +50,7 @@ public class SiteMonControllerServerListener {
 		public void shutdown() {
 			synchronized (eventSyncCondition) {
 				messages.add(new ShutdownServerMessage());
-				eventSyncCondition.notifyAll();
+				eventSyncCondition.notify();
 			}
 		}
 	};
@@ -82,10 +82,10 @@ public class SiteMonControllerServerListener {
 	public Message waitForMessage() {
 		while (true) {
 			synchronized (eventSyncCondition) {
-				eventSyncCondition.waitNoInterrruptException();
 				if (messages.size() > 0) {
 					return messages.poll();
 				}
+				eventSyncCondition.waitNoInterrruptException();
 			}
 		}
 	}

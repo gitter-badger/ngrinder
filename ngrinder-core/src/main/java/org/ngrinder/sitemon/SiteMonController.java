@@ -152,7 +152,6 @@ public class SiteMonController implements Agent {
 			siteMonControllerServerListener.shutdown();
 		}
 		connected = false;
-		setShutdownServer(true);
 	}
 
 	private void handle(Message message) throws EngineException {
@@ -217,7 +216,6 @@ public class SiteMonController implements Agent {
 				try {
 					sendCurrentState();
 				} catch (CommunicationException e) {
-					shutdown();
 					LOGGER.error("Error while sending current state:" + e.getMessage());
 					LOGGER.debug("The error detail is", e);
 				}
