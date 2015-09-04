@@ -31,21 +31,24 @@ import org.springframework.data.jpa.repository.Query;
 public interface SiteMonResultRepository extends
 	JpaRepository<SiteMonResult, SiteMonResultPK>,
 	JpaSpecificationExecutor<SiteMonResult> {
-
+	
 	/**
-	 * Find all testNumber after the given start date with distinct.
+	 * Find all testNumber after the given start date with distinct
+	 * and order by timestamp.
 	 *
 	 * @param siteMonId sitemon id
 	 * @param start time
 	 * @return {@link String} test number list
 	 */
-	@Query("select distinct(s.siteMonResultPK.testNumber) from SiteMonResult s where s.siteMonResultPK.siteMonId = ?1 and s.siteMonResultPK.timestamp > ?2")
-	public List<Integer> findTestNumber(String siteMonId, Date start);
+	@Query("select distinct(s.siteMonResultPK.testNumber) from SiteMonResult s"
+		+ " where s.siteMonResultPK.siteMonId = ?1 and s.siteMonResultPK.timestamp >= ?2"
+		+ " order by s.siteMonResultPK.testNumber")
+	public List<Integer> findDistinctTestNumberOrderByTestNumber(String siteMonId, Date start);
 	
-	@Query("select s.errorLog from SiteMonResult s"
-		+ " where s.siteMonResultPK.siteMonId = ?1"
-		+ " and s.siteMonResultPK.timestamp >= ?2 and s.siteMonResultPK.timestamp <= ?3")
-	public List<String> findErrorLog(String siteMonId, Date minTimestamp, Date maxTimestamp);
+	@Query("select s from SiteMonResult s where s.siteMonResultPK.siteMonId = ?1"
+		+ " and s.siteMonResultPK.timestamp = ?2 order by s.siteMonResultPK.testNumber")
+	public List<SiteMonResult> findAllBySiteMonIdEqualAndTimestampEqualOrderByTestNumber(
+		String siteMonId, Date date);
 	
 	@Modifying
 	@Query("delete from SiteMonResult s where s.siteMonResultPK.timestamp <= ?1")

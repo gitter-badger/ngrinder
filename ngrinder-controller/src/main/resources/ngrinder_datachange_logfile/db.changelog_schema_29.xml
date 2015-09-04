@@ -17,13 +17,21 @@
 			<column name="test_number" type="INTEGER">
 				<constraints primaryKey="true" nullable="false" />
 			</column>
-			<column name="success" type="BIGINT" />
-			<column name="error" type="BIGINT" />
-			<column name="test_time" type="BIGINT" />
+			<column name="success" type="varchar(65535)" />
+			<column name="error" type="varchar(65535)" />
+			<column name="test_time" type="varchar(65535)" />
 			<column name="time_stamp" type="TIMESTAMP">
 				<constraints primaryKey="true" nullable="false" />
 			</column>
-			<column name="error_log" type="varchar(65535)" defaultValue="" />
+		</createTable>
+		<createTable tableName="SITEMON_RESULT_LOG">
+			<column name="sitemon_id" type="varchar(50)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="time_stamp" type="TIMESTAMP">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="log" type="varchar(65535)" />
 		</createTable>
 		<modifySql dbms="cubrid">
 			<append value=" REUSE_OID"/>

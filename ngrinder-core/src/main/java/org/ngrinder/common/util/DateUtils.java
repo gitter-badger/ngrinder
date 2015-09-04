@@ -81,6 +81,36 @@ public abstract class DateUtils {
 		int rawOffset = userLocal.getRawOffset() - TimeZone.getDefault().getRawOffset();
 		return new Date(serverDate.getTime() + rawOffset);
 	}
+	
+	/**
+	 * Get yyyy-MM-dd 00:00:00.000
+	 * @param date
+	 * @return AM 0 o'clock of {@value date}
+	 */
+	public static Date getStartTimeOf(Date date) {
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		c.set(Calendar.HOUR_OF_DAY, 0);
+		c.set(Calendar.MINUTE, 0);
+		c.set(Calendar.SECOND, 0);
+		c.set(Calendar.MILLISECOND, 0);
+		return c.getTime();
+	}
+	
+	/**
+	 * Get yyyy-MM-dd 23:59:59.999
+	 * @param date
+	 * @return AM 0 o'clock of {@value date} next day.
+	 */
+	public static Date getEndTimeOf(Date date) {
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		c.set(Calendar.HOUR_OF_DAY, 23);
+		c.set(Calendar.MINUTE, 59);
+		c.set(Calendar.SECOND, 59);
+		c.set(Calendar.MILLISECOND, 999);
+		return c.getTime();
+	}
 
 	/**
 	 * Format date to {@value #FULL_DATE_FORMAT}.

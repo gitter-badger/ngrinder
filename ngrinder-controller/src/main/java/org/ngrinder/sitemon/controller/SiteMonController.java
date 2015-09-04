@@ -15,6 +15,7 @@ package org.ngrinder.sitemon.controller;
 
 import static org.ngrinder.common.util.Preconditions.*;
 
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
@@ -27,6 +28,7 @@ import org.ngrinder.model.User;
 import org.ngrinder.perftest.service.PerfTestService;
 import org.ngrinder.script.model.FileEntry;
 import org.ngrinder.sitemon.service.SiteMonAgentManagerService;
+import org.ngrinder.sitemon.service.SiteMonResultService;
 import org.ngrinder.sitemon.service.SiteMonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -49,6 +51,9 @@ public class SiteMonController extends BaseController {
 	
 	@Autowired
 	private SiteMonService siteMonService;
+	
+	@Autowired
+	private SiteMonResultService siteMonResultService;
 
 	@Autowired
 	private SiteMonAgentManagerService agentManager;
@@ -156,20 +161,20 @@ public class SiteMonController extends BaseController {
 	@RestAPI
 	@RequestMapping("/api/{siteMonId}/result")
 	public HttpEntity<String> getResult(@PathVariable String siteMonId,
-		@RequestParam(required = false) Long start) {
+		@RequestParam(required = false) Long start) throws ParseException {
 		if (start == null) {
-			return toJsonHttpEntity(siteMonService.getGraphDataRecentDay(siteMonId));
+			return toJsonHttpEntity(siteMonResultService.getTodayGraphData(siteMonId));
 		}
-		return toJsonHttpEntity(siteMonService.getGraphData(siteMonId, new Date(start)));
+		return toJsonHttpEntity(siteMonResultService.getGraphData(siteMonId, new Date(start)));
 	}
 
 	@RestAPI
 	@RequestMapping("/api/{siteMonId}/log")
 	public HttpEntity<String> getLog(@PathVariable String siteMonId,
 		@RequestParam long minTimestamp, @RequestParam long maxTimestamp) {
-		List<String> log = siteMonService.getLog(siteMonId, new Date(minTimestamp), new Date(
+		List<String> logs = siteMonResultService.findAllLog(siteMonId, new Date(minTimestamp), new Date(
 			maxTimestamp));
-		return toJsonHttpEntity(log);
+		return toJsonHttpEntity(logs);
 	}
 	
 	private boolean hasPermission(User createdUser) {

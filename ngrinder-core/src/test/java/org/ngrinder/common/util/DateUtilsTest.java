@@ -15,10 +15,12 @@ package org.ngrinder.common.util;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.text.ParseException;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
@@ -78,6 +80,22 @@ public class DateUtilsTest {
 		// convert the server date back to test.
 		Date newServerDate = DateUtils.convertToServerDate(userLocaleId, userDate);
 		assertThat(serverDate.getTime(), is(newServerDate.getTime()));
+	}
+	
+	@Test
+	public void testGetStartTimeOf() throws Exception {
+		Date date = DateUtils.toDate("2015-09-04 13:23:34");
+		Date startTimeOf = DateUtils.getStartTimeOf(date);
+		String dateToString = DateUtils.dateToString(startTimeOf);
+		assertThat(dateToString, is("2015-09-04 00:00:00"));
+	}
+	
+	@Test
+	public void testGetEndTimeOf() throws Exception {
+		Date date = DateUtils.toDate("2015-09-04 13:23:34");
+		Date startTimeOf = DateUtils.getEndTimeOf(date);
+		String dateToString = DateUtils.dateToString(startTimeOf);
+		assertThat(dateToString, is("2015-09-04 23:59:59"));
 	}
 
 	@Test

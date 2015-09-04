@@ -33,6 +33,7 @@ import org.ngrinder.sitemon.messages.ShutdownSiteMonProcessMessage;
 import org.ngrinder.sitemon.messages.SiteMonErrorCallbackMessage;
 import org.ngrinder.sitemon.messages.SiteMonResultMessage;
 import org.ngrinder.sitemon.model.SiteMonResult;
+import org.ngrinder.sitemon.model.SiteMonResultLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +63,9 @@ public class SiteMonScriptRunner implements GrinderConstants {
 	private Logger LOGGER = LoggerFactory.getLogger("sitemon script runner");
 	private Map<String, ProcessWorker> workers = new HashMap<String, ProcessWorker>();
 	private final File baseDirectory;
+	private Object lock = new Object();
 	private ConcurrentLinkedQueue<SiteMonResult> monitoringResults = new ConcurrentLinkedQueue<SiteMonResult>();
+	private ConcurrentLinkedQueue<SiteMonResultLog> monitoringResultLogs = new ConcurrentLinkedQueue<SiteMonResultLog>();
 	private SiteMonControllerServerDaemon scriptProcessConsole;
 	private final boolean useLogging;
 	private final int logMaxHistory;
@@ -81,8 +84,9 @@ public class SiteMonScriptRunner implements GrinderConstants {
 			new Handler<SiteMonResultMessage>() {
 				@Override
 				public void handle(SiteMonResultMessage message) throws CommunicationException {
-					synchronized (monitoringResults) {
+					synchronized (lock) {
 						monitoringResults.addAll(message.getResults());
+						monitoringResultLogs.addAll(message.getErrorLogs());
 					}
 				}
 
@@ -110,11 +114,24 @@ public class SiteMonScriptRunner implements GrinderConstants {
 	 * @return Sitemon result list.
 	 */
 	public List<SiteMonResult> pollAllResult() {
-		synchronized (monitoringResults) {
+		synchronized (lock) {
 			LinkedList<SiteMonResult> results = new LinkedList<SiteMonResult>(
 				monitoringResults);
 			monitoringResults.clear();
 			return results;
+		}
+	}
+	
+	/**
+	 * Clone and clear to sitemon result log list.  
+	 * @return Sitemon result list.
+	 */
+	public List<SiteMonResultLog> pollAllResultLog() {
+		synchronized (lock) {
+			LinkedList<SiteMonResultLog> resultLogs = new LinkedList<SiteMonResultLog>(
+				monitoringResultLogs);
+			monitoringResultLogs.clear();
+			return resultLogs;
 		}
 	}
 

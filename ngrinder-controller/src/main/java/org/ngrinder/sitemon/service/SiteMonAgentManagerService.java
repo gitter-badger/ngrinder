@@ -40,8 +40,8 @@ import org.ngrinder.sitemon.messages.SiteMonReloadMessage;
 import org.ngrinder.sitemon.messages.SiteMonResultMessage;
 import org.ngrinder.sitemon.messages.UnregistScheduleMessage;
 import org.ngrinder.sitemon.model.SiteMonDistDirectory;
+import org.ngrinder.sitemon.model.SiteMonResult;
 import org.ngrinder.sitemon.repository.SiteMonRepository;
-import org.ngrinder.sitemon.repository.SiteMonResultRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,7 +82,7 @@ public class SiteMonAgentManagerService implements ControllerConstants {
 	private SiteMonRepository siteMonRepository;
 	
 	@Autowired
-	private SiteMonResultRepository siteMonResultRepository;
+	private SiteMonResultService siteMonResultService;
 
 	/**
 	 * Initialize sitemon manager.
@@ -116,7 +116,10 @@ public class SiteMonAgentManagerService implements ControllerConstants {
 		register.set(SiteMonResultMessage.class, new Handler<SiteMonResultMessage>() {
 			@Override
 			public void handle(SiteMonResultMessage message) throws CommunicationException {
-				siteMonResultRepository.save(message.getResults());
+				for (SiteMonResult result : message.getResults()) {
+					siteMonResultService.appendResult(result);
+				}
+				siteMonResultService.saveLog(message.getErrorLogs());
 			}
 
 			@Override

@@ -1,6 +1,8 @@
 package org.ngrinder.sitemon.repository;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.*;
 
 import java.text.ParseException;
@@ -27,17 +29,23 @@ public class SiteMonResultRepositoryTest extends AbstractNGrinderTransactionalTe
 	private SiteMonResult siteMonResult1;
 	private SiteMonResult siteMonResult2;
 	private SiteMonResult siteMonResult3;
+	private SiteMonResult siteMonResult4;
+	private SiteMonResult siteMonResult5;
 	
 	@Before
 	public void before() throws ParseException {
 		sut.deleteAll();
-		siteMonResult1 = new SiteMonResult("id1", 1, 1, 1, 1, DateUtils.toDate("2015-08-04 10:52:00"), "log1");
-		siteMonResult2 = new SiteMonResult("id2", 2, 2, 2, 2, DateUtils.toDate("2015-08-04 10:53:00"), "log2");
-		siteMonResult3 = new SiteMonResult("id3", 3, 3, 3, 3, DateUtils.toDate("2015-08-04 10:54:00"), "log3");
+		siteMonResult1 = new SiteMonResult("id1", 1, "['2015-09-03 12:11:11',1]", "", "", DateUtils.toDate("2015-08-04 10:52:00"));
+		siteMonResult2 = new SiteMonResult("id2", 1, "", "", "", DateUtils.toDate("2015-08-04 10:52:00"));
+		siteMonResult3 = new SiteMonResult("id2", 1, "", "", "", DateUtils.toDate("2015-08-04 10:53:00"));
+		siteMonResult4 = new SiteMonResult("id2", 2, "", "", "", DateUtils.toDate("2015-08-05 10:52:00"));
+		siteMonResult5 = new SiteMonResult("id2", 1, "", "", "", DateUtils.toDate("2015-08-05 10:52:00"));
 		siteMonResults = Arrays.asList(
 			siteMonResult1,
 			siteMonResult2,
-			siteMonResult3
+			siteMonResult3,
+			siteMonResult4,
+			siteMonResult5
 		);
 		
 		sut.save(siteMonResults);
@@ -73,27 +81,50 @@ public class SiteMonResultRepositoryTest extends AbstractNGrinderTransactionalTe
 	}
 	
 	@Test
-	public void testFindAllSpecification() throws Exception {
-		String siteMonId = siteMonResult1.getSiteMonId();
-		Date timestamp = siteMonResult1.getTimestamp();
-		List<SiteMonResult> findAll = sut.findAll(SiteMonResultSpecification.idEqualAndAfterTimeOrderByTime(
-			siteMonId, DateUtils.addDay(timestamp, 1)));
+	public void testSaveAndFlush() throws Exception {
+		SiteMonResultPK pk = new SiteMonResultPK(siteMonResult1.getSiteMonId(),
+			siteMonResult1.getTestNumber(), siteMonResult1.getTimestamp());
+		SiteMonResult findOne = sut.findOne(pk);
+		findOne.setSuccess("changed");
+		findOne.setError("changed");
+		findOne.setTestTime("changed");
+		SiteMonResult saveAndFlush = sut.saveAndFlush(findOne);
 		
-		assertThat(findAll.size(), is(0));
-		
-		findAll = sut.findAll(SiteMonResultSpecification.idEqualAndAfterTimeOrderByTime(
-			siteMonId, timestamp));
-		
-		assertThat(findAll.size(), is(1));
+		assertThat(saveAndFlush.getSuccess(), is("changed"));
+		assertThat(saveAndFlush.getError(), is("changed"));
+		assertThat(saveAndFlush.getTestTime(), is("changed"));
 	}
 	
 	@Test
-	public void testFindErrorLog() throws Exception {
-		List<String> errorLog = sut.findErrorLog(siteMonResult1.getSiteMonId(),
-			siteMonResult1.getTimestamp(), siteMonResult1.getTimestamp());
+	public void testFindAllSpecification() throws Exception {
+		List<SiteMonResult> findAll = sut.findAllBySiteMonIdEqualAndTimestampEqualOrderByTestNumber(
+			siteMonResult1.getSiteMonId(), siteMonResult1.getTimestamp());
+		assertThat(findAll.size(), is(1));
 		
-		assertThat(errorLog.size(), is(1));
-		assertThat(errorLog.get(0), is(siteMonResult1.getErrorLog()));
+		findAll = sut.findAllBySiteMonIdEqualAndTimestampEqualOrderByTestNumber(
+			siteMonResult1.getSiteMonId(), new Date());
+		assertThat(findAll.size(), is(0));
+		
+		findAll = sut.findAllBySiteMonIdEqualAndTimestampEqualOrderByTestNumber(
+			siteMonResult4.getSiteMonId(), siteMonResult4.getTimestamp());
+		assertThat(siteMonResult4.getSiteMonId(), is(siteMonResult5.getSiteMonId()));
+		assertThat(siteMonResult4.getTimestamp(), is(siteMonResult5.getTimestamp()));
+		assertThat(findAll.size(), is(2));
+		assertThat(findAll.get(0).getTestNumber(), is(lessThan(findAll.get(1).getTestNumber())));
+	}
+	
+	@Test
+	public void testFindDistinctTestNumberOrderByTestNumber() throws Exception {
+		List<Integer> id1TestNumbers = sut.findDistinctTestNumberOrderByTestNumber(
+			siteMonResult1.getSiteMonId(), siteMonResult1.getTimestamp());
+		List<Integer> id2TestNumbers = sut.findDistinctTestNumberOrderByTestNumber(
+			siteMonResult2.getSiteMonId(), siteMonResult2.getTimestamp());
+		
+		assertThat(id1TestNumbers.size(), is(1));
+		assertThat(id1TestNumbers, is(hasItems(siteMonResult1.getTestNumber())));
+		
+		assertThat(id2TestNumbers.size(), is(2));
+		assertThat(id2TestNumbers, is(hasItems(siteMonResult2.getTestNumber(), siteMonResult5.getTestNumber())));
 	}
 	
 	@Test

@@ -37,27 +37,24 @@ public class SiteMonResult implements Serializable {
 	private SiteMonResultPK siteMonResultPK;
 	
 	@Column(name = "success")
-	private long success;
+	private String success;
 	
 	@Column(name = "error")
-	private long error;
+	private String error;
 	
 	@Column(name = "test_time")
-	private long testTime;
-	
-	@Column(name = "error_log")
-	private String errorLog;
+	private String testTime;
 	
 	public SiteMonResult() {
+		siteMonResultPK = new SiteMonResultPK();
 	}
 
-	public SiteMonResult(String siteMonId, int testNumber, long success, long error,
-		long testTime, Date timestamp, String errorLog) {
+	public SiteMonResult(String siteMonId, int testNumber, String success, String error,
+		String testTime, Date timestamp) {
 		this.siteMonResultPK = new SiteMonResultPK(siteMonId, testNumber, timestamp);
 		this.success = success;
 		this.error = error;
 		this.testTime = testTime;
-		this.errorLog = errorLog;
 	}
 
 	public String getSiteMonId() {
@@ -67,25 +64,37 @@ public class SiteMonResult implements Serializable {
 	public int getTestNumber() {
 		return siteMonResultPK.getTestNumber();
 	}
-
-	public long getSuccess() {
+	
+	public String getSuccess() {
 		return success;
 	}
 
-	public long getError() {
+	public void setSuccess(String success) {
+		this.success = success;
+	}
+
+	public String getError() {
 		return error;
 	}
 
-	public long getTestTime() {
+	public void setError(String error) {
+		this.error = error;
+	}
+
+	public String getTestTime() {
 		return testTime;
+	}
+
+	public void setTestTime(String testTime) {
+		this.testTime = testTime;
 	}
 
 	public Date getTimestamp() {
 		return siteMonResultPK.getTimestamp();
 	}
 	
-	public String getErrorLog() {
-		return errorLog;
+	public void setTimestamp(Date timestamp) {
+		siteMonResultPK.setTimestamp(timestamp);
 	}
 
 	@Embeddable

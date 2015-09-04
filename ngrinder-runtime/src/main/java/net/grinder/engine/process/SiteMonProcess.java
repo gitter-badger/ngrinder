@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -29,6 +30,7 @@ import org.ngrinder.sitemon.messages.ShutdownSiteMonProcessMessage;
 import org.ngrinder.sitemon.messages.SiteMonErrorCallbackMessage;
 import org.ngrinder.sitemon.messages.SiteMonResultMessage;
 import org.ngrinder.sitemon.model.SiteMonResult;
+import org.ngrinder.sitemon.model.SiteMonResultLog;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -438,7 +440,8 @@ public class SiteMonProcess {
 						callErrorCallback();
 					}
 					SiteMonResultMessage message = new SiteMonResultMessage();					
-					message.addAll(extractResults(sample, errorLog));
+					message.addAll(extractResults(sample));
+					message.addErrorLog(new SiteMonResultLog(siteMonId, executeTimestamp, errorLog));
 					m_consoleSender.send(message);
 					m_consoleSender.flush();
 				} catch (CommunicationException e) {
@@ -489,17 +492,19 @@ public class SiteMonProcess {
 		return errorLog.toString();
 	}
 	
-	private List<SiteMonResult> extractResults(TestStatisticsMap sample, final String errorLog) {
+	private List<SiteMonResult> extractResults(TestStatisticsMap sample) {
 		final List<SiteMonResult> results = new LinkedList<SiteMonResult>();
 		final StatisticsIndexMap indexMap = m_statisticsServices.getStatisticsIndexMap();
 		sample.new ForEach() {
 			@Override
 			protected void next(Test test, StatisticsSet statistics) {
+				String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", 
+					Locale.getDefault()).format(executeTimestamp);
 				SiteMonResult result = new SiteMonResult(siteMonId, test.getNumber(),
-					statistics.getCount(indexMap.getLongSampleIndex("timedTests")),
-					statistics.getValue(indexMap.getLongIndex("errors")),
-					statistics.getSum(indexMap.getLongSampleIndex("timedTests")),
-					executeTimestamp, errorLog);
+					"['" + timestamp + "'," + statistics.getCount(indexMap.getLongSampleIndex("timedTests")) + "]",
+					"['" + timestamp + "'," + statistics.getValue(indexMap.getLongIndex("errors")) + "]",
+					"['" + timestamp + "'," + statistics.getSum(indexMap.getLongSampleIndex("timedTests")) + "]",
+					executeTimestamp);
 				results.add(result);
 			}
 		}.iterate();

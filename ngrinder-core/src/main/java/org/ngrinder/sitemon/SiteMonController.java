@@ -29,6 +29,7 @@ import org.ngrinder.sitemon.messages.SiteMonReloadMessage;
 import org.ngrinder.sitemon.messages.SiteMonResultMessage;
 import org.ngrinder.sitemon.messages.UnregistScheduleMessage;
 import org.ngrinder.sitemon.model.SiteMonResult;
+import org.ngrinder.sitemon.model.SiteMonResultLog;
 import org.ngrinder.util.AgentStateMonitor;
 import org.python.google.common.base.Preconditions;
 import org.slf4j.Logger;
@@ -151,6 +152,7 @@ public class SiteMonController implements Agent {
 			siteMonControllerServerListener.shutdown();
 		}
 		connected = false;
+		setShutdownServer(true);
 	}
 
 	private void handle(Message message) throws EngineException {
@@ -234,9 +236,11 @@ public class SiteMonController implements Agent {
 		}, 3000);
 		sendStatusTimer.schedule(new TimerTask() {
 			public void run() {
-				List<SiteMonResult> results = siteMonScheduler.pollAllResults();
-				if (results.size() > 0) {
+				List<SiteMonResult> results = siteMonScheduler.pollAllSiteMonResult();
+				List<SiteMonResultLog> resultLogs = siteMonScheduler.pollAllSiteMonResultLog();
+				if (results.size() > 0 || resultLogs.size() > 0) {
 					SiteMonResultMessage message = new SiteMonResultMessage(results);
+					message.addAllErrorLog(resultLogs);
 					try {
 						clientSender.send(message);
 					} catch (Exception e) {

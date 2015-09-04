@@ -22,6 +22,7 @@ import java.util.Enumeration;
 
 import org.ngrinder.common.util.DateUtils;
 import org.ngrinder.infra.config.Config;
+import org.ngrinder.sitemon.repository.SiteMonResultLogRepository;
 import org.ngrinder.sitemon.repository.SiteMonResultRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,9 @@ public class BatchScheduleService {
 	@Autowired
 	private SiteMonResultRepository siteMonResultRepository;
 	
+	@Autowired
+	private SiteMonResultLogRepository siteMonResultLogRepository;
+	
 	/**
 	 * It operate two o'clock every day for delete the old sitemon result.
 	 */
@@ -53,6 +57,7 @@ public class BatchScheduleService {
 		if (isBatchServer()) {
 			Date beforeMaxHistory = DateUtils.addDay(new Date(), -config.getSiteMonResultMaxHistory());
 			siteMonResultRepository.deleteBeforeTimestamp(beforeMaxHistory);
+			siteMonResultLogRepository.deleteBeforeTimestamp(beforeMaxHistory);
 		}
 	}
 	

@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.ngrinder.sitemon.messages.RegistScheduleMessage;
 import org.ngrinder.sitemon.model.SiteMonResult;
+import org.ngrinder.sitemon.model.SiteMonResultLog;
 
 /**
  * The sitemon run manager.
@@ -29,7 +30,9 @@ public interface SiteMonScheduler {
 
 	public void unregist(String siteMonId);
 	
-	public List<SiteMonResult> pollAllResults();
+	public List<SiteMonResult> pollAllSiteMonResult();
+	
+	public List<SiteMonResultLog> pollAllSiteMonResultLog();
 
 	public void shutdown();
 }

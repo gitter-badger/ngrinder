@@ -16,7 +16,9 @@ package org.ngrinder.sitemon.messages;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.ngrinder.sitemon.model.SiteMonResult;
+import org.ngrinder.sitemon.model.SiteMonResultLog;
 
 import net.grinder.communication.Message;
 
@@ -30,13 +32,16 @@ public class SiteMonResultMessage implements Message {
 	private static final long serialVersionUID = -2658696439516448216L;
 	
 	private final List<SiteMonResult> results;
+	private List<SiteMonResultLog> errorLogs;
 
 	public SiteMonResultMessage() {
 		this.results = new LinkedList<SiteMonResult>();
+		this.errorLogs = new LinkedList<SiteMonResultLog>();
 	}
 
 	public SiteMonResultMessage(List<SiteMonResult> results) {
 		this.results = new LinkedList<SiteMonResult>(results);
+		this.errorLogs = new LinkedList<SiteMonResultLog>();
 	}
 	
 	public void addAll(List<SiteMonResult> results) {
@@ -45,6 +50,20 @@ public class SiteMonResultMessage implements Message {
 
 	public List<SiteMonResult> getResults() {
 		return results;
+	}
+
+	public List<SiteMonResultLog> getErrorLogs() {
+		return errorLogs;
+	}
+
+	public void addErrorLog(SiteMonResultLog errorLog) {
+		if (StringUtils.isNotEmpty(errorLog.getLog())) {
+			this.errorLogs.add(errorLog);
+		}
+	}
+
+	public void addAllErrorLog(List<SiteMonResultLog> errorLogs) {
+		this.errorLogs.addAll(errorLogs);
 	}
 
 }

@@ -28,6 +28,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.ngrinder.common.util.ThreadUtils;
 import org.ngrinder.sitemon.messages.RegistScheduleMessage;
 import org.ngrinder.sitemon.model.SiteMonResult;
+import org.ngrinder.sitemon.model.SiteMonResultLog;
 import org.ngrinder.util.AgentStateMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,11 +102,12 @@ public class SiteMonSchedulerImplementation implements SiteMonScheduler {
 		agentStateMonitor.setRegistScriptCount(siteMonMap.size());
 	}
 	
-	/**
-	 * @return
-	 */
-	public List<SiteMonResult> pollAllResults() {
+	public List<SiteMonResult> pollAllSiteMonResult() {
 		return scriptRunner.pollAllResult();
+	}
+	
+	public List<SiteMonResultLog> pollAllSiteMonResultLog() {
+		return scriptRunner.pollAllResultLog();
 	}
 
 	public void setRepeatTime(long repeatTime) {
