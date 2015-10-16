@@ -34,15 +34,15 @@ public class SiteMonRepositoryTest extends AbstractNGrinderTransactionalTest {
 		userRepository.save(user1);
 		userRepository.save(user2);
 		
-		siteMon1 = new SiteMon("id1", "name1", user1, "script1", 1, "hosts1", "param1", "agent1", true, "back1");
-		siteMon2 = new SiteMon("id2", "name2", user2, "script2", 2, "hosts2", "param2", "agent2", false, "back2");
+		siteMon1 = new SiteMon("id1", "name1", 1, user1, "script1", 1, "hosts1", "param1", "agent1", true, "back1");
+		siteMon2 = new SiteMon("id2", "name2", 2, user2, "script2", 2, "hosts2", "param2", "agent2", false, "back2");
 		sut.save(siteMon1);
 		sut.save(siteMon2);
 	}
 
 	@Test
 	public void testSave() throws Exception {
-		SiteMon siteMon = new SiteMon("id", "name", new User(), "script", 0, "hosts", "param", "agent", true, "back");
+		SiteMon siteMon = new SiteMon("id", "name", 0, new User(), "script", 0, "hosts", "param", "agent", true, "back");
 		SiteMon save = sut.save(siteMon);
 		assertEqual(siteMon, save);
 	}

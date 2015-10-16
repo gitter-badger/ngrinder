@@ -41,6 +41,9 @@ public class SiteMon {
 	@Column(name = "name")
 	private String name;
 	
+	@Column(name = "monitoring_interval")
+	private int monitoringInterval;
+	
 	@OneToOne
 	@JoinColumn(name = "created_user")
 	private User createdUser;
@@ -74,10 +77,12 @@ public class SiteMon {
 		
 	}
 	
-	public SiteMon(String id, String name, User createdUser, String scriptName, long scriptRevision,
-		String targetHosts, String param, String agentName, boolean runState, String errorCallback) {
+	public SiteMon(String id, String name, int monitoringInterval, User createdUser,
+		String scriptName, long scriptRevision, String targetHosts, String param, String agentName,
+		boolean runState, String errorCallback) {
 		this.id = id;
 		this.name = name;
+		this.monitoringInterval = monitoringInterval;
 		this.createdUser = createdUser;
 		this.scriptName = scriptName;
 		this.scriptRevision = scriptRevision;
@@ -102,6 +107,14 @@ public class SiteMon {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public int getMonitoringInterval() {
+		return monitoringInterval;
+	}
+
+	public void setMonitoringInterval(int monitoringInterval) {
+		this.monitoringInterval = monitoringInterval;
 	}
 
 	public User getCreatedUser() {

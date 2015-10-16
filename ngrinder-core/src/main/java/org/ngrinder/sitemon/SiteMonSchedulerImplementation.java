@@ -54,6 +54,7 @@ public class SiteMonSchedulerImplementation implements SiteMonScheduler {
 	private boolean shutdown = false;
 
 	Map<String, RegistScheduleMessage> siteMonMap = new HashMap<String, RegistScheduleMessage>();
+	Map<String, MonitoringIntervalChecker> intervalCheckerMap = new HashMap<String, MonitoringIntervalChecker>();
 
 	/**
 	 * The constructor.
@@ -89,6 +90,8 @@ public class SiteMonSchedulerImplementation implements SiteMonScheduler {
 	@Override
 	public void regist(final RegistScheduleMessage message) {
 		siteMonMap.put(message.getSiteMonId(), message);
+		intervalCheckerMap.put(message.getSiteMonId(),
+			new MonitoringIntervalChecker(message.getMonitoringInterval()));
 		agentStateMonitor.setRegistScriptCount(siteMonMap.size());
 	}
 
@@ -142,7 +145,6 @@ public class SiteMonSchedulerImplementation implements SiteMonScheduler {
 				agentStateMonitor.recordUseTime(useTime);
 				sleepForRepeatCycle(useTime);
 			}
-			System.err.println("Shut down ???");
 		}
 
 		private void sleepForRepeatCycle(long usedTime) {
@@ -170,6 +172,10 @@ public class SiteMonSchedulerImplementation implements SiteMonScheduler {
 			for (Entry<String, RegistScheduleMessage> entry : siteMonMap.entrySet()) {
 				final String siteMonId = entry.getKey();
 				final RegistScheduleMessage message = entry.getValue();
+				
+				if (intervalCheckerMap.get(siteMonId).skip()) {
+					continue;
+				}
 
 				Callable<Object> task = new Callable<Object>() {
 					@Override
@@ -185,6 +191,26 @@ public class SiteMonSchedulerImplementation implements SiteMonScheduler {
 			}
 			return futures;
 		}
+	}
+	
+	class MonitoringIntervalChecker {
+		
+		private final int interval;
+		private int remainSkipCount;
+
+		MonitoringIntervalChecker(int interval) {
+			this.interval = interval;
+			remainSkipCount = interval;
+		}
+		
+		public boolean skip() {
+			if (--remainSkipCount > 0) {
+				return true;
+			}
+			remainSkipCount = interval;
+			return false;
+		}
+		
 	}
 
 }

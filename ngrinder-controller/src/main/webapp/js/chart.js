@@ -128,8 +128,7 @@ Chart.prototype.plot = function () {
 				markerRenderer: $.jqplot.MarkerRenderer,
 				markerOptions: {
 					size: 2.0,
-					color: '#555555',
-					style: this.opts.markerStyle
+					color: '#555555'
 				},
 				lineWidth: 1.0
 			},

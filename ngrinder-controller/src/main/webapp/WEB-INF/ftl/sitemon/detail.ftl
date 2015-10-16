@@ -158,6 +158,7 @@ $(document).ready(function() {
 	$("#nav_siteMon").addClass("active");
 	showProgressBar('<@spring.message "siteMon.message.updateReport"/> & <@spring.message "perfTest.message.updateResource"/>');
 	$("#sitemon_config_section_tab").find("a").tab('show');
+	addValidation();
 	bindEvent();
 	updateScriptResources();
 	initReportChart();
@@ -165,6 +166,25 @@ $(document).ready(function() {
 	alert("${msg}");
 </#if>
 });
+
+var validationOptions = {};
+function addValidation() {
+    validationOptions = {
+		rules: {
+			monitoringInterval : {
+				required: true,
+				digits: true,
+				min: 1,
+				max: 9999
+			}
+		},
+		errorPlacement : function(error, element) {
+			error.appendTo(element.parent());
+		}
+	};
+
+	$("#siteMon_config_form").validate(validationOptions);
+}
 
 function bindEvent() {
 	$("#pause_siteMon_btn").click(function() {
@@ -261,9 +281,7 @@ function updateScriptResources(bInitHosts) {
 		$("#script_resources").html(html);
 		
 		bUpdatedResources = true;
-		if (bUpdatedReport) {
-			hideProgressBar();
-		}
+		onHideProgress();
 	};
 	ajaxObj.call();
 }
@@ -280,19 +298,31 @@ var testTimeData;
 var resultChart;
 var timeChart;
 function initReportChart() {
+<#if formMode?? && formMode == true>
+	var formMode = true;
+<#else>
+	var formMode = false;
+</#if>
+	if (formMode) {
+		bUpdatedReport = true;
+		onHideProgress();
+		return;
+	}
+	$("#sitemon_report_section_tab").find("a").tab('show');
+	$("#sitemon_report_section_tab").show();
 	var ajaxObj = new AjaxObj("${req.getContextPath()}/sitemon/api/${siteMon.id}/result", null, "<@spring.message "common.error.error"/>");
 	ajaxObj.success = function(res) {
-		if (eval(res.successData).length > 0) {
-			$("#sitemon_report_section_tab").find("a").tab('show');
-			$("#sitemon_report_section_tab").show();
-			drawReportChart(res);
-			$("#sitemon_config_section_tab").find("a").tab('show');
-			setInterval(reportAutoRefresh, ONE_MINUTE_MS);
+		if (eval(res.successData).length == 0) {
+			$("#noResultGuide").removeClass("hide");
+			bUpdatedReport = true;
+			onHideProgress();
+			return;
 		}
+		$("#resultChart").removeClass("hide");
+		drawReportChart(res);
+		setInterval(reportAutoRefresh, ONE_MINUTE_MS);
 		bUpdatedReport = true;
-		if (bUpdatedResources) {
-			hideProgressBar();
-		}
+		onHideProgress();
 	};
 	ajaxObj.call();
 }
@@ -302,7 +332,7 @@ function drawReportChart(res) {
 	var mergeResult = mergeLabel(eval(res.successData), eval(res.errorData));
 	createSamplingData(mergeResult[0], mergeResult[1], TEN_MINUTE_MS);
 	testTimeData = eval(res.testTimeData);
-	resultChart = new Chart("test_result_chart", [resultSuccessData, resultErrorData], 1, {labels : ["success", "error"], seriesColors: ["#0000ff", "#ff0000"], markerStyle: "square", xAxisMin : res.minTimestamp, xAxisMax : res.maxTimestamp, xAxisRenderer : $.jqplot.DateAxisRenderer, xAxisFormatString : '%H:%M'}).plot();
+	resultChart = new Chart("test_result_chart", [resultSuccessData, resultErrorData], 1, {labels : ["success", "error"], seriesColors: ["#0000ff", "#ff0000"], xAxisMin : res.minTimestamp, xAxisMax : res.maxTimestamp, xAxisRenderer : $.jqplot.DateAxisRenderer, xAxisFormatString : '%H:%M'}).plot();
 	timeChart = new Chart("test_time_chart", testTimeData, 1, {labels : labels, xAxisMin : res.minTimestamp, xAxisMax : res.maxTimestamp, xAxisRenderer : $.jqplot.DateAxisRenderer, xAxisFormatString : '%H:%M'}).plot();
 }
 
@@ -393,6 +423,12 @@ SamplingData.prototype = {
 	add : function(success, error) {
 		if (success < this.success) this.success = success;
 		if (error > this.error) this.error = error;
+	}
+}
+
+function onHideProgress() {
+	if (bUpdatedResources && bUpdatedReport) {
+		hideProgressBar();
 	}
 }
 </script>

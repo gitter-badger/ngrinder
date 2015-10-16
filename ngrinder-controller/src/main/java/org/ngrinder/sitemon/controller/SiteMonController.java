@@ -49,6 +49,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/sitemon")
 public class SiteMonController extends BaseController {
 	
+	private static final int ONE_MINUTE = 1;	// Default monitoring interval.
+
 	@Autowired
 	private SiteMonService siteMonService;
 	
@@ -83,9 +85,10 @@ public class SiteMonController extends BaseController {
 			"invalid permission for " + perfTestId + " perftest");
 
 		FileEntry siteMonScript = siteMonService.getSiteMonScript(user, perfTest, scriptClone);
-		modelMap.addAttribute("siteMon", new SiteMon("Perftest" + perfTestId, perfTest.getTestName(), 
-			user, siteMonScript.getPath(), siteMonScript.getRevision(), perfTest.getTargetHosts(),
-			perfTest.getParam(), null, true, ""));
+		modelMap.addAttribute("siteMon",
+			new SiteMon("Perftest" + perfTestId, perfTest.getTestName(), ONE_MINUTE, user,
+				siteMonScript.getPath(), siteMonScript.getRevision(), perfTest.getTargetHosts(),
+				perfTest.getParam(), null, true, ""));
 		modelMap.addAttribute("formMode", true);
 		return "sitemon/detail";
 	}

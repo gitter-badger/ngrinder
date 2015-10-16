@@ -132,7 +132,7 @@ public class SiteMonAgentCommunicationTest {
 	}
 
 	private void sendRegistScheduleMessage(SiteMonControllerServerDaemon serverDaemon) {
-		RegistScheduleMessage regist = new RegistScheduleMessage(siteMonId, scriptname, hosts, param, errorCallback);
+		RegistScheduleMessage regist = new RegistScheduleMessage(siteMonId, 1, scriptname, hosts, param, errorCallback);
 		serverDaemon.sendToAgents(regist);
 	}
 

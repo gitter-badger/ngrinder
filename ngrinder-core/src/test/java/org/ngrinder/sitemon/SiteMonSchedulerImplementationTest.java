@@ -12,6 +12,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.ngrinder.common.util.ThreadUtils;
 import org.ngrinder.sitemon.SiteMonSchedulerImplementation;
+import org.ngrinder.sitemon.SiteMonSchedulerImplementation.MonitoringIntervalChecker;
 import org.ngrinder.sitemon.messages.RegistScheduleMessage;
 import org.ngrinder.util.AgentStateMonitor;
 
@@ -31,8 +32,8 @@ public class SiteMonSchedulerImplementationTest {
 	
 	int lastSetScriptCount;
 	long lastRecordUseTime;
-	RegistScheduleMessage message = new RegistScheduleMessage("id", "scriptfile", "host:123", "param", null);
-	RegistScheduleMessage message2 = new RegistScheduleMessage("id2", "scriptfile", "host:123", "param", null);
+	RegistScheduleMessage message = new RegistScheduleMessage("id", 1, "scriptfile", "host:123", "param", null);
+	RegistScheduleMessage message2 = new RegistScheduleMessage("id2", 2, "scriptfile", "host:123", "param", null);
 	
 	@Before
 	public void before() {
@@ -119,6 +120,27 @@ public class SiteMonSchedulerImplementationTest {
 		
 		assertThat(lastRecordUseTime, greaterThan(scriptUseTime - littleTime));
 		assertThat(lastRecordUseTime, lessThan(scriptUseTime + littleTime));
+	}
+	
+	@Test
+	public void testIntervalCheckerSkip() throws Exception {
+		MonitoringIntervalChecker checker = sut.new MonitoringIntervalChecker(1);
+		for (int i = 0; i < 10; i++) {
+			assertThat(checker.skip(), is(false));
+		}
+
+		checker = sut.new MonitoringIntervalChecker(2);
+		for (int i = 0; i < 10; i++) {
+			assertThat(checker.skip(), is(true));
+			assertThat(checker.skip(), is(false));
+		}
+
+		checker = sut.new MonitoringIntervalChecker(3);
+		for (int i = 0; i < 10; i++) {
+			assertThat(checker.skip(), is(true));
+			assertThat(checker.skip(), is(true));
+			assertThat(checker.skip(), is(false));
+		}
 	}
 	
 }

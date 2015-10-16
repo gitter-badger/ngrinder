@@ -17,6 +17,7 @@
 			<column name="name" type="VARCHAR(255)" defaultValue="" />
 			<column name="created_user" type="BIGINT" />
 			<column name="script_name" type="varchar(255)" />
+			<column name="monitoring_interval" type="int" defaultValue="1" />
 			<column name="script_revision" type="BIGINT" />
 			<column name="target_hosts" type="varchar(65535)" />
 			<column name="param" type="varchar(256)" defaultValue="" />

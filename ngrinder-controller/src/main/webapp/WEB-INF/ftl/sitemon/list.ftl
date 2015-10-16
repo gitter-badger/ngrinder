@@ -31,7 +31,7 @@
 		</tr>
 		</thead>
 		<tbody>
-		<@list list_items=siteMons others="table_list" colspan="8"; siteMon>
+		<@list list_items=siteMons others="table_list" colspan="5"; siteMon>
 		<tr>
 			<#if siteMon.agentRunning>
 				<#if siteMon.runState>

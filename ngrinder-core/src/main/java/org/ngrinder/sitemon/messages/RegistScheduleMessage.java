@@ -25,6 +25,7 @@ public class RegistScheduleMessage implements Message {
 	private static final long serialVersionUID = 8032597041213935838L;
 
 	private final String siteMonId;
+	private final int monitoringInterval;
 	private final String scriptname;
 	private final String propHosts;
 	private final String propParam;
@@ -38,9 +39,10 @@ public class RegistScheduleMessage implements Message {
 	 * @param propHosts
 	 * @param propParam
 	 */
-	public RegistScheduleMessage(String siteMonId, String scriptname, String propHosts,
+	public RegistScheduleMessage(String siteMonId, int monitoringInterval, String scriptname, String propHosts,
 		String propParam, String errorCallback) {
 		this.siteMonId = siteMonId;
+		this.monitoringInterval = monitoringInterval;
 		this.scriptname = scriptname;
 		this.propHosts = propHosts;
 		this.propParam = propParam;
@@ -49,6 +51,10 @@ public class RegistScheduleMessage implements Message {
 
 	public String getSiteMonId() {
 		return siteMonId;
+	}
+
+	public int getMonitoringInterval() {
+		return monitoringInterval;
 	}
 
 	public String getScriptname() {

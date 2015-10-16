@@ -46,6 +46,14 @@
 							</@control_group>
 						</div>
 					</div>
+					<div class="row">
+						<div class="span">
+							<@control_group controls_style = "margin-left: 140px;" label_style = "width: 120px;" label_message_key="siteMon.config.monitoringInterval">
+								<input id="monitoringInterval" class="span1 text-right" name="monitoringInterval" maxlength="4" size="4" type="text" value="${siteMon.monitoringInterval!1}"/>
+								<small style="margin-left: 4px;"><@spring.message "siteMon.config.minute"/></small>
+							</@control_group>
+						</div>
+					</div>
 				<#if saved>
 					<div class="row">
 						<div class="span">

@@ -201,9 +201,11 @@ public class SiteMonAgentManagerService implements ControllerConstants {
 			new Directory(disDirectory.getRootDirectory()),
 			Pattern.compile(ConsoleProperties.DEFAULT_DISTRIBUTION_FILE_FILTER_EXPRESSION),
 			null);
-		siteMonServerDaemon.sendToAddressedAgents(agentAddress, new RegistScheduleMessage(
-			siteMon.getId(), script.getFileName(), siteMon.getTargetHosts(),
-			siteMon.getParam(), siteMon.getErrorCallback()));
+		siteMonServerDaemon.sendToAddressedAgents(
+			agentAddress,
+			new RegistScheduleMessage(siteMon.getId(), siteMon.getMonitoringInterval(),
+				script.getFileName(), siteMon.getTargetHosts(), siteMon.getParam(),
+				siteMon.getErrorCallback()));
 	}
 
 	/**
